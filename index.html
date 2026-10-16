@@ -94,9 +94,9 @@ table.hk th,table.hk td{border:1px solid var(--ink);text-align:center;padding:3p
 .sign{width:300px;margin:34px 0 0 230px;text-align:center}
 .sign .nm{margin-top:62px;text-decoration:underline}
 .dh{text-align:center;font-weight:700;text-decoration:underline;font-size:15px;margin:0 0 14px}
-.ph-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.ph{height:300px;display:flex;align-items:center;justify-content:center;background:#fff}
-.ph img{max-width:100%;max-height:100%;display:block}
+.ph-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ph{height:300px;display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden}
+.ph img{display:block;max-width:none;max-height:none;flex:none}
 .ph.empty{border:1.5px dashed #888;color:#666;text-align:center;font-size:14px;padding:0 24px;grid-column:1 / -1;height:150px}
 @media (prefers-reduced-motion:no-preference){.btn{transition:border-color .15s}}
 body{margin:0}
@@ -247,7 +247,7 @@ function renderRows(){
   var host=$("#rows");
   host.innerHTML=S.rows.map(function(r,i){
     var opts='<option value="">Pilih bulan</option>'+BULAN.map(function(b){return '<option'+(b===r.bulan?' selected':'')+'>'+b+'</option>'}).join("");
-    var th=r.photos.map(function(p,pi){return '<div class="thumb"><img src="'+p+'" alt="Foto '+(pi+1)+'"><button type="button" data-rm="'+r.id+':'+pi+'" aria-label="Hapus foto '+(pi+1)+'">×</button></div>'}).join("");
+    var th=r.photos.map(function(p,pi){return '<div class="thumb"><img src="'+p.s+'" alt="Foto '+(pi+1)+'"><button type="button" data-rm="'+r.id+':'+pi+'" aria-label="Hapus foto '+(pi+1)+'">×</button></div>'}).join("");
     return '<div class="row-card" data-id="'+r.id+'">'+
      '<div class="head"><strong>Bulan ke-'+(i+1)+'</strong>'+(S.rows.length>1?'<button type="button" class="btn sm danger" data-del="'+r.id+'">Hapus</button>':'')+'</div>'+
      '<div class="f"><label for="b'+r.id+'">Bulan</label><select id="b'+r.id+'" data-f="bulan">'+opts+'</select></div>'+
@@ -292,7 +292,7 @@ function shrink(file){
         var m=1400,w=im.naturalWidth,h=im.naturalHeight,s=Math.min(1,m/Math.max(w,h));
         var c=document.createElement("canvas"); c.width=Math.round(w*s); c.height=Math.round(h*s);
         var x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(im,0,0,c.width,c.height);
-        res(c.toDataURL("image/jpeg",0.85));
+        res({s:c.toDataURL("image/jpeg",0.85),w:c.width,h:c.height});
       };
       im.src=fr.result;
     };
@@ -345,7 +345,7 @@ function pagesHtml(preview){
       return;
     }
     for(var i=0;i<r.photos.length;i+=6){
-      var cells=r.photos.slice(i,i+6).map(function(p){return '<div class="ph"><img src="'+p+'" alt=""></div>'}).join("");
+      var cells=r.photos.slice(i,i+6).map(function(p){var k=Math.min(325/p.w,300/p.h),w=Math.round(p.w*k),h=Math.round(p.h*k);return '<div class="ph"><img src="'+p.s+'" alt="" width="'+w+'" height="'+h+'" style="width:'+w+'px;height:'+h+'px"></div>'}).join("");
       out.push('<section class="pg"><div class="dh">'+esc(title)+'</div><div class="ph-grid">'+cells+'</div></section>');
     }
   });
