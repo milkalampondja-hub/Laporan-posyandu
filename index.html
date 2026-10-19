@@ -185,7 +185,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 7</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 8</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -250,7 +250,7 @@ try{
       if(!j.rows.length)j.rows=[newRow("")];
       if(!Array.isArray(j.kader)||!j.kader.length)j.kader=[""];
       S=Object.assign(blank(),j);
-      restored=!!(S.posyandu||S.kelurahan);
+      freshActivity(S);restored=false;
     }}
 }catch(e){}
 function save(){
@@ -339,13 +339,13 @@ function opt(list,sel,ph){return '<option value="">'+ph+'</option>'+list.map(fun
 
 /* ---------- tampilan ---------- */
 function viewHome(){
-  var has=restored||S.posyandu;
+  var has=false;
   var how=[["users","Data posyandu","Pilih jenis laporan dan kelurahan, isi nama posyandu dan kader."],["calendar","Kegiatan","Tanggal, tempat, dan hasil kegiatan bulan ini."],["camera","Foto","Tambahkan foto dokumentasi dari galeri atau kamera."],["edit","Catatan","Masalah, tindak lanjut, dan tanggal tanda tangan lurah."],["filecheck","Download","Periksa pratinjau, lalu simpan PDF dan cetak."]];
   return '<section class="hero"><div class="badge-logo"><img src="'+LOGO+'" alt=""></div><h1>LAPORAN POSYANDU<br>KECAMATAN PALU UTARA</h1><p>Posyandu Balita dan Lansia<br>Kota Palu</p></section>'+
   (has?'<section class="card resume"><div class="rl">Laporan terakhir</div><div class="rt">'+esc(S.posyandu||"Belum diberi nama")+'</div><div class="rs">'+esc((J()?J().label+" · ":"")+(S.kelurahan?"Kelurahan "+S.kelurahan:"Belum memilih kelurahan"))+'</div><div class="btnrow"><button type="button" class="btn primary" data-start="0">Lanjutkan laporan</button><button type="button" class="btn" id="new-report">Laporan bulan baru</button></div></section>':'')+
   '<section class="card"><h2>Cara mengisi laporan</h2><ol class="how">'+how.map(function(h){return '<li><span class="hi">'+ic(h[0],22)+'</span><div><b>'+h[1]+'</b><span>'+h[2]+'</span></div></li>'}).join("")+'</ol></section>'+
   (has?'':'<button type="button" class="btn primary block big" data-start="0">Mulai laporan</button>')+
-  '<p class="save">Isian tersimpan otomatis di HP ini.</p>';
+  '<p class="save">Data posyandu dan kader diingat di HP ini, jadi tidak perlu mengisi ulang.</p>';
 }
 function viewPosyandu(){
   var kd=S.kader.map(function(n,i){
