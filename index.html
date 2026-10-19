@@ -110,6 +110,15 @@ details.opt{margin-top:4px}details.opt summary{cursor:pointer;font-weight:600;co
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 /* Kertas A4 (794 x 1123 px). Tetap putih di tema gelap karena ini dokumen yang dicetak. */
 .pg{width:794px;min-height:1123px;background:var(--paper);color:var(--ink);font-family:var(--f-doc);font-size:15px;line-height:1.35;padding:52px 66px 56px;position:relative;box-shadow:var(--shadow)}
+.pg.t1{padding:40px 62px 36px;font-size:14px;line-height:1.28}
+.pg.t1 .rule{margin:5px 0 12px}.pg.t1 .jd{margin:0 0 10px}
+.pg.t1 table.kv td{padding:3px 0}.pg.t1 table.hk td,.pg.t1 table.hk th{padding:1px 6px}
+.pg.t1 .sign{margin-top:16px}.pg.t1 .sign .nm{margin-top:46px}
+.pg.t2{padding:30px 58px 26px;font-size:13px;line-height:1.2}
+.pg.t2 .kop{min-height:80px}.pg.t2 .kop img{width:66px}.pg.t2 .kop .k1{font-size:18px}.pg.t2 .kop .k2{font-size:20px}
+.pg.t2 .rule{margin:4px 0 8px}.pg.t2 .jd{margin:0 0 6px;font-size:14px}
+.pg.t2 table.kv td{padding:2px 0}.pg.t2 table.hk td,.pg.t2 table.hk th{padding:0 5px}
+.pg.t2 .sign{margin-top:10px}.pg.t2 .sign .nm{margin-top:38px}
 .export-host{position:absolute;left:-10000px;top:0;width:794px}
 .export-host .pg{box-shadow:none}
 .kop{position:relative;text-align:center;min-height:92px;padding:0 0 4px}
@@ -185,7 +194,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 9</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 10</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -576,6 +585,10 @@ function pagesHtml(){
   });
   return out.join("");
 }
+function fitLetter(root){
+  var pg=root.querySelector(".pg");if(!pg)return;
+  ["","t1","t2"].some(function(c){pg.classList.remove("t1","t2");if(c)pg.classList.add(c);return pg.scrollHeight<=1123});
+}
 var ro=null;
 function fit(){
   var box=document.getElementById("pvbox"),stage=document.getElementById("stage"),sc=document.getElementById("scaler");
@@ -586,7 +599,7 @@ function fit(){
 }
 function renderPreview(){
   var stage=document.getElementById("stage");if(!stage)return;
-  stage.innerHTML=pagesHtml();fit();
+  stage.innerHTML=pagesHtml();fitLetter(stage);fit();
   if(ro)ro.disconnect();
   if(window.ResizeObserver){ro=new ResizeObserver(fit);ro.observe(document.getElementById("pvbox"))}
 }
@@ -597,7 +610,7 @@ var resUrl=null,resBlob=null,resName="";
 async function buildPdf(){
   if(!window.html2canvas||!window.jspdf)throw new Error("lib");
   if(document.fonts&&document.fonts.ready)await document.fonts.ready;
-  var host=document.createElement("div");host.className="export-host";host.innerHTML=pagesHtml();document.body.appendChild(host);
+  var host=document.createElement("div");host.className="export-host";host.innerHTML=pagesHtml();document.body.appendChild(host);fitLetter(host);
   try{
     var imgs=Array.prototype.slice.call(host.querySelectorAll("img"));
     await Promise.all(imgs.map(function(i){return i.complete?1:new Promise(function(r){i.onload=i.onerror=r})}));
