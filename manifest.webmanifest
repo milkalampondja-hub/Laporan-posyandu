@@ -1,13 +1,13 @@
 {
-  "name": "Laporan Posyandu Lansia",
+  "name": "Laporan Posyandu Kecamatan Palu Utara",
   "short_name": "Laporan Posyandu",
-  "description": "Isi laporan Posyandu Lansia, lihat pratinjau, lalu download PDF untuk dicetak.",
+  "description": "Isi laporan Posyandu Balita atau Lansia, lihat pratinjau, lalu download PDF untuk dicetak.",
   "lang": "id",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0d6b5b",
-  "theme_color": "#0d6b5b",
+  "background_color": "#2d1f78",
+  "theme_color": "#2d1f78",
   "icons": [
     {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
     {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}

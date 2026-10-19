@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Laporan Posyandu</title>
-<meta name="theme-color" content="#0d6b5b">
+<title>Laporan Posyandu Kecamatan Palu Utara</title>
+<meta name="theme-color" content="#2d1f78">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Laporan Posyandu">
@@ -20,18 +20,18 @@
 <style>
 /* Tata letak: aplikasi satu kolom, lima langkah (bar atas dengan kemajuan, kartu isian, bar bawah dengan tombol Kembali / Lanjut). */
 :root{
-  --bg:#eef2f1; --surface:#ffffff; --fg:#14211d; --muted:#586862; --line:#d2dbd8;
-  --accent:#0d6b5b; --accent-fg:#ffffff; --accent-soft:#dff0ec; --gold:#f2b705;
+  --bg:#f2f0f8; --surface:#ffffff; --fg:#1a1633; --muted:#5d5a78; --line:#d9d5ea;
+  --accent:#2d1f78; --accent-fg:#ffffff; --accent-soft:#e8e4f7; --gold:#f0a800;
   --danger:#b3261e; --danger-soft:#fbe9e7; --warn:#8a5a00; --warn-soft:#fff3d6; --ok:#17794a; --ok-soft:#e1f4e9;
   --paper:#ffffff; --ink:#000000; --shadow:0 1px 2px rgba(20,33,29,.08),0 8px 24px rgba(20,33,29,.08);
-  --field:#f6f9f8; --hero1:#0a5446; --hero2:#118a73;
+  --field:#f7f6fc; --hero1:#221660; --hero2:#4a3aa8;
   --f-ui:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --f-doc:Tinos,"Times New Roman",Times,serif; --f-kop:"Courier Prime","Courier New",Courier,monospace;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0e1513; --surface:#17211e; --fg:#e6eeeb; --muted:#9bafa7; --line:#2b3a35;
-  --accent:#4fc3a8; --accent-fg:#06241d; --accent-soft:#1d3a33; --field:#101a17;
+  --bg:#110e22; --surface:#1b1733; --fg:#ece9fa; --muted:#a8a3c8; --line:#2f2a52;
+  --accent:#b7a9ff; --accent-fg:#1a1240; --accent-soft:#2a2455; --field:#141028;
   --danger:#ff8a80; --danger-soft:#3a1f1c; --warn:#ffd277; --warn-soft:#3a2f12; --ok:#6fdc9f; --ok-soft:#173326;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); color-scheme:dark;}}
 *{box-sizing:border-box}
@@ -43,7 +43,7 @@ button,input,select,textarea{font:inherit;color:inherit}
   padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
 .app-in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:12px;padding-bottom:10px}
 .app img{width:34px;height:auto;border-radius:3px;background:#fff;padding:2px;flex:none}
-.app .ttl{font-weight:700;font-size:17px;line-height:1.2}
+.app .ttl{font-weight:700;font-size:15px;line-height:1.2;letter-spacing:.2px}
 .app .sub{font-size:13px;opacity:.92}
 .prog{height:4px;background:rgba(255,255,255,.28);margin:0 calc(-1 * max(16px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-left,0px)))}
 .prog i{display:block;height:100%;background:var(--gold);width:20%;transition:width .25s}
@@ -154,7 +154,7 @@ table.hk th,table.hk td{border:1px solid var(--ink);text-align:center;padding:3p
 .hero{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;border-radius:20px;padding:30px 22px;text-align:center;margin-bottom:16px;box-shadow:var(--shadow)}
 .hero .badge-logo{width:84px;height:84px;margin:0 auto 14px;border-radius:22px;background:#fff;display:grid;place-items:center}
 .hero .badge-logo img{width:50px;height:auto}
-.hero h1{color:#fff;margin:0 0 4px;font-size:26px}
+.hero h1{color:#fff;margin:0 0 6px;font-size:22px;line-height:1.25;letter-spacing:.3px}.hero h1::after{content:"";display:block;width:56px;height:4px;border-radius:2px;background:var(--gold);margin:12px auto 0}main:focus{outline:none}.foot{text-align:center;font-size:12.5px;color:var(--muted);padding:8px 16px 4px;line-height:1.6}.foot b{color:var(--fg);font-weight:600}
 .hero p{margin:0;opacity:.92}
 .how{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:16px}
 .how li{display:flex;gap:14px;align-items:flex-start}
@@ -167,7 +167,7 @@ input[type=text],input[type=date],input[type=number],select,textarea{background:
 select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%237a8a84' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:44px}
 .card{border-radius:16px;box-shadow:0 1px 2px rgba(20,33,29,.05)}
 .btn{border-radius:14px}
-.btn.primary{box-shadow:0 4px 12px rgba(13,107,91,.28)}
+.btn.primary{box-shadow:0 4px 12px rgba(45,31,120,.28)}
 .btn:active{transform:translateY(1px)}
 .dock{box-shadow:0 -4px 16px rgba(20,33,29,.08)}
 .dock .btn{min-height:54px;font-size:17px}
@@ -179,12 +179,13 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 <header class="app">
   <div class="app-in">
     <img src="data:image/jpeg;base64,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" alt="">
-    <div><div class="ttl">Laporan Posyandu</div><div class="sub" id="stepsub">Langkah 1 dari 5</div></div>
+    <div><div class="ttl">LAPORAN POSYANDU<br>KECAMATAN PALU UTARA</div><div class="sub" id="stepsub">Langkah 1 dari 5</div></div>
   </div>
   <div class="prog" aria-hidden="true"><i id="progbar"></i></div>
 </header>
 
 <main id="main" tabindex="-1"></main>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved</footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -340,7 +341,7 @@ function opt(list,sel,ph){return '<option value="">'+ph+'</option>'+list.map(fun
 function viewHome(){
   var has=restored||S.posyandu;
   var how=[["users","Data posyandu","Pilih jenis laporan dan kelurahan, isi nama posyandu dan kader."],["calendar","Kegiatan","Tanggal, tempat, dan hasil kegiatan bulan ini."],["camera","Foto","Tambahkan foto dokumentasi dari galeri atau kamera."],["edit","Catatan","Masalah, tindak lanjut, dan tanggal tanda tangan lurah."],["filecheck","Download","Periksa pratinjau, lalu simpan PDF dan cetak."]];
-  return '<section class="hero"><div class="badge-logo"><img src="'+LOGO+'" alt=""></div><h1>Laporan Posyandu</h1><p>Posyandu Balita dan Lansia<br>Kecamatan Palu Utara, Kota Palu</p></section>'+
+  return '<section class="hero"><div class="badge-logo"><img src="'+LOGO+'" alt=""></div><h1>LAPORAN POSYANDU<br>KECAMATAN PALU UTARA</h1><p>Posyandu Balita dan Lansia<br>Kota Palu</p></section>'+
   (has?'<section class="card resume"><div class="rl">Laporan terakhir</div><div class="rt">'+esc(S.posyandu||"Belum diberi nama")+'</div><div class="rs">'+esc((J()?J().label+" · ":"")+(S.kelurahan?"Kelurahan "+S.kelurahan:"Belum memilih kelurahan"))+'</div><div class="btnrow"><button type="button" class="btn primary" data-start="0">Lanjutkan laporan</button><button type="button" class="btn" id="new-report">Laporan bulan baru</button></div></section>':'')+
   '<section class="card"><h2>Cara mengisi laporan</h2><ol class="how">'+how.map(function(h){return '<li><span class="hi">'+ic(h[0],22)+'</span><div><b>'+h[1]+'</b><span>'+h[2]+'</span></div></li>'}).join("")+'</ol></section>'+
   (has?'':'<button type="button" class="btn primary block big" data-start="0">Mulai laporan</button>')+
@@ -437,7 +438,7 @@ var VIEWS=[viewPosyandu,viewKegiatan,viewFoto,viewCatatan,viewPeriksa];
 function render(keepScroll){
   var home=step<0;
   main.innerHTML=(home?"":stepper())+(home?viewHome():VIEWS[step]());
-  document.getElementById("stepsub").textContent=home?"Posyandu Balita dan Lansia":"Langkah "+(step+1)+" dari 5 · "+STEPS[step];
+  document.getElementById("stepsub").textContent=home?"Posyandu Balita dan Lansia · Kota Palu":"Langkah "+(step+1)+" dari 5 · "+STEPS[step];
   document.getElementById("progbar").style.width=home?"0%":((step+1)*20)+"%";
   document.querySelector(".dock").hidden=home;
   btnBack.hidden=home;
