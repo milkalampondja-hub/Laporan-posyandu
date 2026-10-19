@@ -185,7 +185,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 8</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 9</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -341,7 +341,7 @@ function opt(list,sel,ph){return '<option value="">'+ph+'</option>'+list.map(fun
 function viewHome(){
   var has=false;
   var how=[["users","Data posyandu","Pilih jenis laporan dan kelurahan, isi nama posyandu dan kader."],["calendar","Kegiatan","Tanggal, tempat, dan hasil kegiatan bulan ini."],["camera","Foto","Tambahkan foto dokumentasi dari galeri atau kamera."],["edit","Catatan","Masalah, tindak lanjut, dan tanggal tanda tangan lurah."],["filecheck","Download","Periksa pratinjau, lalu simpan PDF dan cetak."]];
-  return '<section class="hero"><div class="badge-logo"><img src="'+LOGO+'" alt=""></div><h1>LAPORAN POSYANDU<br>KECAMATAN PALU UTARA</h1><p>Posyandu Balita dan Lansia<br>Kota Palu</p></section>'+
+  return '<section class="hero"><div class="badge-logo"><img src="'+LOGO+'" alt=""></div><h1>LAPORAN POSYANDU<br>KECAMATAN PALU UTARA</h1><p>Posyandu Balita dan Lansia</p></section>'+
   (has?'<section class="card resume"><div class="rl">Laporan terakhir</div><div class="rt">'+esc(S.posyandu||"Belum diberi nama")+'</div><div class="rs">'+esc((J()?J().label+" · ":"")+(S.kelurahan?"Kelurahan "+S.kelurahan:"Belum memilih kelurahan"))+'</div><div class="btnrow"><button type="button" class="btn primary" data-start="0">Lanjutkan laporan</button><button type="button" class="btn" id="new-report">Laporan bulan baru</button></div></section>':'')+
   '<section class="card"><h2>Cara mengisi laporan</h2><ol class="how">'+how.map(function(h){return '<li><span class="hi">'+ic(h[0],22)+'</span><div><b>'+h[1]+'</b><span>'+h[2]+'</span></div></li>'}).join("")+'</ol></section>'+
   (has?'':'<button type="button" class="btn primary block big" data-start="0">Mulai laporan</button>')+
@@ -358,7 +358,7 @@ function viewPosyandu(){
   }).join("");
   return '<div class="eyebrow">Langkah 1 dari 5</div><h1>Data posyandu</h1><p class="lead">Isi sekali saja. Data ini tersimpan otomatis di HP ini untuk laporan berikutnya.</p>'+
   '<section class="card"><h2>Jenis laporan</h2><p class="help">Pilih sesuai posyandu yang dilaporkan.</p><div class="jgrid" id="jenis-grp">'+jc+'</div></section>'+
-  '<section class="card"><div class="f"><label class="l" for="kelurahan">Kelurahan</label><select id="kelurahan" data-k="kelurahan">'+opt(Object.keys(KEL),S.kelurahan,"Pilih kelurahan")+'</select></div>'+
+  '<section class="card"><div class="f"><label class="l" for="kelurahan">Pilih kelurahan</label><select id="kelurahan" data-k="kelurahan">'+opt(Object.keys(KEL),S.kelurahan,"Pilih kelurahan")+'</select></div>'+
   '<div class="f"><label class="l" for="posyandu">Nama posyandu<span class="hint">Contoh: ROSELLA</span></label><input type="text" id="posyandu" data-k="posyandu" value="'+esc(S.posyandu)+'" autocomplete="off" autocapitalize="characters"></div></section>'+
   '<section class="card"><h2>Nama kader</h2><p class="help">Tulis satu nama di setiap kotak.</p>'+kd+
   '<button type="button" class="btn sm" id="add-kader">+ Tambah kader</button></section>'+
@@ -438,7 +438,7 @@ var VIEWS=[viewPosyandu,viewKegiatan,viewFoto,viewCatatan,viewPeriksa];
 function render(keepScroll){
   var home=step<0;
   main.innerHTML=(home?"":stepper())+(home?viewHome():VIEWS[step]());
-  document.getElementById("stepsub").textContent=home?"Posyandu Balita dan Lansia · Kota Palu":"Langkah "+(step+1)+" dari 5 · "+STEPS[step];
+  document.getElementById("stepsub").textContent=home?"Posyandu Balita dan Lansia":"Langkah "+(step+1)+" dari 5 · "+STEPS[step];
   document.getElementById("progbar").style.width=home?"0%":((step+1)*20)+"%";
   document.querySelector(".dock").hidden=home;
   btnBack.hidden=home;
