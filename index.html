@@ -42,7 +42,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .app{position:sticky;top:0;z-index:30;background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;
   padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
 .app-in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:12px;padding-bottom:10px}
-.app img{width:34px;height:auto;border-radius:3px;background:#fff;padding:2px;flex:none}
+.app img{width:34px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
 .app .ttl{font-weight:700;font-size:15px;line-height:1.2;letter-spacing:.2px}
 .app .sub{font-size:13px;opacity:.92}
 .prog{height:4px;background:rgba(255,255,255,.28);margin:0 calc(-1 * max(16px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-left,0px)))}
@@ -161,8 +161,8 @@ table.hk th,table.hk td{border:1px solid var(--ink);text-align:center;padding:3p
 .lbl{font-size:12px;color:var(--muted);font-weight:500}
 .steps li.cur .lbl{color:var(--fg);font-weight:700}
 .hero{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;border-radius:20px;padding:30px 22px;text-align:center;margin-bottom:16px;box-shadow:var(--shadow)}
-.hero .badge-logo{width:84px;height:84px;margin:0 auto 14px;border-radius:22px;background:#fff;display:grid;place-items:center}
-.hero .badge-logo img{width:50px;height:auto}
+.hero .badge-logo{margin:0 auto 16px;display:flex;justify-content:center}
+.hero .badge-logo img{width:78px;height:auto;filter:drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff) drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1.5px 0 #fff) drop-shadow(0 3px 6px rgba(0,0,0,.25))}
 .hero h1{color:#fff;margin:0 0 6px;font-size:22px;line-height:1.25;letter-spacing:.3px}.hero h1::after{content:"";display:block;width:56px;height:4px;border-radius:2px;background:var(--gold);margin:12px auto 0}main:focus{outline:none}.foot{text-align:center;font-size:12.5px;color:var(--muted);padding:8px 16px 4px;line-height:1.6}.foot b{color:var(--fg);font-weight:600}
 .hero p{margin:0;opacity:.92}
 .how{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:16px}
@@ -194,7 +194,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 11</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 12</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
