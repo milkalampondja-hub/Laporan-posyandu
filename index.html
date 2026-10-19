@@ -85,7 +85,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .file input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .file:focus-within>span{outline:3px solid var(--accent);outline-offset:1px}
 .status{font-size:14px;color:var(--muted);margin-top:8px;min-height:20px}
-.status.err2{color:var(--danger);font-weight:600}
+.status.ok2{color:var(--ok);font-weight:600}.status.err2{color:var(--danger);font-weight:600}
 .check{list-style:none;margin:0;padding:0}
 .check li{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
 .check li:last-child{border-bottom:0}
@@ -194,7 +194,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 12</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 13</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -497,6 +497,7 @@ main.addEventListener("click",function(e){
     if(!wipeArm){wipeArm=1;b.textContent="Ketuk lagi untuk menghapus semua";setTimeout(function(){wipeArm=0;if(b.isConnected)b.textContent="Hapus semua isian"},4000);return}
     wipeArm=0;S=blank();restored=false;save();render();return}
   if(b.id==="make"){makePdf(b)}
+  if(b.id==="retry-arsip"){kirimArsip()}
 });
 btnBack.addEventListener("click",function(){go(step-1)});
 btnNext.addEventListener("click",function(){
@@ -606,7 +607,23 @@ function renderPreview(){
 window.addEventListener("resize",fit);
 
 /* ---------- PDF ---------- */
-var resUrl=null,resBlob=null,resName="";
+var ARSIP_URL="";
+var resUrl=null,resBlob=null,resName="",arsipDone=false,arsipBusy=false;
+function blobB64(b){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(",")[1])};r.onerror=rej;r.readAsDataURL(b)})}
+async function kirimArsip(){
+  var box=document.getElementById("arsip");if(!box||!ARSIP_URL||!resBlob||arsipDone||arsipBusy)return;
+  arsipBusy=true;box.className="status";box.textContent="Menyimpan ke arsip Drive…";
+  try{
+    var ms=S.rows.filter(function(r){return r.bulan});
+    var data={kelurahan:S.kelurahan,posyandu:S.posyandu.trim(),jenis:J().label,bulan:ms.length?ms[0].bulan:"",tahun:yearOf(),tanggalKegiatan:tgl(S.tanggal),kader:kaderList().join(", "),pdf:await blobB64(resBlob)};
+    var r=await fetch(ARSIP_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data)});
+    var j=await r.json();
+    if(!j.ok)throw new Error(j.pesan||"gagal");
+    arsipDone=true;box.className="status ok2";box.textContent="Tersimpan di arsip. Nomor laporan: "+j.nomor+(j.versi>1?" (versi "+j.versi+")":"");
+  }catch(e){
+    box.className="status err2";box.innerHTML='Belum tersimpan di arsip. PDF di HP tetap aman. <button type="button" class="btn sm" id="retry-arsip">Coba kirim lagi</button>';
+  }finally{arsipBusy=false}
+}
 async function buildPdf(){
   if(!window.html2canvas||!window.jspdf)throw new Error("lib");
   if(document.fonts&&document.fonts.ready)await document.fonts.ready;
@@ -639,13 +656,14 @@ async function makePdf(btn){
     var bln=S.rows.filter(function(r){return r.bulan}).map(function(r){return r.bulan}).join("-");
     resName=("Laporan "+J().label+" "+S.posyandu.trim()+(bln?" "+bln:"")+".pdf").replace(/[\\\/:*?"<>|]/g," ").replace(/\s+/g," ");
     if(resUrl)URL.revokeObjectURL(resUrl);
-    resBlob=blob;resUrl=URL.createObjectURL(blob);
+    resBlob=blob;arsipDone=false;arsipBusy=false;resUrl=URL.createObjectURL(blob);
     var canShare=false;
     try{canShare=!!(navigator.canShare&&navigator.share&&navigator.canShare({files:[new File([blob],resName,{type:"application/pdf"})]}))}catch(e){}
-    res.innerHTML='<div class="result"><strong>PDF laporan siap</strong><div class="fn">'+esc(resName)+'</div><div>Simpan file ini, lalu cetak.</div><div class="btnrow">'+
+    res.innerHTML='<div class="result"><strong>PDF laporan siap</strong><div class="fn">'+esc(resName)+'</div><div>Simpan file ini, lalu cetak.</div><div class="status" id="arsip" role="status" aria-live="polite"></div><div class="btnrow">'+
       '<a class="btn primary" href="'+resUrl+'" download="'+esc(resName)+'">Simpan PDF</a>'+
       (canShare?'<button type="button" class="btn" id="share">Bagikan atau cetak</button>':'')+
       '<a class="btn" href="'+resUrl+'" target="_blank" rel="noopener">Buka PDF</a></div></div>';
+    var dl=res.querySelector("a[download]");if(dl)dl.addEventListener("click",function(){kirimArsip()});
     var sh=document.getElementById("share");
     if(sh)sh.addEventListener("click",function(){navigator.share({files:[new File([resBlob],resName,{type:"application/pdf"})],title:resName}).catch(function(){})});
     st.textContent="";
