@@ -194,7 +194,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 18</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 19</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -612,12 +612,12 @@ var resUrl=null,resBlob=null,resName="",arsipDone=false,arsipBusy=false;
 function blobB64(b){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(",")[1])};r.onerror=rej;r.readAsDataURL(b)})}
 function postViaForm(data,ms){
   return new Promise(function(res,rej){
-    var name="arsipframe"+Date.now()+Math.floor(Math.random()*1000),fr=document.createElement("iframe");fr.name=name;fr.style.display="none";document.body.appendChild(fr);
+    var tok=Math.random().toString(36).slice(2)+Date.now().toString(36);data.t=tok;var name="arsipframe"+tok,fr=document.createElement("iframe");fr.name=name;fr.style.display="none";document.body.appendChild(fr);
     var f=document.createElement("form");f.method="POST";f.action=ARSIP_URL;f.target=name;f.style.display="none";
     var i=document.createElement("input");i.type="hidden";i.name="data";i.value=JSON.stringify(data);f.appendChild(i);document.body.appendChild(f);
     var done=false;
     function end(fn,v){if(done)return;done=true;clearTimeout(t);window.removeEventListener("message",on);setTimeout(function(){f.remove();fr.remove()},500);fn(v)}
-    function on(ev){var okSrc=ev.source===fr.contentWindow;if(!okSrc)return;if(ev.data&&typeof ev.data==="object"&&"ok" in ev.data)end(res,ev.data)}
+    function on(ev){var h="";try{h=new URL(ev.origin).hostname}catch(x){}if(!/googleusercontent\.com$/.test(h))return;if(ev.data&&typeof ev.data==="object"&&ev.data.t===tok&&"ok" in ev.data)end(res,ev.data)}
     window.addEventListener("message",on);
     var t=setTimeout(function(){end(rej,new Error("Tidak ada jawaban dari server arsip"))},ms||45000);
     f.submit();

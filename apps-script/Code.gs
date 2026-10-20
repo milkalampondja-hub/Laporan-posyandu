@@ -14,11 +14,14 @@ var HEADER      = ['Nomor Laporan','Tanggal Kirim','Tahun','Bulan','Kelurahan','
 
 function doGet() { return ContentService.createTextOutput(JSON.stringify({ ok: true, pesan: 'Arsip Laporan Posyandu aktif' })).setMimeType(ContentService.MimeType.JSON); }
 
+var TOKEN_BALAS = '';
+
 function doPost(e) {
   var kunci = LockService.getScriptLock();
   try {
     kunci.waitLock(30000);
     var d = JSON.parse((e.parameter && e.parameter.data) ? e.parameter.data : e.postData.contents);
+    TOKEN_BALAS = String(d.t || '');
     var cache = CacheService.getScriptCache();
     if (d.aksi === 'ping') return jawab({ ok: true, pesan: 'ping' });
     if (d.aksi === 'bagian') {
@@ -73,8 +76,9 @@ function doPost(e) {
 }
 
 function jawab(o) {
+  o.t = TOKEN_BALAS;
   var teks = JSON.stringify(o).replace(/</g, '\\u003c');
-  return HtmlService.createHtmlOutput('<script>parent.postMessage(' + teks + ',"*");</script>');
+  return HtmlService.createHtmlOutput('<script>window.top.postMessage(' + teks + ',"*");</script>');
 }
 function bersih(s) { return String(s == null ? '' : s).replace(/[\\\/:*?"<>|\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120); }
 
