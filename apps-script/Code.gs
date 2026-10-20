@@ -19,6 +19,26 @@ function doPost(e) {
   try {
     kunci.waitLock(30000);
     var d = JSON.parse((e.parameter && e.parameter.data) ? e.parameter.data : e.postData.contents);
+    var cache = CacheService.getScriptCache();
+    if (d.aksi === 'ping') return jawab({ ok: true, pesan: 'ping' });
+    if (d.aksi === 'bagian') {
+      if (!/^[A-Za-z0-9]{6,40}$/.test(String(d.id))) throw new Error('ID tidak valid');
+      if (String(d.isi).length > 95000) throw new Error('Potongan terlalu besar');
+      cache.put('lp_' + d.id + '_' + parseInt(d.i, 10), String(d.isi), 21600);
+      return jawab({ ok: true, i: d.i });
+    }
+    if (d.aksi === 'selesai') {
+      if (!/^[A-Za-z0-9]{6,40}$/.test(String(d.id))) throw new Error('ID tidak valid');
+      var n = parseInt(d.n, 10), bagian = [], kunciCache = [];
+      if (!(n >= 1 && n <= 400)) throw new Error('Jumlah potongan tidak valid');
+      for (var i = 0; i < n; i++) {
+        var k = 'lp_' + d.id + '_' + i, v = cache.get(k);
+        if (v == null) throw new Error('Potongan ' + (i + 1) + ' tidak ditemukan, coba kirim lagi');
+        bagian.push(v); kunciCache.push(k);
+      }
+      cache.removeAll(kunciCache);
+      d.pdf = bagian.join('');
+    }
     var kel = String(d.kelurahan || ''), jenis = String(d.jenis || '');
     var pos = bersih(d.posyandu), bln = String(d.bulan || ''), thn = parseInt(d.tahun, 10);
     if (KELURAHAN.indexOf(kel) < 0) throw new Error('Kelurahan tidak dikenal');
@@ -35,7 +55,6 @@ function doPost(e) {
     var kodeBln = (nBln < 10 ? '0' : '') + nBln;
     var folder = anak(anak(anak(anak(induk(), String(thn)), kodeBln + '-' + bln), kel), pos);
 
-    // versi: jumlah laporan sebelumnya untuk kombinasi yang sama + 1
     var rows = sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, 7).getValues() : [];
     var versi = 1;
     rows.forEach(function (r) { if (r[2] == thn && r[3] == bln && r[4] == kel && r[5] == pos && r[6] == jenis) versi++; });

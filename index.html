@@ -194,7 +194,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 17</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 18</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -610,18 +610,23 @@ window.addEventListener("resize",fit);
 var ARSIP_URL="https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec";
 var resUrl=null,resBlob=null,resName="",arsipDone=false,arsipBusy=false;
 function blobB64(b){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(",")[1])};r.onerror=rej;r.readAsDataURL(b)})}
-function postViaForm(data){
+function postViaForm(data,ms){
   return new Promise(function(res,rej){
-    var name="arsipframe"+Date.now(),fr=document.createElement("iframe");fr.name=name;fr.style.display="none";document.body.appendChild(fr);
+    var name="arsipframe"+Date.now()+Math.floor(Math.random()*1000),fr=document.createElement("iframe");fr.name=name;fr.style.display="none";document.body.appendChild(fr);
     var f=document.createElement("form");f.method="POST";f.action=ARSIP_URL;f.target=name;f.style.display="none";
     var i=document.createElement("input");i.type="hidden";i.name="data";i.value=JSON.stringify(data);f.appendChild(i);document.body.appendChild(f);
     var done=false;
     function end(fn,v){if(done)return;done=true;clearTimeout(t);window.removeEventListener("message",on);setTimeout(function(){f.remove();fr.remove()},500);fn(v)}
-    function on(ev){if(ev.source!==fr.contentWindow&&!/googleusercontent\.com$/.test(new URL(ev.origin).hostname))return;if(ev.data&&typeof ev.data==="object"&&"ok" in ev.data)end(res,ev.data)}
+    function on(ev){var okSrc=ev.source===fr.contentWindow;if(!okSrc)return;if(ev.data&&typeof ev.data==="object"&&"ok" in ev.data)end(res,ev.data)}
     window.addEventListener("message",on);
-    var t=setTimeout(function(){end(rej,new Error("Tidak ada jawaban dari server arsip"))},90000);
+    var t=setTimeout(function(){end(rej,new Error("Tidak ada jawaban dari server arsip"))},ms||45000);
     f.submit();
   });
+}
+async function kirimBagian(obj){
+  var err;
+  for(var k=0;k<3;k++){try{var j=await postViaForm(obj,45000);if(j&&j.ok)return j;err=new Error((j&&j.pesan)||"gagal")}catch(e){err=e}}
+  throw err;
 }
 async function kirimArsip(){
   var box=document.getElementById("arsip");if(!box||!ARSIP_URL||!resBlob||arsipDone||arsipBusy)return;
@@ -629,7 +634,15 @@ async function kirimArsip(){
   try{
     var ms=S.rows.filter(function(r){return r.bulan});
     var data={kelurahan:S.kelurahan,posyandu:S.posyandu.trim(),jenis:J().label,bulan:ms.length?ms[0].bulan:"",tahun:yearOf(),tanggalKegiatan:tgl(S.tanggal),kader:kaderList().join(", "),pdf:await blobB64(resBlob)};
-    var j=await postViaForm(data);
+    var pdf=data.pdf;delete data.pdf;
+    var id=Math.random().toString(36).slice(2,10)+Date.now().toString(36),CH=90000,n=Math.ceil(pdf.length/CH);
+    for(var q=0;q<n;q++){
+      box.textContent="Menyimpan ke arsip Drive… "+(q+1)+" dari "+n;
+      await kirimBagian({aksi:"bagian",id:id,i:q,isi:pdf.slice(q*CH,(q+1)*CH)});
+    }
+    box.textContent="Menyimpan ke arsip Drive… menyelesaikan";
+    data.aksi="selesai";data.id=id;data.n=n;
+    var j=await kirimBagian(data);
     if(!j.ok)throw new Error(j.pesan||"gagal");
     arsipDone=true;box.className="status ok2";box.textContent="Tersimpan di arsip. Nomor laporan: "+j.nomor+(j.versi>1?" (versi "+j.versi+")":"");
   }catch(e){
