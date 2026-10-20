@@ -12,13 +12,13 @@ var JENIS       = ['Posyandu Balita','Posyandu Lansia'];
 var BULAN       = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 var HEADER      = ['Nomor Laporan','Tanggal Kirim','Tahun','Bulan','Kelurahan','Posyandu','Jenis','Tanggal Kegiatan','Nama Kader','Versi','Nama File','Link File'];
 
-function doGet() { return jawab({ ok: true, pesan: 'Arsip Laporan Posyandu aktif' }); }
+function doGet() { return ContentService.createTextOutput(JSON.stringify({ ok: true, pesan: 'Arsip Laporan Posyandu aktif' })).setMimeType(ContentService.MimeType.JSON); }
 
 function doPost(e) {
   var kunci = LockService.getScriptLock();
   try {
     kunci.waitLock(30000);
-    var d = JSON.parse(e.postData.contents);
+    var d = JSON.parse((e.parameter && e.parameter.data) ? e.parameter.data : e.postData.contents);
     var kel = String(d.kelurahan || ''), jenis = String(d.jenis || '');
     var pos = bersih(d.posyandu), bln = String(d.bulan || ''), thn = parseInt(d.tahun, 10);
     if (KELURAHAN.indexOf(kel) < 0) throw new Error('Kelurahan tidak dikenal');
@@ -53,7 +53,10 @@ function doPost(e) {
   }
 }
 
-function jawab(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+function jawab(o) {
+  var teks = JSON.stringify(o).replace(/</g, '\\u003c');
+  return HtmlService.createHtmlOutput('<script>parent.postMessage(' + teks + ',"*");</script>');
+}
 function bersih(s) { return String(s == null ? '' : s).replace(/[\\\/:*?"<>|\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120); }
 
 function induk() {

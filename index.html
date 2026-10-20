@@ -194,7 +194,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 16</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 17</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -610,14 +610,26 @@ window.addEventListener("resize",fit);
 var ARSIP_URL="https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec";
 var resUrl=null,resBlob=null,resName="",arsipDone=false,arsipBusy=false;
 function blobB64(b){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(",")[1])};r.onerror=rej;r.readAsDataURL(b)})}
+function postViaForm(data){
+  return new Promise(function(res,rej){
+    var name="arsipframe"+Date.now(),fr=document.createElement("iframe");fr.name=name;fr.style.display="none";document.body.appendChild(fr);
+    var f=document.createElement("form");f.method="POST";f.action=ARSIP_URL;f.target=name;f.style.display="none";
+    var i=document.createElement("input");i.type="hidden";i.name="data";i.value=JSON.stringify(data);f.appendChild(i);document.body.appendChild(f);
+    var done=false;
+    function end(fn,v){if(done)return;done=true;clearTimeout(t);window.removeEventListener("message",on);setTimeout(function(){f.remove();fr.remove()},500);fn(v)}
+    function on(ev){if(ev.source!==fr.contentWindow&&!/googleusercontent\.com$/.test(new URL(ev.origin).hostname))return;if(ev.data&&typeof ev.data==="object"&&"ok" in ev.data)end(res,ev.data)}
+    window.addEventListener("message",on);
+    var t=setTimeout(function(){end(rej,new Error("Tidak ada jawaban dari server arsip"))},90000);
+    f.submit();
+  });
+}
 async function kirimArsip(){
   var box=document.getElementById("arsip");if(!box||!ARSIP_URL||!resBlob||arsipDone||arsipBusy)return;
   arsipBusy=true;box.className="status";box.textContent="Menyimpan ke arsip Drive…";
   try{
     var ms=S.rows.filter(function(r){return r.bulan});
     var data={kelurahan:S.kelurahan,posyandu:S.posyandu.trim(),jenis:J().label,bulan:ms.length?ms[0].bulan:"",tahun:yearOf(),tanggalKegiatan:tgl(S.tanggal),kader:kaderList().join(", "),pdf:await blobB64(resBlob)};
-    var r=await fetch(ARSIP_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data)});
-    var j=await r.json();
+    var j=await postViaForm(data);
     if(!j.ok)throw new Error(j.pesan||"gagal");
     arsipDone=true;box.className="status ok2";box.textContent="Tersimpan di arsip. Nomor laporan: "+j.nomor+(j.versi>1?" (versi "+j.versi+")":"");
   }catch(e){
