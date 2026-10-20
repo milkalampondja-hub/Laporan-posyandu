@@ -11,6 +11,9 @@ var KELURAHAN   = ['Kayumalue Ngapa','Kayumalue Pajeko','Mamboro','Mamboro Barat
 var JENIS       = ['Posyandu Balita','Posyandu Lansia'];
 var BULAN       = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 var HEADER      = ['Nomor Laporan','Tanggal Kirim','Tahun','Bulan','Kelurahan','Posyandu','Jenis','Tanggal Kegiatan','Nama Kader','Versi','Nama File','Link File','Hasil Kegiatan','Status PDF'];
+// Login aplikasi Pantau. GANTI kedua nilai ini di Apps Script Anda sebelum diterapkan.
+var PANTAU_USER = 'admin';
+var PANTAU_SANDI = 'GantiSandi2026';
 var ID_RE       = /^[A-Za-z0-9]{6,40}$/;
 
 var TOKEN_BALAS = '';
@@ -28,7 +31,12 @@ function doGet(e) {
     hasil = v ? JSON.parse(v) : { ok: false, tunggu: true };
   }
   else if (p.aksi === 'daftar') {
-    hasil = daftarLaporan();
+    if (String(p.u || '') === PANTAU_USER && String(p.p || '') === PANTAU_SANDI) {
+      hasil = daftarLaporan();
+    } else {
+      Utilities.sleep(1200);
+      hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
+    }
   }
   var teks = JSON.stringify(hasil);
   if (cb) return ContentService.createTextOutput(cb + '(' + teks + ');').setMimeType(ContentService.MimeType.JAVASCRIPT);
