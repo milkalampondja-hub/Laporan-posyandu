@@ -12,9 +12,23 @@ var JENIS       = ['Posyandu Balita','Posyandu Lansia'];
 var BULAN       = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 var HEADER      = ['Nomor Laporan','Tanggal Kirim','Tahun','Bulan','Kelurahan','Posyandu','Jenis','Tanggal Kegiatan','Nama Kader','Versi','Nama File','Link File'];
 
-function doGet() { return ContentService.createTextOutput(JSON.stringify({ ok: true, pesan: 'Arsip Laporan Posyandu aktif' })).setMimeType(ContentService.MimeType.JSON); }
+function doGet(e) {
+  var p = (e && e.parameter) || {};
+  var cb = /^[A-Za-z0-9_]{1,40}$/.test(String(p.cb || '')) ? String(p.cb) : '';
+  var hasil = { ok: true, pesan: 'Arsip Laporan Posyandu aktif' };
+  if (p.aksi === 'cek' && /^[A-Za-z0-9]{6,40}$/.test(String(p.id))) {
+    hasil = { ok: CacheService.getScriptCache().get('lp_' + p.id + '_' + parseInt(p.i, 10)) != null };
+  } else if (p.aksi === 'hasil' && /^[A-Za-z0-9]{6,40}$/.test(String(p.id))) {
+    var v = CacheService.getScriptCache().get('hasil_' + p.id);
+    hasil = v ? JSON.parse(v) : { ok: false, tunggu: true };
+  }
+  var teks = JSON.stringify(hasil);
+  if (cb) return ContentService.createTextOutput(cb + '(' + teks + ');').setMimeType(ContentService.MimeType.JAVASCRIPT);
+  return ContentService.createTextOutput(teks).setMimeType(ContentService.MimeType.JSON);
+}
 
 var TOKEN_BALAS = '';
+var ID_AKTIF = '';
 
 function doPost(e) {
   var kunci = LockService.getScriptLock();
@@ -22,6 +36,7 @@ function doPost(e) {
     kunci.waitLock(30000);
     var d = JSON.parse((e.parameter && e.parameter.data) ? e.parameter.data : e.postData.contents);
     TOKEN_BALAS = String(d.t || '');
+    ID_AKTIF = String(d.id || '');
     var cache = CacheService.getScriptCache();
     if (d.aksi === 'ping') return jawab({ ok: true, pesan: 'ping' });
     if (d.aksi === 'bagian') {
@@ -67,12 +82,19 @@ function doPost(e) {
     var file = folder.createFile(Utilities.newBlob(bytes, 'application/pdf', nama));
 
     sh.appendRow([nomor, new Date(), thn, bln, kel, pos, jenis, bersih(d.tanggalKegiatan), bersih(d.kader), versi, nama, file.getUrl()]);
-    return jawab({ ok: true, nomor: nomor, versi: versi });
+    return simpanHasil({ ok: true, nomor: nomor, versi: versi });
   } catch (err) {
-    return jawab({ ok: false, pesan: String(err.message || err) });
+    return simpanHasil({ ok: false, pesan: String(err.message || err) });
   } finally {
     try { kunci.releaseLock(); } catch (x) {}
   }
+}
+
+function simpanHasil(o) {
+  if (/^[A-Za-z0-9]{6,40}$/.test(ID_AKTIF)) {
+    try { CacheService.getScriptCache().put('hasil_' + ID_AKTIF, JSON.stringify(o), 21600); } catch (x) {}
+  }
+  return jawab(o);
 }
 
 function jawab(o) {
