@@ -194,7 +194,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 14</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 15</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -621,7 +621,7 @@ async function kirimArsip(){
     if(!j.ok)throw new Error(j.pesan||"gagal");
     arsipDone=true;box.className="status ok2";box.textContent="Tersimpan di arsip. Nomor laporan: "+j.nomor+(j.versi>1?" (versi "+j.versi+")":"");
   }catch(e){
-    box.className="status err2";box.innerHTML='Belum tersimpan di arsip. PDF di HP tetap aman. <button type="button" class="btn sm" id="retry-arsip">Coba kirim lagi</button>';
+    var why=String(e&&e.message||e);box.className="status err2";box.innerHTML='Belum tersimpan di arsip. PDF di HP tetap aman.<br><small>Penyebab: '+esc(why)+'</small><br><button type="button" class="btn sm" id="retry-arsip">Coba kirim lagi</button>';
   }finally{arsipBusy=false}
 }
 async function buildPdf(){
