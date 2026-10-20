@@ -27,9 +27,32 @@ function doGet(e) {
     var v = cache.get('hasil_' + p.tag + '_' + p.id);
     hasil = v ? JSON.parse(v) : { ok: false, tunggu: true };
   }
+  else if (p.aksi === 'daftar') {
+    hasil = daftarLaporan();
+  }
   var teks = JSON.stringify(hasil);
   if (cb) return ContentService.createTextOutput(cb + '(' + teks + ');').setMimeType(ContentService.MimeType.JAVASCRIPT);
   return ContentService.createTextOutput(teks).setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Untuk aplikasi pemantau: hanya data umum (tanpa nama kader dan tanpa link file). */
+function daftarLaporan() {
+  try {
+    var sh = lembar(), n = sh.getLastRow();
+    if (n < 2) return { ok: true, data: [], waktu: Date.now() };
+    var zona = Session.getScriptTimeZone();
+    var tgl = function (v) { return v instanceof Date ? Utilities.formatDate(v, zona, 'dd/MM/yyyy HH:mm:ss') : String(v == null ? '' : v); };
+    var rows = sh.getRange(2, 1, n - 1, HEADER.length).getValues();
+    var data = [];
+    rows.forEach(function (r) {
+      if (!r[0]) return;
+      data.push({ n: String(r[0]), tk: tgl(r[1]), thn: String(r[2]), bln: String(r[3]), kel: String(r[4]), pos: String(r[5]),
+                  jenis: String(r[6]), tgl: tgl(r[7]), ver: parseInt(r[9], 10) || 1, pdf: String(r[13] || '') === 'PDF tersimpan' });
+    });
+    return { ok: true, data: data, waktu: Date.now() };
+  } catch (err) {
+    return { ok: false, pesan: String(err.message || err) };
+  }
 }
 
 function doPost(e) {

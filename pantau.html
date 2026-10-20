@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pantau Laporan Posyandu</title>
+<meta name="theme-color" content="#0a7a35">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pantau Posyandu">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#f0f5f1; --surface:#fff; --fg:#14231a; --muted:#566a5d; --line:#d3e0d7;
+  --accent:#0a7a35; --accent-fg:#fff; --accent-soft:#def2e4; --gold:#f2b705;
+  --warn:#8a5a00; --warn-soft:#fff3cf; --none:#eef2ef;
+  --hero1:#0a7a35; --hero2:#075a28;
+  --shadow:0 1px 2px rgba(20,33,29,.08),0 8px 24px rgba(20,33,29,.08);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e1611; --surface:#17231b; --fg:#e8f1ea; --muted:#9db3a3; --line:#2b3d31;
+  --accent:#5fd48a; --accent-fg:#06241a; --accent-soft:#1d3a28; --warn:#f2c14e; --warn-soft:#3a2f10; --none:#1b2a20;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-size:16px;line-height:1.5;padding-bottom:max(24px,env(safe-area-inset-bottom,0px))}
+button,input,select{font:inherit;color:inherit}
+header{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;
+  padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px))}
+.hin{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:12px}
+header img{width:38px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
+header .t{font-weight:700;font-size:16px;line-height:1.2}
+header .s{font-size:13px;opacity:.92}
+main{max-width:860px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left,0px))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.filters .full{grid-column:1/-1}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px}
+select,input[type=search]{width:100%;min-height:46px;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:9px 12px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;font-size:13px;color:var(--muted)}
+.btn{min-height:44px;padding:8px 16px;border-radius:12px;border:1.5px solid var(--accent);background:var(--accent);color:var(--accent-fg);font-weight:600;cursor:pointer}
+.btn:disabled{opacity:.6}
+.tot{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.tot div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.tot b{display:block;font-size:28px;line-height:1.1;color:var(--accent)}
+.tot span{font-size:13px;color:var(--muted)}
+h2{font-size:17px;margin:0 0 10px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:10px 6px;border-bottom:1px solid var(--line);text-align:center}
+th:first-child,td:first-child{text-align:left}
+th{font-size:13px;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-block;white-space:nowrap;padding:3px 9px;border-radius:99px;font-size:13px;font-weight:700}
+.pill.ok{background:var(--accent-soft);color:var(--accent)}
+.pill.no{background:var(--none);color:var(--muted);font-weight:600}
+.item{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--surface)}
+.item .a{font-weight:700}
+.item .b{font-size:14px;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.tag.w{background:var(--warn-soft);color:var(--warn)}
+.tag.g{background:var(--none);color:var(--muted)}
+.msg{padding:14px;border-radius:12px;background:var(--warn-soft);color:var(--warn);margin-bottom:16px;font-size:15px}
+.empty{text-align:center;color:var(--muted);padding:22px 8px}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:8px 16px 0}
+a.back{color:var(--accent);font-weight:600;text-decoration:none}
+</style>
+</head>
+<body>
+<header><div class="hin"><img src="logo.png" alt=""><div><div class="t">PANTAU LAPORAN POSYANDU</div><div class="s">Kecamatan Palu Utara</div></div></div></header>
+<main>
+  <div class="card">
+    <div class="filters">
+      <div><label for="fb">Bulan</label><select id="fb"></select></div>
+      <div><label for="ft">Tahun</label><select id="ft"></select></div>
+      <div><label for="fj">Jenis</label><select id="fj"><option value="">Semua jenis</option><option>Posyandu Balita</option><option>Posyandu Lansia</option></select></div>
+      <div><label for="fk">Kelurahan</label><select id="fk"><option value="">Semua</option></select></div>
+      <div class="full"><label for="fq">Cari nama Posyandu</label><input id="fq" type="search" placeholder="Ketik nama Posyandu" autocomplete="off"></div>
+    </div>
+  </div>
+  <div class="bar"><span id="stamp">Memuat data…</span><button class="btn" id="re" type="button">Muat ulang</button></div>
+  <div id="msg"></div>
+  <div class="tot" id="tot"></div>
+  <div class="card"><h2>Status per kelurahan</h2><div id="mx"></div></div>
+  <div class="card"><h2>Laporan yang sudah terkirim</h2><div id="ls"></div></div>
+  <p style="text-align:center;margin:0 0 8px"><a class="back" href="./">Ke aplikasi laporan</a></p>
+</main>
+<footer>Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Pantau Versi 1</span></footer>
+<script>
+var ARSIP_URL='https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec';
+var BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+var KEL=['Kayumalue Ngapa','Kayumalue Pajeko','Mamboro','Mamboro Barat','Taipa'];
+var DATA=[],ADA=false,loading=false;
+function $(i){return document.getElementById(i)}
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function opt(s,v,t){var o=document.createElement('option');o.value=v;o.textContent=t;s.appendChild(o)}
+
+(function init(){
+  var now=new Date(),fb=$('fb'),ft=$('ft'),fk=$('fk');
+  opt(fb,'','Semua bulan');BULAN.forEach(function(b){opt(fb,b,b)});
+  fb.value=BULAN[now.getMonth()];
+  opt(ft,String(now.getFullYear()),String(now.getFullYear()));
+  KEL.forEach(function(k){opt(fk,k,k)});
+  ['fb','ft','fj','fk'].forEach(function(i){$(i).addEventListener('change',tampil)});
+  $('fq').addEventListener('input',tampil);
+  $('re').addEventListener('click',muat);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden&&Date.now()-last>45000)muat()});
+  setInterval(function(){if(!document.hidden)muat()},60000);
+  muat();
+})();
+
+var last=0;
+function muat(){
+  if(loading)return;loading=true;$('re').disabled=true;
+  var cb='p'+Date.now(),s=document.createElement('script'),selesai=false;
+  function bersih(){selesai=true;clearTimeout(tm);try{delete window[cb]}catch(x){window[cb]=undefined}if(s.parentNode)s.parentNode.removeChild(s);loading=false;$('re').disabled=false}
+  var tm=setTimeout(function(){if(selesai)return;bersih();gagal('Data belum bisa dimuat. Periksa sinyal internet lalu tekan Muat ulang.')},25000);
+  window[cb]=function(r){
+    if(selesai)return;bersih();
+    if(!r||!r.ok){gagal('Data belum bisa dimuat'+(r&&r.pesan?': '+r.pesan:'. Coba lagi sebentar.'));return}
+    DATA=r.data||[];ADA=true;last=Date.now();$('msg').textContent='';
+    var n=new Date();$('stamp').textContent='Diperbarui '+String(n.getHours()).padStart(2,'0')+'.'+String(n.getMinutes()).padStart(2,'0')+' WITA';
+    isiTahun();tampil();
+  };
+  s.onerror=function(){if(selesai)return;bersih();gagal('Data belum bisa dimuat. Periksa sinyal internet lalu tekan Muat ulang.')};
+  s.src=ARSIP_URL+'?aksi=daftar&cb='+cb+'&_='+Date.now();
+  document.head.appendChild(s);
+}
+function gagal(t){
+  var m=$('msg');m.textContent='';var d=el('div','msg',t);m.appendChild(d);
+  $('stamp').textContent=ADA?'Menampilkan data terakhir':'Belum ada data';
+  if(!ADA){$('tot').textContent='';$('mx').textContent='';$('ls').textContent=''}
+}
+function isiTahun(){
+  var ft=$('ft'),cur=ft.value,set={};
+  set[String(new Date().getFullYear())]=1;DATA.forEach(function(d){if(d.thn)set[d.thn]=1});
+  var th=Object.keys(set).sort().reverse();
+  ft.textContent='';th.forEach(function(t){opt(ft,t,t)});
+  ft.value=set[cur]?cur:th[0];
+}
+function terbaru(list){
+  var m={};
+  list.forEach(function(d){
+    var k=[d.thn,d.bln,d.kel,d.pos.toLowerCase(),d.jenis].join('|');
+    if(!m[k]||d.ver>m[k].ver||(d.ver===m[k].ver&&d.n>m[k].n))m[k]=d;
+  });
+  return Object.keys(m).map(function(k){return m[k]});
+}
+function tampil(){
+  if(!ADA)return;
+  var th=$('ft').value,bl=$('fb').value,jn=$('fj').value,kl=$('fk').value,q=$('fq').value.trim().toLowerCase();
+  var dasar=DATA.filter(function(d){return d.thn===th&&(!bl||d.bln===bl)});
+  var uniq=terbaru(dasar);
+  var lihat=uniq.filter(function(d){return(!jn||d.jenis===jn)&&(!kl||d.kel===kl)&&(!q||d.pos.toLowerCase().indexOf(q)>=0)});
+  // ringkasan
+  var tb=lihat.filter(function(d){return d.jenis==='Posyandu Balita'}).length,tl=lihat.filter(function(d){return d.jenis==='Posyandu Lansia'}).length;
+  var tot=$('tot');tot.textContent='';
+  [[lihat.length,'Laporan masuk'],[tb,'Balita'],[tl,'Lansia']].forEach(function(x){var d=el('div');d.appendChild(el('b',null,x[0]));d.appendChild(el('span',null,x[1]));tot.appendChild(d)});
+  // matriks
+  var mx=$('mx');mx.textContent='';
+  var t=el('table'),hd=el('tr');['Kelurahan','Balita','Lansia'].forEach(function(h){hd.appendChild(el('th',null,h))});t.appendChild(hd);
+  KEL.filter(function(k){return!kl||k===kl}).forEach(function(k){
+    var tr=el('tr');tr.appendChild(el('td',null,k));
+    ['Posyandu Balita','Posyandu Lansia'].forEach(function(j){
+      var c=uniq.filter(function(d){return d.kel===k&&d.jenis===j}).length,td=el('td');
+      if(jn&&jn!==j){td.appendChild(el('span','pill no','-'))}
+      else td.appendChild(el('span','pill '+(c?'ok':'no'),c?c+' laporan':'Belum ada'));
+      tr.appendChild(td);
+    });
+    t.appendChild(tr);
+  });
+  mx.appendChild(t);
+  if(!bl)mx.appendChild(el('div','b',''));
+  // daftar
+  var ls=$('ls');ls.textContent='';
+  if(!lihat.length){ls.appendChild(el('div','empty',DATA.length?'Belum ada laporan untuk pilihan ini.':'Belum ada laporan yang masuk.'));return}
+  lihat.sort(function(a,b){return b.n<a.n?-1:b.n>a.n?1:0});
+  lihat.forEach(function(d){
+    var it=el('div','item');
+    it.appendChild(el('div','a',d.pos));
+    it.appendChild(el('div','b',d.kel+' · '+d.jenis));
+    it.appendChild(el('div','b','Kegiatan '+(d.tgl||'-')+' · Terkirim '+(d.tk||'-')));
+    var tg=el('div','tags');
+    tg.appendChild(el('span','tag g',d.n));
+    tg.appendChild(el('span','tag',d.bln+' '+d.thn));
+    tg.appendChild(el('span','tag '+(d.pdf?'':'w'),d.pdf?'PDF tersimpan':'PDF menunggu'));
+    if(d.ver>1)tg.appendChild(el('span','tag g','Revisi ke-'+d.ver));
+    it.appendChild(tg);ls.appendChild(it);
+  });
+}
+</script>
+</body>
+</html>
