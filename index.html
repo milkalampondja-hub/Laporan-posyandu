@@ -194,7 +194,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 13</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 14</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -607,7 +607,7 @@ function renderPreview(){
 window.addEventListener("resize",fit);
 
 /* ---------- PDF ---------- */
-var ARSIP_URL="";
+var ARSIP_URL="https://script.google.com/macros/s/AKfycbxJ5hPSChdUqR93FvXXtYPZ30ebEUDXDBStWiw7zY1Tx1Ptb-vSkWfHUDAeBdUfx3F9/exec";
 var resUrl=null,resBlob=null,resName="",arsipDone=false,arsipBusy=false;
 function blobB64(b){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(",")[1])};r.onerror=rej;r.readAsDataURL(b)})}
 async function kirimArsip(){
