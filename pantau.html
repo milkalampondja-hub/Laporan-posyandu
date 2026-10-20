@@ -118,7 +118,6 @@ header img.lg{width:38px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) 
       <div><label for="fj">Jenis</label><select id="fj"><option value="">Semua jenis</option><option>Posyandu Balita</option><option>Posyandu Lansia</option></select></div>
       <div><label for="fk">Kelurahan</label><select id="fk"><option value="">Semua</option></select></div>
       <div class="full"><label for="fq">Cari nama Posyandu</label><input id="fq" type="search" placeholder="Ketik nama Posyandu" autocomplete="off"></div>
-      <label class="full chk"><input id="fr" type="checkbox"> Tampilkan juga laporan yang dikirim ulang (semua versi)</label>
     </div>
   </div>
   <div class="bar"><span id="stamp">Memuat data…</span><button class="btn" id="re" type="button">Muat ulang</button></div>
@@ -133,7 +132,7 @@ header img.lg{width:38px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) 
   <div class="card"><h2>Laporan yang sudah terkirim</h2><div id="ls"></div></div>
   <p style="text-align:center;margin:0 0 8px"><a class="back" href="./">Ke aplikasi laporan</a></p>
 </main>
-<footer>Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Pantau Versi 3</span></footer>
+<footer>Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Pantau Versi 4</span></footer>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script>
@@ -152,7 +151,7 @@ function opt(s,v,t){var o=document.createElement('option');o.value=v;o.textConte
   opt(ft,String(now.getFullYear()),String(now.getFullYear()));
   KEL.forEach(function(k){opt(fk,k,k)});
   ['fb','ft','fj','fk'].forEach(function(i){$(i).addEventListener('change',tampil)});
-  $('fq').addEventListener('input',tampil);$('fr').addEventListener('change',tampil);
+  $('fq').addEventListener('input',tampil);
   $('dx').addEventListener('click',function(){unduh('xlsx')});$('dc').addEventListener('click',function(){unduh('csv')});
   $('re').addEventListener('click',muat);
   document.addEventListener('visibilitychange',function(){if(CRED&&!document.hidden&&Date.now()-last>45000)muat()});
@@ -284,7 +283,7 @@ function tampil(){
   if(!ADA)return;
   var th=$('ft').value,bl=$('fb').value,jn=$('fj').value,kl=$('fk').value,q=$('fq').value.trim().toLowerCase();
   var dasar=DATA.filter(function(d){return d.thn===th&&(!bl||d.bln===bl)});
-  var uniq=$('fr').checked?dasar.slice():terbaru(dasar);
+  var uniq=terbaru(dasar);
   var lihat=uniq.filter(function(d){return(!jn||d.jenis===jn)&&(!kl||d.kel===kl)&&(!q||d.pos.toLowerCase().indexOf(q)>=0)});
   // ringkasan
   window.LIHAT=lihat;
