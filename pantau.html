@@ -69,8 +69,8 @@ a.back{color:var(--accent);font-weight:600;text-decoration:none}
 .login{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:max(24px,env(safe-area-inset-top,0px)) 20px max(24px,env(safe-area-inset-bottom,0px));
   background:radial-gradient(120% 80% at 50% 0%,#0f9a45 0%,#0a7a35 38%,#06431c 100%);color:#fff;text-align:center}
-.login .av{width:124px;height:124px;border-radius:50%;padding:4px;background:linear-gradient(135deg,#f2b705,#ffe08a);box-shadow:0 10px 30px rgba(0,0,0,.35);margin-bottom:18px}
-.login .av img{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;border:3px solid #fff}
+.login .av{margin-bottom:18px}
+.login .av img{display:block;width:92px;height:auto;filter:drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff) drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1.5px 0 #fff) drop-shadow(0 4px 8px rgba(0,0,0,.3))}
 .login h1{font-size:22px;line-height:1.2;margin:0 0 4px;letter-spacing:.3px}
 .login p.sub{margin:0 0 24px;opacity:.9;font-size:15px}
 .lf{width:100%;max-width:380px;background:var(--surface);color:var(--fg);border-radius:18px;padding:22px 20px;box-shadow:0 18px 50px rgba(0,0,0,.35);text-align:left}
@@ -82,17 +82,20 @@ a.back{color:var(--accent);font-weight:600;text-decoration:none}
 .lerr{margin-top:12px;font-size:14px;color:#b3261e;min-height:20px;font-weight:600}
 @media (prefers-color-scheme:dark){.lerr{color:#ff8a80}}
 .lfoot{margin-top:22px;font-size:12.5px;opacity:.85}
-.hin .av2{width:44px;height:44px;border-radius:50%;padding:2px;background:linear-gradient(135deg,#f2b705,#ffe08a);flex:none}
-header .hin .av2 img{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;border:2px solid #fff;filter:none}
 .hin .sp{flex:1}
 .out{min-height:40px;padding:6px 14px;border-radius:10px;border:1.5px solid rgba(255,255,255,.55);background:rgba(255,255,255,.12);color:#fff;font-weight:600;cursor:pointer}
-header img{filter:none}
+header img.lg{width:38px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
 .hidden{display:none!important}
+.chk{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--fg);font-weight:500;margin-top:2px}
+.chk input{width:22px;height:22px;min-height:0;flex:none}
+.btn.wide{width:100%;margin-top:8px}
+.btn.alt{background:var(--surface);color:var(--accent)}
+.dl .b{font-size:14px;color:var(--muted)}
 </style>
 </head>
 <body>
 <section class="login" id="login">
-  <div class="av"><img src="foto.jpg" alt=""></div>
+  <div class="av"><img src="logo.png" alt="Logo Kota Palu"></div>
   <h1>PANTAU LAPORAN POSYANDU</h1>
   <p class="sub">Kecamatan Palu Utara</p>
   <form class="lf" id="lf" autocomplete="on">
@@ -106,7 +109,7 @@ header img{filter:none}
   <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved</div>
 </section>
 <div id="app" class="hidden">
-<header><div class="hin"><div class="av2"><img src="foto.jpg" alt=""></div><div><div class="t">PANTAU LAPORAN POSYANDU</div><div class="s">Kecamatan Palu Utara</div></div><div class="sp"></div><button class="out" id="out" type="button">Keluar</button></div></header>
+<header><div class="hin"><img class="lg" src="logo.png" alt=""><div><div class="t">PANTAU LAPORAN POSYANDU</div><div class="s">Kecamatan Palu Utara</div></div><div class="sp"></div><button class="out" id="out" type="button">Keluar</button></div></header>
 <main>
   <div class="card">
     <div class="filters">
@@ -115,17 +118,24 @@ header img{filter:none}
       <div><label for="fj">Jenis</label><select id="fj"><option value="">Semua jenis</option><option>Posyandu Balita</option><option>Posyandu Lansia</option></select></div>
       <div><label for="fk">Kelurahan</label><select id="fk"><option value="">Semua</option></select></div>
       <div class="full"><label for="fq">Cari nama Posyandu</label><input id="fq" type="search" placeholder="Ketik nama Posyandu" autocomplete="off"></div>
+      <label class="full chk"><input id="fr" type="checkbox"> Tampilkan juga laporan yang dikirim ulang (semua versi)</label>
     </div>
   </div>
   <div class="bar"><span id="stamp">Memuat data…</span><button class="btn" id="re" type="button">Muat ulang</button></div>
+  <div class="card dl"><h2>Tarik data untuk laporan bulanan</h2>
+    <p class="b" style="margin:0 0 12px" id="dlinfo">Data mengikuti pilihan Bulan, Tahun, Jenis, dan Kelurahan di atas.</p>
+    <button class="btn wide" id="dx" type="button">Unduh Excel (.xlsx)</button>
+    <button class="btn wide alt" id="dc" type="button">Unduh CSV</button>
+  </div>
   <div id="msg"></div>
   <div class="tot" id="tot"></div>
   <div class="card"><h2>Status per kelurahan</h2><div id="mx"></div></div>
   <div class="card"><h2>Laporan yang sudah terkirim</h2><div id="ls"></div></div>
   <p style="text-align:center;margin:0 0 8px"><a class="back" href="./">Ke aplikasi laporan</a></p>
 </main>
-<footer>Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Pantau Versi 2</span></footer>
+<footer>Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Pantau Versi 3</span></footer>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script>
 var ARSIP_URL='https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec';
 var BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
@@ -142,7 +152,8 @@ function opt(s,v,t){var o=document.createElement('option');o.value=v;o.textConte
   opt(ft,String(now.getFullYear()),String(now.getFullYear()));
   KEL.forEach(function(k){opt(fk,k,k)});
   ['fb','ft','fj','fk'].forEach(function(i){$(i).addEventListener('change',tampil)});
-  $('fq').addEventListener('input',tampil);
+  $('fq').addEventListener('input',tampil);$('fr').addEventListener('change',tampil);
+  $('dx').addEventListener('click',function(){unduh('xlsx')});$('dc').addEventListener('click',function(){unduh('csv')});
   $('re').addEventListener('click',muat);
   document.addEventListener('visibilitychange',function(){if(CRED&&!document.hidden&&Date.now()-last>45000)muat()});
   $('sh').addEventListener('click',function(){var i=$('lp'),t=i.type==='password';i.type=t?'text':'password';this.textContent=t?'Sembunyi':'Lihat'});
@@ -187,6 +198,73 @@ function gagal(t){
   $('stamp').textContent=ADA?'Menampilkan data terakhir':'Belum ada data';
   if(!ADA){$('tot').textContent='';$('mx').textContent='';$('ls').textContent=''}
 }
+
+var FIELD={'Posyandu Balita':['Sasaran Ibu Hamil','Kunjungan Ibu Hamil','Sasaran Bayi Balita (S)','Memiliki KMS (K)','Kunjungan (D)','BB Naik (N)','BB Tidak Naik (T)','BGM','Stunting'],
+ 'Posyandu Lansia':['Sasaran lansia','Kunjungan lansia']};
+function esc2(x){return x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
+function ambil(d){ // pecah teks hasil menjadi baris per bulan
+  var fl=FIELD[d.jenis]||[],segs=(d.hasil||'').split(' | '),out=[];
+  segs.forEach(function(sg){
+    var b=d.bln,m=sg.match(/^([A-Za-z]+):?\s/);
+    if(m&&BULAN.indexOf(m[1])>=0){b=m[1];sg=sg.slice(m[0].length)}
+    var v={};fl.forEach(function(f){var r=new RegExp(esc2(f)+'\\s+(-?[0-9][0-9.,]*)').exec(sg);v[f]=r?Number(String(r[1]).replace(',','.')):''});
+    out.push({b:b,v:v});
+  });
+  if(!out.length)out.push({b:d.bln,v:{}});
+  return out;
+}
+function bangun(){
+  var L=(window.LIHAT||[]).filter(function(d){return true});
+  var sheets={'Posyandu Balita':[],'Posyandu Lansia':[],'Rekap Kelurahan':[]};
+  var ur=L.slice().sort(function(a,b){return KEL.indexOf(a.kel)-KEL.indexOf(b.kel)||a.pos.localeCompare(b.pos)||a.n.localeCompare(b.n)});
+  ['Posyandu Balita','Posyandu Lansia'].forEach(function(j){
+    var fl=FIELD[j],rows=[],tot={},no=0;fl.forEach(function(f){tot[f]=0});
+    ur.filter(function(d){return d.jenis===j}).forEach(function(d){
+      ambil(d).forEach(function(r){
+        no++;var o={'No':no,'Nomor Laporan':d.n,'Bulan':r.b,'Tahun':d.thn,'Kelurahan':d.kel,'Posyandu':d.pos,'Tanggal Kegiatan':d.tgl,'Tanggal Kirim':d.tk};
+        fl.forEach(function(f){o[f]=r.v[f];if(r.v[f]!=='')tot[f]+=r.v[f]});
+        o['Nama Kader']=d.kader||'';rows.push(o);
+      });
+    });
+    if(rows.length){var t={'No':'','Nomor Laporan':'','Bulan':'','Tahun':'','Kelurahan':'JUMLAH','Posyandu':'','Tanggal Kegiatan':'','Tanggal Kirim':''};fl.forEach(function(f){t[f]=tot[f]});t['Nama Kader']='';rows.push(t)}
+    sheets[j]=rows;
+  });
+  // rekap per kelurahan
+  ['Posyandu Balita','Posyandu Lansia'].forEach(function(j){
+    var fl=FIELD[j];
+    KEL.forEach(function(k){
+      var o={'Jenis':j,'Kelurahan':k,'Jumlah Laporan':0};fl.forEach(function(f){o[f]=0});
+      ur.filter(function(d){return d.jenis===j&&d.kel===k}).forEach(function(d){o['Jumlah Laporan']++;ambil(d).forEach(function(r){fl.forEach(function(f){if(r.v[f]!=='')o[f]+=r.v[f]})})});
+      sheets['Rekap Kelurahan'].push(o);
+    });
+  });
+  return sheets;
+}
+function namaBerkas(){var bl=$('fb').value||'Semua bulan',th=$('ft').value;return 'Data Posyandu '+bl+' '+th}
+function unduh(jenis){
+  if(!ADA||!window.LIHAT||!window.LIHAT.length){alert('Belum ada laporan untuk pilihan ini.');return}
+  var sh=bangun(),nm=namaBerkas();
+  if(jenis==='xlsx'&&window.XLSX){
+    var wb=XLSX.utils.book_new();
+    ['Posyandu Balita','Posyandu Lansia','Rekap Kelurahan'].forEach(function(n){
+      if(!sh[n].length)return;
+      var ws=XLSX.utils.json_to_sheet(sh[n]);
+      var k=Object.keys(sh[n][0]);ws['!cols']=k.map(function(x){return{wch:Math.max(10,Math.min(32,x.length+2))}});
+      XLSX.utils.book_append_sheet(wb,ws,n.replace('Posyandu ',''));
+    });
+    XLSX.writeFile(wb,nm+'.xlsx');return;
+  }
+  if(jenis==='xlsx'){alert('Fitur Excel belum termuat. Periksa internet lalu coba lagi, atau pilih Unduh CSV.');return}
+  var out=[];
+  ['Posyandu Balita','Posyandu Lansia','Rekap Kelurahan'].forEach(function(n){
+    var r=sh[n];if(!r.length)return;var k=Object.keys(r[0]);
+    out.push(n);out.push(k.map(q).join(';'));r.forEach(function(o){out.push(k.map(function(x){return q(o[x])}).join(';'))});out.push('');
+  });
+  var bl=new Blob(['\ufeff'+out.join('\r\n')],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(bl);a.download=nm+'.csv';document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1000);
+}
+function q(v){v=v==null?'':String(v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
 function isiTahun(){
   var ft=$('ft'),cur=ft.value,set={};
   set[String(new Date().getFullYear())]=1;DATA.forEach(function(d){if(d.thn)set[d.thn]=1});
@@ -206,9 +284,10 @@ function tampil(){
   if(!ADA)return;
   var th=$('ft').value,bl=$('fb').value,jn=$('fj').value,kl=$('fk').value,q=$('fq').value.trim().toLowerCase();
   var dasar=DATA.filter(function(d){return d.thn===th&&(!bl||d.bln===bl)});
-  var uniq=terbaru(dasar);
+  var uniq=$('fr').checked?dasar.slice():terbaru(dasar);
   var lihat=uniq.filter(function(d){return(!jn||d.jenis===jn)&&(!kl||d.kel===kl)&&(!q||d.pos.toLowerCase().indexOf(q)>=0)});
   // ringkasan
+  window.LIHAT=lihat;
   var tb=lihat.filter(function(d){return d.jenis==='Posyandu Balita'}).length,tl=lihat.filter(function(d){return d.jenis==='Posyandu Lansia'}).length;
   var tot=$('tot');tot.textContent='';
   [[lihat.length,'Laporan masuk'],[tb,'Balita'],[tl,'Lansia']].forEach(function(x){var d=el('div');d.appendChild(el('b',null,x[0]));d.appendChild(el('span',null,x[1]));tot.appendChild(d)});

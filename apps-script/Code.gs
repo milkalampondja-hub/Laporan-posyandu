@@ -43,7 +43,7 @@ function doGet(e) {
   return ContentService.createTextOutput(teks).setMimeType(ContentService.MimeType.JSON);
 }
 
-/** Untuk aplikasi pemantau: hanya data umum (tanpa nama kader dan tanpa link file). */
+/** Untuk aplikasi pemantau (hanya setelah login): data laporan beserta angka hasil kegiatan dan nama kader. */
 function daftarLaporan() {
   try {
     var sh = lembar(), n = sh.getLastRow();
@@ -55,7 +55,8 @@ function daftarLaporan() {
     rows.forEach(function (r) {
       if (!r[0]) return;
       data.push({ n: String(r[0]), tk: tgl(r[1]), thn: String(r[2]), bln: String(r[3]), kel: String(r[4]), pos: String(r[5]),
-                  jenis: String(r[6]), tgl: tgl(r[7]), ver: parseInt(r[9], 10) || 1, pdf: String(r[13] || '') === 'PDF tersimpan' });
+                  jenis: String(r[6]), tgl: tgl(r[7]), kader: String(r[8] || ''), hasil: String(r[12] || ''),
+                  ver: parseInt(r[9], 10) || 1, pdf: String(r[13] || '') === 'PDF tersimpan' });
     });
     return { ok: true, data: data, waktu: Date.now() };
   } catch (err) {
