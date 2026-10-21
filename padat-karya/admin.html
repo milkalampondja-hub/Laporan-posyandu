@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin Padat Karya</title>
+<style>
+:root{--pri:#1e3a5f;--bd:#d8e0ea;--bg:#f3f6fa;--ok:#15803d;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:#0f172a}
+header{background:var(--pri);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}header h1{margin:0;font-size:1.05rem}
+main{max-width:980px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+input,select,textarea,button{font:inherit;padding:9px;border:1px solid var(--bd);border-radius:8px}button{cursor:pointer;background:var(--pri);color:#fff;border:0}button.sec{background:#e5ecf4;color:var(--pri)}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{padding:7px 8px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top}th{background:#eef3f8}
+.tabs button{margin-right:6px}.tabs button.on{background:var(--pri);color:#fff}.tabs button:not(.on){background:#e5ecf4;color:var(--pri)}
+.y{color:var(--ok);font-weight:700}.n{color:var(--bad);font-weight:700}
+.msg{padding:9px 12px;border-radius:8px;margin:8px 0}.err{background:#fee2e2;color:#7f1d1d}.ok{background:#dcfce7;color:#14532d}
+.ph{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.ph figure{margin:0;font-size:.72rem}.ph img{width:100%;border-radius:8px;cursor:pointer}
+.scroll{overflow-x:auto}[hidden]{display:none!important}.badge{padding:2px 8px;border-radius:99px;background:#e2e8f0;font-size:.8rem;font-weight:700}
+</style>
+</head>
+<body>
+<header><h1>Admin Kecamatan — Monitoring Padat Karya</h1><button class="sec" id="out" hidden>Keluar</button></header>
+<main>
+<div id="login" class="card"><h3 style="margin-top:0">Login admin</h3><input id="pw" type="password" placeholder="Password admin"> <button id="go">Masuk</button><div id="lmsg"></div></div>
+<div id="app" hidden>
+  <div class="tabs card"><button id="t1" class="on">Harian</button><button id="t2">Akhir bulan</button></div>
+  <div id="p1">
+    <div class="card"><input type="date" id="d"> <button id="dl">Tampilkan</button> <span id="dsum"></span>
+      <div class="scroll"><table><thead><tr><th>Pengawas</th><th>Kelurahan</th><th>Laporan</th><th>Hadir</th><th>Tidak</th><th>Foto</th><th></th></tr></thead><tbody id="dtb"></tbody></table></div></div>
+    <div class="card" id="det" hidden></div>
+  </div>
+  <div id="p2" hidden>
+    <div class="card"><input type="month" id="m"> <button id="ml">Tampilkan</button> <button class="sec" id="rk">Unduh rekap CSV</button>
+      <div class="scroll"><table><thead><tr><th>Pengawas</th><th>Hari</th><th>Status</th><th>Dokumen</th><th>Pemeriksaan</th></tr></thead><tbody id="mtb"></tbody></table></div></div>
+  </div>
+  <div id="amsg"></div>
+</div>
+</main>
+<script src="config.js"></script>
+<script>
+(function(){
+'use strict';
+var C=window.APP_CONFIG,$=function(s){return document.querySelector(s)},T=null;
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function msg(el,t,c){$(el).innerHTML=t?'<div class="msg '+(c||'err')+'">'+esc(t)+'</div>':''}
+async function api(a,b){
+  var r=await fetch(C.API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:a,token:T},b||{}))});
+  var j=await r.json();if(!j.ok){if(j.code==='AUTH')logout();throw new Error(j.error||'Gagal')}return j}
+function logout(){T=null;try{sessionStorage.removeItem('pk_adm')}catch(e){}$('#app').hidden=true;$('#login').hidden=false;$('#out').hidden=true}
+function show(){$('#login').hidden=true;$('#app').hidden=false;$('#out').hidden=false}
+$('#go').onclick=async function(){
+  try{var r=await api('adminLogin',{password:$('#pw').value});T=r.token;try{sessionStorage.setItem('pk_adm',T)}catch(e){}$('#pw').value='';show();loadDay()}catch(e){msg('#lmsg',e.message)}};
+$('#pw').onkeydown=function(e){if(e.key==='Enter')$('#go').click()};
+$('#out').onclick=logout;
+function tab(n){$('#p1').hidden=n!==1;$('#p2').hidden=n!==2;$('#t1').className=n===1?'on':'';$('#t2').className=n===2?'on':'';if(n===2)loadMonth()}
+$('#t1').onclick=function(){tab(1)};$('#t2').onclick=function(){tab(2)};
+$('#d').value=new Date().toLocaleDateString('sv-SE');$('#m').value=$('#d').value.slice(0,7);
+
+async function loadDay(){
+  msg('#amsg','');$('#det').hidden=true;
+  try{var r=await api('adminDashboard',{tanggal:$('#d').value});var s=0;
+    $('#dtb').innerHTML=r.rows.map(function(x){if(x.sudah)s++;return '<tr><td>'+esc(x.nama)+'</td><td>'+esc(x.kelurahan)+'</td><td class="'+(x.sudah?'y':'n')+'">'+(x.sudah?'Sudah':'Belum')+'</td><td>'+esc(x.hadir)+'</td><td>'+esc(x.tidak)+'</td><td>'+esc(x.foto)+'</td><td>'+(x.sudah?'<button class="sec" data-p="'+esc(x.id)+'">Rincian</button>':'')+'</td></tr>'}).join('');
+    $('#dsum').textContent=s+' dari '+r.rows.length+' pengawas sudah mengirim';
+  }catch(e){msg('#amsg',e.message)}
+}
+$('#dl').onclick=loadDay;
+$('#dtb').onclick=async function(e){
+  var p=e.target.getAttribute('data-p');if(!p)return;
+  try{var r=await api('adminDetail',{pengawasId:p,tanggal:$('#d').value}),l=r.laporan;
+    $('#det').hidden=false;
+    $('#det').innerHTML='<h3 style="margin-top:0">'+esc(l.pengawas)+' — '+esc(l.kelurahan)+' — '+esc(l.tanggal)+'</h3><p><b>Lokasi:</b> '+esc(l.lokasi)+'<br><b>Kegiatan:</b> '+esc(l.kegiatan)+'<br><b>Keterangan:</b> '+esc(l.keterangan||'-')+'<br><b>Diterima server:</b> '+esc(l.diterima_server)+'</p>'+
+      '<h4>Foto</h4><div class="ph">'+r.foto.map(function(f){return '<figure>'+(f.thumb?'<img src="data:image/jpeg;base64,'+f.thumb+'" data-f="'+esc(f.file_id)+'">':'')+'<figcaption>'+esc(f.sumber)+' · '+esc(f.waktu)+'<br>'+(f.lat?esc(f.lat)+', '+esc(f.lon)+' ±'+esc(f.akurasi)+' m':'GPS: '+esc(f.gps))+'</figcaption></figure>'}).join('')+'</div>'+
+      '<h4>Absensi (hadir '+esc(l.jml_hadir)+' / tidak '+esc(l.jml_tidak_hadir)+')</h4><div class="scroll"><table><tbody>'+r.absensi.map(function(a){return '<tr><td>'+esc(a.nama)+'</td><td class="'+(a.status==='Hadir'?'y':'n')+'">'+(a.status==='Hadir'?'✓ Hadir':'X Tidak hadir')+'</td></tr>'}).join('')+'</tbody></table></div>';
+    $('#det').scrollIntoView({behavior:'smooth'});
+  }catch(err){msg('#amsg',err.message)}
+};
+function dl(name,mime,b64){var bin=atob(b64),a=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);var u=URL.createObjectURL(new Blob([a],{type:mime}));var l=document.createElement('a');l.href=u;l.download=name;document.body.appendChild(l);l.click();l.remove();setTimeout(function(){URL.revokeObjectURL(u)},5000)}
+async function getFile(id){try{var r=await api('adminFile',{fileId:id});dl(r.nama,r.mime,r.data)}catch(e){msg('#amsg',e.message)}}
+$('#det').onclick=function(e){var f=e.target.getAttribute('data-f');if(f)getFile(f)};
+
+async function loadMonth(){
+  msg('#amsg','');
+  try{var r=await api('adminMonth',{bulan:$('#m').value});
+    $('#mtb').innerHTML=r.rows.map(function(x){
+      var docs=x.dokumen.map(function(d){return '<a href="#" data-f="'+esc(d.file_id)+'">'+esc(d.jenis)+'</a>'}).join('<br>')||'<span class="n">Belum ada</span>';
+      if(x.pdf_id)docs='<a href="#" data-f="'+esc(x.pdf_id)+'">PDF laporan</a><br>'+docs;
+      return '<tr><td>'+esc(x.nama)+'<br><small>'+esc(x.kelurahan)+'</small></td><td>'+x.hari+'</td><td><span class="badge">'+esc(x.status)+'</span></td><td>'+docs+'</td>'+
+        '<td><select data-s="'+esc(x.id)+'"><option>Menunggu Pemeriksaan</option><option>Perlu Perbaikan</option><option>Disetujui</option></select><br><textarea rows="2" placeholder="Catatan perbaikan" data-c="'+esc(x.id)+'" style="width:100%;margin-top:4px">'+esc(x.catatan)+'</textarea><br><button data-r="'+esc(x.id)+'">Simpan</button></td></tr>'}).join('');
+    r.rows.forEach(function(x){var s=document.querySelector('select[data-s="'+x.id+'"]');if(s&&x.status!=='Belum Lengkap')s.value=x.status});
+  }catch(e){msg('#amsg',e.message)}
+}
+$('#ml').onclick=loadMonth;
+$('#mtb').onclick=async function(e){
+  var f=e.target.getAttribute('data-f');if(f){e.preventDefault();return getFile(f)}
+  var id=e.target.getAttribute('data-r');if(!id)return;
+  try{await api('adminReview',{pengawasId:id,bulan:$('#m').value,status:document.querySelector('select[data-s="'+id+'"]').value,catatan:document.querySelector('textarea[data-c="'+id+'"]').value});msg('#amsg','Tersimpan.','ok');loadMonth()}catch(err){msg('#amsg',err.message)}
+};
+$('#rk').onclick=async function(){try{var r=await api('adminRekap',{bulan:$('#m').value});var u=URL.createObjectURL(new Blob(['﻿'+r.csv],{type:'text/csv'}));var a=document.createElement('a');a.href=u;a.download=r.nama;a.click()}catch(e){msg('#amsg',e.message)}};
+
+try{var t=sessionStorage.getItem('pk_adm');if(t){T=t;show();loadDay()}}catch(e){}
+})();
+</script>
+</body>
+</html>

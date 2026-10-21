@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Monitoring Padat Karya</title>
+<style>
+:root{--pri:#0f766e;--pri2:#115e59;--ok:#15803d;--bad:#b91c1c;--bg:#f1f5f4;--card:#fff;--tx:#0f172a;--mut:#64748b;--bd:#dbe4e2}
+*{box-sizing:border-box}body{margin:0;font:16px/1.45 system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx);padding-bottom:96px}
+header{background:var(--pri);color:#fff;padding:14px 16px}header h1{margin:0;font-size:1.15rem}header p{margin:2px 0 0;font-size:.8rem;opacity:.85}
+.tabs{display:flex;background:#fff;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:5}
+.tabs button{flex:1;padding:12px;border:0;background:none;font-weight:600;color:var(--mut);border-bottom:3px solid transparent}
+.tabs button.on{color:var(--pri);border-color:var(--pri)}
+main{max-width:640px;margin:0 auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{margin:0 0 10px;font-size:1rem;color:var(--pri2)}
+label{display:block;font-size:.85rem;color:var(--mut);margin:8px 0 3px}
+input,select,textarea{width:100%;padding:11px;border:1px solid var(--bd);border-radius:10px;font:inherit;background:#fff}
+textarea{min-height:70px}
+button{font:inherit;cursor:pointer}
+.btn{padding:12px 14px;border:0;border-radius:10px;background:var(--pri);color:#fff;font-weight:600}
+.btn.sec{background:#e2ece9;color:var(--pri2)}.btn.full{width:100%}.btn:disabled{opacity:.5}
+.row{display:flex;gap:8px}.row>*{flex:1}.row .auto{flex:0 0 auto}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.chip{background:#e2ece9;border-radius:99px;padding:5px 10px;font-size:.85rem}.chip b{margin-left:6px;color:var(--bad);cursor:pointer}
+.chk{display:flex;gap:8px;align-items:center;padding:6px 0}.chk input{width:auto}
+.mem{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)}
+.mem span{flex:1;padding-right:8px}.tg{min-width:96px;padding:9px;border:0;border-radius:9px;font-weight:700;color:#fff}
+.tg.h{background:var(--ok)}.tg.x{background:var(--bad)}
+.sum{display:flex;gap:8px;margin:6px 0}.sum div{flex:1;text-align:center;border-radius:10px;padding:8px;color:#fff;font-weight:700}
+.thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.th{position:relative}.th img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}
+.th i{position:absolute;left:4px;bottom:4px;background:#000a;color:#fff;font-size:.65rem;padding:1px 5px;border-radius:5px;font-style:normal}
+.th b{position:absolute;right:3px;top:3px;background:var(--bad);color:#fff;width:22px;height:22px;border-radius:50%;text-align:center;line-height:22px;cursor:pointer}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);padding:10px 12px calc(10px + env(safe-area-inset-bottom));z-index:6}
+.bar .in{max-width:640px;margin:auto}.bar small{display:block;text-align:center;color:var(--mut);margin-bottom:6px}
+.msg{padding:10px 12px;border-radius:10px;margin:8px 0;font-size:.9rem}.msg.err{background:#fee2e2;color:#7f1d1d}.msg.ok{background:#dcfce7;color:#14532d}.msg.warn{background:#fef9c3;color:#713f12}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.8rem;font-weight:700;background:#e2e8f0}
+.badge.Disetujui{background:#dcfce7;color:#14532d}.badge.Perlu{background:#fee2e2;color:#7f1d1d}.badge.Menunggu{background:#fef9c3;color:#713f12}
+#cam{position:fixed;inset:0;background:#000;z-index:20;display:flex;flex-direction:column}
+#cam video{flex:1;min-height:0;width:100%;object-fit:cover}#cam .ctl{padding:14px;display:flex;gap:10px;justify-content:center;align-items:center;background:#000}
+#cam .gps{position:absolute;top:8px;left:8px;right:8px;color:#fff;background:#0009;padding:6px 10px;border-radius:8px;font-size:.8rem}
+.shut{width:68px;height:68px;border-radius:50%;border:5px solid #fff;background:#e11d48}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><h1>Monitoring Padat Karya</h1><p>Kecamatan Palu Utara · Tahun 2026</p></header>
+<div class="tabs"><button id="tH" class="on">Harian</button><button id="tB">Akhir Bulan</button></div>
+<main>
+<div id="net"></div>
+<section id="harian">
+  <div class="card">
+    <h2>1. Identitas</h2>
+    <label for="pengawas">Nama pengawas</label><select id="pengawas"><option value="">Memuat…</option></select>
+    <div id="kodeWrap">
+      <label for="kode">Kode pengawas</label><input id="kode" type="password" inputmode="numeric" autocomplete="off" placeholder="6 digit dari Admin Kecamatan">
+      <div class="chk"><input type="checkbox" id="ingat" checked><label style="margin:0" for="ingat">Ingat di HP ini</label></div>
+      <button class="btn full" id="btnMasuk">Buka formulir</button>
+    </div>
+    <div id="idInfo" hidden>
+      <label>Kelurahan</label><input id="kel" readonly>
+      <label for="tgl">Tanggal</label><input id="tgl" type="date">
+      <button class="btn sec" id="btnGanti" style="margin-top:8px">Ganti pengawas</button>
+    </div>
+    <div id="idMsg"></div>
+  </div>
+
+  <div id="form" hidden>
+    <div class="card">
+      <h2>2. Lokasi &amp; pekerjaan</h2>
+      <label for="lokIn">Jalan / lokasi yang diawasi</label>
+      <div class="row"><input id="lokIn" placeholder="mis. Jl. Datu Masuci"><button class="btn sec auto" id="lokAdd">Tambah</button></div>
+      <div class="chips" id="lokChips"></div>
+      <label>Jenis kegiatan</label><div id="kegBox"></div>
+      <input id="kegLain" placeholder="Kegiatan lain (opsional)">
+    </div>
+
+    <div class="card">
+      <h2>3. Absensi anggota</h2>
+      <div class="sum"><div style="background:var(--ok)">Hadir <span id="cH">0</span></div><div style="background:var(--bad)">Tidak <span id="cX">0</span></div></div>
+      <div class="row"><input id="cari" placeholder="Cari nama…"><button class="btn sec auto" id="semuaH">Semua hadir</button></div>
+      <div id="absList"></div>
+    </div>
+
+    <div class="card">
+      <h2>4. Dokumentasi foto</h2>
+      <div class="row"><button class="btn" id="btnCam">📷 Ambil foto</button><button class="btn sec" id="btnGal">Unggah galeri</button></div>
+      <input type="file" id="fileGal" accept="image/*" multiple hidden>
+      <input type="file" id="fileCap" accept="image/*" capture="environment" hidden>
+      <div class="msg warn" style="font-size:.8rem">Foto kamera diberi stempel tanggal, jam &amp; koordinat. Foto galeri ditandai “galeri”. Stempel bukan bukti anti-manipulasi.</div>
+      <div class="thumbs" id="thumbs"></div>
+      <small id="fotoCt" style="color:var(--mut)"></small>
+    </div>
+
+    <div class="card"><h2>5. Keterangan</h2><textarea id="ket" placeholder="Kendala atau pekerjaan khusus (opsional)"></textarea></div>
+    <div id="saveMsg"></div>
+  </div>
+</section>
+
+<section id="bulanan" hidden>
+  <div class="card">
+    <h2>Laporan akhir bulan</h2>
+    <div id="bNeed" class="msg warn" hidden>Buka formulir harian dahulu (pilih nama &amp; kode pengawas).</div>
+    <div id="bBox" hidden>
+      <label for="bln">Bulan</label><input type="month" id="bln">
+      <button class="btn full" id="bMuat" style="margin-top:8px">Muat status</button>
+      <div id="bInfo"></div>
+      <button class="btn full" id="bPdf" style="margin-top:10px" hidden>⬇ Unduh PDF laporan bulanan</button>
+      <div id="bUp" hidden>
+        <h2 style="margin-top:16px">Unggah dokumen resmi</h2>
+        <div class="msg warn" style="font-size:.8rem">Centang ✓/X di aplikasi hanya catatan operasional. Anggota tetap tanda tangan lembar absensi fisik; di akhir bulan ditandatangani &amp; dicap Lurah, lalu scan/foto diunggah di sini. Dokumen asli tetap disimpan.</div>
+        <label for="jenis">Jenis dokumen</label>
+        <select id="jenis"><option>Absensi Bertanda Tangan</option><option>Pengesahan Lurah</option><option>Lampiran Lain</option></select>
+        <label for="dokFile">Berkas (foto atau PDF)</label><input type="file" id="dokFile" accept="image/*,application/pdf">
+        <button class="btn full" id="bUnggah" style="margin-top:8px">Unggah</button>
+      </div>
+      <div id="bMsg"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="bar" id="saveBar" hidden><div class="in"><small id="barInfo"></small><button class="btn full" id="btnSimpan">SIMPAN LAPORAN HARI INI</button></div></div>
+
+<div id="cam" hidden>
+  <div class="gps" id="camGps">Mencari GPS…</div>
+  <video id="vid" playsinline muted autoplay></video>
+  <div class="ctl"><button class="btn sec" id="camClose">Tutup</button><button class="shut" id="camShot" aria-label="Ambil"></button><button class="btn sec" id="camFlip">Balik</button></div>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function(){
+'use strict';
+var C=window.APP_CONFIG, $=function(s){return document.querySelector(s)};
+var KEG=['Pembersihan jalan','Pembersihan drainase/selokan','Pembersihan rumput/semak','Pengangkutan sampah'];
+var S={pengawas:[],me:null,kode:'',anggota:[],abs:{},lokasi:[],fotos:[],reportId:null,gps:null,watch:null,stream:null,facing:'environment',busy:false,statusBulan:null};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
+function todayStr(){return new Date().toLocaleDateString('sv-SE')}
+function uuid(){return (window.crypto&&crypto.randomUUID)?crypto.randomUUID():'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)}
+function msg(el,t,cls){$(el).innerHTML=t?'<div class="msg '+(cls||'')+'">'+esc(t)+'</div>':''}
+function wita(d){return d.toLocaleString('id-ID',{timeZone:'Asia/Makassar',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})+' WITA'}
+
+async function api(action,body){
+  var r=await fetch(C.API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:action},body||{}))});
+  var j=await r.json();
+  if(!j.ok){var e=new Error(j.error||'Gagal');e.code=j.code;throw e}
+  return j;
+}
+function isNet(e){return e instanceof TypeError}
+
+/* ---------- tabs ---------- */
+function tab(b){$('#harian').hidden=b;$('#bulanan').hidden=!b;$('#tH').classList.toggle('on',!b);$('#tB').classList.toggle('on',b);
+  $('#saveBar').hidden=b||!S.me;
+  if(b){$('#bNeed').hidden=!!S.me;$('#bBox').hidden=!S.me}}
+$('#tH').onclick=function(){tab(false)};$('#tB').onclick=function(){tab(true)};
+
+/* ---------- init ---------- */
+async function init(){
+  window.addEventListener('offline',function(){$('#net').innerHTML='<div class="msg warn">Tidak ada internet. Isian tetap tersimpan di HP; kirim saat tersambung.</div>'});
+  window.addEventListener('online',function(){$('#net').innerHTML=''});
+  var list=null;
+  try{var r=await fetch(C.API_URL+'?action=init');var j=await r.json();if(j.ok){list=j.pengawas;lsSet('pk_pengawas',list)}}catch(e){}
+  if(!list)list=lsGet('pk_pengawas')||[];
+  S.pengawas=list;
+  $('#pengawas').innerHTML='<option value="">— pilih nama —</option>'+list.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.nama)+' ('+esc(p.kelurahan)+')</option>'}).join('');
+  if(!list.length)msg('#idMsg','Daftar pengawas tidak dapat dimuat. Periksa internet / URL pada config.js.','err');
+  var me=lsGet('pk_me');
+  if(me&&list.some(function(p){return p.id===me.id})){$('#pengawas').value=me.id;$('#kode').value=me.kode;masuk()}
+  $('#tgl').value=todayStr();
+  var d=new Date();$('#bln').value=d.toLocaleDateString('sv-SE').slice(0,7);
+}
+
+/* ---------- masuk ---------- */
+async function masuk(){
+  var id=$('#pengawas').value,kode=$('#kode').value.trim();
+  if(!id||!kode){msg('#idMsg','Pilih nama dan isi kode pengawas.','err');return}
+  $('#btnMasuk').disabled=true;msg('#idMsg','Memeriksa…');
+  var data=null,offline=false;
+  try{data=await api('anggota',{pengawasId:id,kode:kode})}
+  catch(e){
+    if(isNet(e)){var c=lsGet('pk_ang_'+id);var me=lsGet('pk_me');
+      if(c&&me&&me.id===id&&me.kode===kode){data=c;offline=true}else{msg('#idMsg','Tidak ada koneksi dan belum ada data tersimpan.','err')}}
+    else msg('#idMsg',e.message,'err');
+  }
+  $('#btnMasuk').disabled=false;
+  if(!data)return;
+  if(!offline)lsSet('pk_ang_'+id,data);
+  S.me=data.pengawas;S.kode=kode;S.anggota=data.anggota;
+  if($('#ingat').checked)lsSet('pk_me',{id:id,kode:kode});else lsDel('pk_me');
+  $('#kodeWrap').hidden=true;$('#idInfo').hidden=false;$('#kel').value=S.me.kelurahan;
+  var t=todayStr();$('#tgl').min=new Date(Date.now()-7*864e5).toLocaleDateString('sv-SE');$('#tgl').max=t;
+  if(!$('#tgl').value)$('#tgl').value=t;
+  msg('#idMsg',offline?'Mode tanpa internet: kode akan diperiksa saat laporan dikirim.':'','warn');
+  $('#form').hidden=false;$('#saveBar').hidden=false;
+  buildKeg();restoreDraft();renderAbs();renderLok();renderFoto();upd();
+}
+$('#btnMasuk').onclick=masuk;
+$('#btnGanti').onclick=function(){lsDel('pk_me');S.me=null;$('#kodeWrap').hidden=false;$('#idInfo').hidden=true;$('#form').hidden=true;$('#saveBar').hidden=true;$('#kode').value=''};
+$('#tgl').onchange=function(){restoreDraft();renderAbs();renderLok();upd()};
+
+/* ---------- draft ---------- */
+function dkey(){return 'pk_draft_'+S.me.id+'_'+$('#tgl').value}
+function saveDraft(){if(!S.me)return;lsSet(dkey(),{lokasi:S.lokasi,keg:checkedKeg(),lain:$('#kegLain').value,abs:S.abs,ket:$('#ket').value,reportId:S.reportId})}
+function restoreDraft(){
+  var d=lsGet(dkey())||{};
+  S.lokasi=d.lokasi||[];S.reportId=d.reportId||null;S.abs={};
+  S.anggota.forEach(function(a){S.abs[a.id]=d.abs&&d.abs[a.id]===false?false:true});
+  document.querySelectorAll('#kegBox input').forEach(function(i){i.checked=(d.keg||[]).indexOf(i.value)>=0});
+  $('#kegLain').value=d.lain||'';$('#ket').value=d.ket||'';
+}
+
+/* ---------- lokasi & kegiatan ---------- */
+function buildKeg(){$('#kegBox').innerHTML=KEG.map(function(k,i){return '<div class="chk"><input type="checkbox" id="k'+i+'" value="'+esc(k)+'"><label style="margin:0" for="k'+i+'">'+esc(k)+'</label></div>'}).join('');
+  $('#kegBox').onchange=function(){saveDraft()}}
+function checkedKeg(){return Array.prototype.map.call(document.querySelectorAll('#kegBox input:checked'),function(i){return i.value})}
+function renderLok(){$('#lokChips').innerHTML=S.lokasi.map(function(l,i){return '<span class="chip">'+esc(l)+'<b data-i="'+i+'">×</b></span>'}).join('')}
+function addLok(){var v=$('#lokIn').value.trim();if(!v)return;if(S.lokasi.length>=10)return;S.lokasi.push(v);$('#lokIn').value='';renderLok();saveDraft()}
+$('#lokAdd').onclick=addLok;$('#lokIn').onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();addLok()}};
+$('#lokChips').onclick=function(e){var i=e.target.getAttribute('data-i');if(i!==null){S.lokasi.splice(+i,1);renderLok();saveDraft()}};
+$('#kegLain').oninput=saveDraft;$('#ket').oninput=saveDraft;
+
+/* ---------- absensi ---------- */
+function renderAbs(){
+  var q=$('#cari').value.trim().toLowerCase();
+  $('#absList').innerHTML=S.anggota.filter(function(a){return !q||a.nama.toLowerCase().indexOf(q)>=0}).map(function(a){
+    var h=S.abs[a.id];return '<div class="mem"><span>'+esc(a.nama)+'</span><button class="tg '+(h?'h':'x')+'" data-id="'+esc(a.id)+'">'+(h?'✓ Hadir':'X Tidak')+'</button></div>'}).join('')||'<p style="color:var(--mut)">Tidak ada anggota.</p>';
+  cnt();
+}
+function cnt(){var h=0;S.anggota.forEach(function(a){if(S.abs[a.id])h++});$('#cH').textContent=h;$('#cX').textContent=S.anggota.length-h}
+$('#absList').onclick=function(e){var id=e.target.getAttribute('data-id');if(!id)return;S.abs[id]=!S.abs[id];e.target.className='tg '+(S.abs[id]?'h':'x');e.target.textContent=S.abs[id]?'✓ Hadir':'X Tidak';cnt();saveDraft();upd()};
+$('#cari').oninput=renderAbs;
+$('#semuaH').onclick=function(){S.anggota.forEach(function(a){S.abs[a.id]=true});renderAbs();saveDraft();upd()};
+
+/* ---------- foto ---------- */
+function renderFoto(){
+  $('#thumbs').innerHTML=S.fotos.map(function(f,i){return '<div class="th"><img src="'+f.url+'" alt=""><i>'+f.sumber+'</i><b data-i="'+i+'">×</b></div>'}).join('');
+  $('#fotoCt').textContent=S.fotos.length+' foto (minimal '+C.MIN_FOTO+', maksimal '+C.MAX_FOTO+')';
+}
+$('#thumbs').onclick=function(e){var i=e.target.getAttribute('data-i');if(i!==null){S.fotos.splice(+i,1);renderFoto();upd()}};
+function stamp(cv,lines){
+  var ctx=cv.getContext('2d'),fs=Math.max(14,Math.round(cv.width/40)),h=Math.round(lines.length*fs*1.3+fs*.6);
+  ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(0,cv.height-h,cv.width,h);
+  ctx.fillStyle='#fff';ctx.font=fs+'px sans-serif';ctx.textBaseline='top';
+  lines.forEach(function(t,i){ctx.fillText(t,fs*.5,cv.height-h+fs*.3+i*fs*1.3)});
+}
+function scaled(src,w,h,max){var r=Math.min(1,max/Math.max(w,h));var cv=document.createElement('canvas');cv.width=Math.round(w*r);cv.height=Math.round(h*r);cv.getContext('2d').drawImage(src,0,0,cv.width,cv.height);return cv}
+function pack(cv,sumber,meta){
+  var th=scaled(cv,cv.width,cv.height,480);
+  var data=cv.toDataURL('image/jpeg',C.FOTO_QUALITY);
+  S.fotos.push({data:data.split(',')[1],thumb:th.toDataURL('image/jpeg',0.6).split(',')[1],sumber:sumber,meta:meta,url:th.toDataURL('image/jpeg',0.6)});
+  renderFoto();upd();
+}
+function room(){if(S.fotos.length>=C.MAX_FOTO){msg('#saveMsg','Maksimal '+C.MAX_FOTO+' foto.','warn');return false}return true}
+
+// galeri
+$('#btnGal').onclick=function(){$('#fileGal').click()};
+$('#fileGal').onchange=async function(e){
+  var files=Array.prototype.slice.call(e.target.files);e.target.value='';
+  for(var i=0;i<files.length;i++){
+    if(!room())break;
+    try{var bmp=await createImageBitmap(files[i],{imageOrientation:'from-image'});
+      var cv=scaled(bmp,bmp.width,bmp.height,C.FOTO_MAX_SISI);
+      pack(cv,'galeri',{waktu:new Date(files[i].lastModified).toISOString(),lat:null,lon:null,akurasi:null,gps:'galeri (tanpa stempel aplikasi)'});
+    }catch(err){msg('#saveMsg','Foto tidak dapat dibaca: '+files[i].name,'err')}
+  }
+};
+// kamera aplikasi
+function gpsText(){var g=S.gps;return g?'GPS '+g.lat.toFixed(6)+', '+g.lon.toFixed(6)+' (±'+Math.round(g.acc)+' m)':'GPS tidak tersedia'}
+function startGps(){
+  S.gps=null;
+  if(!navigator.geolocation){$('#camGps').textContent='GPS tidak didukung perangkat';return}
+  S.watch=navigator.geolocation.watchPosition(function(p){S.gps={lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy,t:Date.now()};$('#camGps').textContent=gpsText()},
+    function(err){$('#camGps').textContent=err.code===1?'Izin GPS ditolak — foto tanpa koordinat':'GPS belum tersedia…'},{enableHighAccuracy:true,maximumAge:5000,timeout:20000});
+}
+async function openCam(){
+  if(!room())return;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('#fileCap').click();return}
+  try{
+    S.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:S.facing},width:{ideal:1920}},audio:false});
+    $('#vid').srcObject=S.stream;$('#cam').hidden=false;startGps();
+  }catch(e){msg('#saveMsg','Kamera tidak dapat dibuka ('+e.name+'). Menggunakan kamera bawaan HP.','warn');$('#fileCap').click()}
+}
+function closeCam(){if(S.stream){S.stream.getTracks().forEach(function(t){t.stop()});S.stream=null}if(S.watch!==null&&navigator.geolocation){navigator.geolocation.clearWatch(S.watch);S.watch=null}$('#cam').hidden=true}
+$('#btnCam').onclick=openCam;$('#camClose').onclick=closeCam;
+$('#camFlip').onclick=function(){S.facing=S.facing==='environment'?'user':'environment';closeCam();openCam()};
+$('#camShot').onclick=function(){
+  var v=$('#vid');if(!v.videoWidth)return;
+  if(C.WAJIB_GPS_KAMERA&&!S.gps){alert('GPS belum tersedia. Tunggu hingga koordinat muncul.');return}
+  var cv=scaled(v,v.videoWidth,v.videoHeight,C.FOTO_MAX_SISI),now=new Date();
+  stamp(cv,[wita(now),gpsText(),(S.me?S.me.kelurahan+' · '+S.me.nama:'')]);
+  var g=S.gps;pack(cv,'kamera',{waktu:now.toISOString(),lat:g?+g.lat.toFixed(6):null,lon:g?+g.lon.toFixed(6):null,akurasi:g?Math.round(g.acc):null,gps:g?'ok':'tidak tersedia'});
+  closeCam();
+};
+// fallback kamera bawaan (tanpa GPS dari aplikasi → ditandai galeri agar tidak diklaim kamera aplikasi)
+$('#fileCap').onchange=async function(e){
+  var f=e.target.files[0];e.target.value='';if(!f||!room())return;
+  try{var bmp=await createImageBitmap(f,{imageOrientation:'from-image'});var cv=scaled(bmp,bmp.width,bmp.height,C.FOTO_MAX_SISI);
+    pack(cv,'galeri',{waktu:new Date().toISOString(),lat:null,lon:null,akurasi:null,gps:'kamera bawaan HP (tanpa stempel aplikasi)'})}catch(err){msg('#saveMsg','Foto tidak dapat dibaca.','err')}
+};
+
+/* ---------- simpan ---------- */
+function upd(){
+  var h=0;S.anggota.forEach(function(a){if(S.abs[a.id])h++});
+  $('#barInfo').textContent='Hadir '+h+' · Tidak hadir '+(S.anggota.length-h)+' · Foto '+S.fotos.length+'/'+C.MIN_FOTO+' min';
+}
+async function simpan(replace){
+  if(S.busy)return;
+  var keg=checkedKeg();var lain=$('#kegLain').value.trim();if(lain)keg.push(lain);
+  if(!S.lokasi.length&&$('#lokIn').value.trim()){addLok()}
+  if(!S.lokasi.length)return msg('#saveMsg','Isi minimal satu jalan/lokasi.','err');
+  if(!keg.length)return msg('#saveMsg','Pilih minimal satu jenis kegiatan.','err');
+  if(S.fotos.length<C.MIN_FOTO)return msg('#saveMsg','Minimal '+C.MIN_FOTO+' foto dokumentasi.','err');
+  var h=0;S.anggota.forEach(function(a){if(S.abs[a.id])h++});
+  if(!confirm('Simpan laporan '+$('#tgl').value+'?\nHadir: '+h+'\nTidak hadir: '+(S.anggota.length-h)+'\nFoto: '+S.fotos.length))return;
+  if(!S.reportId)S.reportId=uuid();saveDraft();
+  S.busy=true;$('#btnSimpan').disabled=true;$('#btnSimpan').textContent='Mengirim… jangan tutup halaman';msg('#saveMsg','');
+  try{
+    var res=await api('submit',{pengawasId:S.me.id,kode:S.kode,reportId:S.reportId,tanggal:$('#tgl').value,lokasi:S.lokasi,kegiatan:keg,keterangan:$('#ket').value,replace:!!replace,
+      absensi:S.anggota.map(function(a){return {id:a.id,hadir:!!S.abs[a.id]}}),
+      foto:S.fotos.map(function(f){return {data:f.data,thumb:f.thumb,sumber:f.sumber,meta:f.meta}})});
+    lsDel(dkey());S.fotos=[];S.reportId=null;S.lokasi=[];$('#ket').value='';$('#kegLain').value='';document.querySelectorAll('#kegBox input').forEach(function(i){i.checked=false});
+    S.anggota.forEach(function(a){S.abs[a.id]=true});renderFoto();renderLok();renderAbs();upd();
+    msg('#saveMsg','✔ Berhasil tersimpan'+(res.duplicate?' (laporan ini sudah diterima sebelumnya)':'')+'. Hadir '+(res.hadir||h)+', tidak hadir '+(res.tidakHadir==null?S.anggota.length-h:res.tidakHadir)+'.','ok');
+    window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+  }catch(e){
+    if(e.code==='EXISTS'){
+      if(confirm('Laporan tanggal ini sudah ada. Ganti dengan isian baru?')){S.reportId=uuid();S.busy=false;$('#btnSimpan').disabled=false;return simpan(true)}
+      msg('#saveMsg','Dibatalkan. Ubah tanggal atau pilih ganti laporan.','warn');
+    }else msg('#saveMsg',(isNet(e)?'Koneksi terputus. Isian & foto masih ada — tekan SIMPAN lagi saat internet tersedia. ':'Belum tersimpan: ')+(isNet(e)?'':e.message),'err');
+  }
+  S.busy=false;$('#btnSimpan').disabled=false;$('#btnSimpan').textContent='SIMPAN LAPORAN HARI INI';
+}
+$('#btnSimpan').onclick=function(){simpan(false)};
+
+/* ---------- akhir bulan ---------- */
+async function muatBulan(){
+  msg('#bMsg','Memuat…');
+  try{
+    var r=await api('status',{pengawasId:S.me.id,kode:S.kode,bulan:$('#bln').value});S.statusBulan=r;
+    var cls=r.status.split(' ')[0];
+    $('#bInfo').innerHTML='<p>Status: <span class="badge '+esc(cls)+'">'+esc(r.status)+'</span></p><p>Hari tercatat: <b>'+r.jumlahHari+'</b></p>'+
+      (r.catatan?'<div class="msg warn">Catatan admin: '+esc(r.catatan)+'</div>':'')+
+      '<p style="margin-bottom:2px">Dokumen terunggah:</p>'+(r.dokumen.length?'<ul>'+r.dokumen.map(function(d){return '<li>'+esc(d.jenis)+' <small>('+esc(d.nama)+')</small></li>'}).join('')+'</ul>':'<p style="color:var(--mut)">Belum ada.</p>')+
+      '<p style="font-size:.85rem;color:var(--mut)">Wajib: '+esc(r.wajib.join(' & '))+'</p>';
+    $('#bPdf').hidden=false;$('#bUp').hidden=false;msg('#bMsg','');
+  }catch(e){msg('#bMsg',e.message,'err')}
+}
+$('#bMuat').onclick=muatBulan;
+function download(name,mime,b64){var bin=atob(b64),a=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);var u=URL.createObjectURL(new Blob([a],{type:mime}));var l=document.createElement('a');l.href=u;l.download=name;document.body.appendChild(l);l.click();l.remove();setTimeout(function(){URL.revokeObjectURL(u)},5000)}
+$('#bPdf').onclick=async function(){
+  $('#bPdf').disabled=true;msg('#bMsg','Menyusun PDF… (bisa memakan waktu 1–2 menit)');
+  try{var r=await api('pdf',{pengawasId:S.me.id,kode:S.kode,bulan:$('#bln').value});download(r.nama,r.mime,r.data);msg('#bMsg','PDF diunduh. Periksa kelengkapan, lalu lengkapi tanda tangan & pengesahan Lurah.','ok')}
+  catch(e){msg('#bMsg',e.message,'err')}
+  $('#bPdf').disabled=false;
+};
+function readB64(file){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(',')[1])};r.onerror=rej;r.readAsDataURL(file)})}
+$('#bUnggah').onclick=async function(){
+  var f=$('#dokFile').files[0];if(!f)return msg('#bMsg','Pilih berkas dahulu.','err');
+  $('#bUnggah').disabled=true;msg('#bMsg','Mengunggah…');
+  try{
+    var mime,data;
+    if(f.type==='application/pdf'){if(f.size>8e6)throw new Error('PDF maksimal 8 MB.');mime='application/pdf';data=await readB64(f)}
+    else{var bmp=await createImageBitmap(f,{imageOrientation:'from-image'});var cv=scaled(bmp,bmp.width,bmp.height,2000);mime='image/jpeg';data=cv.toDataURL('image/jpeg',0.8).split(',')[1]}
+    var r=await api('uploadDokumen',{pengawasId:S.me.id,kode:S.kode,bulan:$('#bln').value,jenis:$('#jenis').value,file:{mime:mime,data:data}});
+    $('#dokFile').value='';msg('#bMsg',r.lengkap?'Terunggah. Dokumen wajib lengkap — menunggu pemeriksaan Admin Kecamatan.':'Terunggah. Lengkapi dokumen wajib lainnya.','ok');muatBulan();
+  }catch(e){msg('#bMsg',e.message,'err')}
+  $('#bUnggah').disabled=false;
+};
+
+init();
+})();
+</script>
+</body>
+</html>
