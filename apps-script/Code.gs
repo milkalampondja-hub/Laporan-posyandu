@@ -268,10 +268,8 @@ function lembar() {
 function aktifkan() { lembar(); induk(); }
 
 
-// ===================== Pengingat WhatsApp resmi (Meta Cloud API) tanggal 25 =====================
-// Token, ID nomor, dan nomor tujuan disimpan di Script Properties (bukan di kode / GitHub).
-var GRAPH_VER = 'v26.0';
-var NAMA_TEMPLATE = 'pengingat_laporan_posyandu';
+// ===================== Pengingat Telegram tanggal 25 =====================
+// Token bot dan chat ID disimpan di Script Properties (bukan di kode / GitHub).
 var URL_PANTAU = 'https://milkalampondja-hub.github.io/Laporan-posyandu/pantau.html';
 
 function dataBulanIni() {
@@ -302,33 +300,28 @@ function ringkasanBulanIni(d) {
   return b.join('\n');
 }
 
-/** Kirim lewat WhatsApp Business Platform. Template harus sudah disetujui Meta (lihat panduan). */
-function kirimWA(d) {
-  var p = PropertiesService.getScriptProperties(), token = p.getProperty('WA_TOKEN'), idNomor = p.getProperty('WA_PHONE_ID'), tujuan = p.getProperty('WA_NOMOR');
-  if (!token || !idNomor || !tujuan) throw new Error('Pengaturan WhatsApp belum lengkap');
-  var teks = function (t) { return String(t).replace(/\s+/g, ' ').trim().slice(0, 900); };
-  var isi = [d.bln + ' ' + d.thn, String(d.total), ringkasJenis(d.per[0]), ringkasJenis(d.per[1])].map(function (t) { return { type: 'text', text: teks(t) }; });
-  var r = UrlFetchApp.fetch('https://graph.facebook.com/' + GRAPH_VER + '/' + encodeURIComponent(idNomor) + '/messages', {
+/** Kirim lewat Telegram Bot API (resmi dan gratis). */
+function kirimTelegram(teks) {
+  var p = PropertiesService.getScriptProperties(), token = p.getProperty('TG_TOKEN'), chat = p.getProperty('TG_CHAT_ID');
+  if (!token || !chat) throw new Error('Pengaturan Telegram belum lengkap');
+  var r = UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
     method: 'post', contentType: 'application/json', muteHttpExceptions: true,
-    headers: { Authorization: 'Bearer ' + token },
-    payload: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: tujuan, type: 'template',
-      template: { name: NAMA_TEMPLATE, language: { code: 'id' }, components: [{ type: 'body', parameters: isi }] } })
+    payload: JSON.stringify({ chat_id: chat, text: teks, disable_web_page_preview: true })
   });
-  if (r.getResponseCode() !== 200) throw new Error('WhatsApp gagal ' + r.getResponseCode() + ': ' + r.getContentText().slice(0, 200));
+  if (r.getResponseCode() !== 200) throw new Error('Telegram gagal ' + r.getResponseCode() + ': ' + r.getContentText().slice(0, 200));
 }
 
 function kirimPengingat25() {
   var d = dataBulanIni();
-  try { kirimWA(d); }
-  catch (err) { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), 'Pengingat tanggal 25 - Laporan Posyandu', ringkasanBulanIni(d) + '\n\n(WhatsApp tidak terkirim: ' + err.message + ')'); }
+  try { kirimTelegram(ringkasanBulanIni(d)); }
+  catch (err) { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), 'Pengingat tanggal 25 - Laporan Posyandu', ringkasanBulanIni(d) + '\n\n(Telegram tidak terkirim: ' + err.message + ')'); }
 }
 
-/** Isi tiga nilai dari Meta, jalankan sekali, lalu kosongkan lagi isinya di kode. */
-function simpanWA() {
+/** Isi dua nilai dari Telegram, jalankan sekali, lalu kosongkan lagi isinya di kode. */
+function simpanTelegram() {
   PropertiesService.getScriptProperties().setProperties({
-    WA_TOKEN: 'ISI_TOKEN_PERMANEN',
-    WA_PHONE_ID: 'ISI_PHONE_NUMBER_ID',
-    WA_NOMOR: '628xxxxxxxxxx'
+    TG_TOKEN: 'ISI_TOKEN_BOT',
+    TG_CHAT_ID: 'ISI_CHAT_ID'
   });
 }
 
