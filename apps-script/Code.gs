@@ -14,6 +14,7 @@ var HEADER      = ['Nomor Laporan','Tanggal Kirim','Tahun','Bulan','Kelurahan','
 // Login aplikasi Pantau. GANTI kedua nilai ini di Apps Script Anda sebelum diterapkan.
 var PANTAU_USER = 'admin';
 var PANTAU_SANDI = 'GantiSandi2026';
+var NAMA_PENGATURAN = 'pengaturan-pantau.json';
 var ID_RE       = /^[A-Za-z0-9]{6,40}$/;
 
 var TOKEN_BALAS = '';
@@ -26,13 +27,22 @@ function doGet(e) {
   var cache = CacheService.getScriptCache();
   if (p.aksi === 'cek' && ID_RE.test(String(p.id))) {
     hasil = { ok: cache.get('lp_' + p.id + '_' + parseInt(p.i, 10)) != null };
-  } else if (p.aksi === 'hasil' && ID_RE.test(String(p.id)) && (p.tag === 'c' || p.tag === 's')) {
+  } else if (p.aksi === 'hasil' && ID_RE.test(String(p.id)) && (p.tag === 'c' || p.tag === 's' || p.tag === 'a')) {
     var v = cache.get('hasil_' + p.tag + '_' + p.id);
     hasil = v ? JSON.parse(v) : { ok: false, tunggu: true };
   }
   else if (p.aksi === 'daftar') {
-    if (String(p.u || '') === PANTAU_USER && String(p.p || '') === PANTAU_SANDI) {
+    if (sandiBenar(p.u, p.p)) {
       hasil = daftarLaporan();
+    } else {
+      Utilities.sleep(1200);
+      hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
+    }
+  }
+  else if (p.aksi === 'profil') {
+    if (sandiBenar(p.u, p.p)) {
+      var c = bacaPengaturan();
+      hasil = { ok: true, nama: c.nama, foto: c.foto, banner: c.banner };
     } else {
       Utilities.sleep(1200);
       hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
@@ -41,6 +51,59 @@ function doGet(e) {
   var teks = JSON.stringify(hasil);
   if (cb) return ContentService.createTextOutput(cb + '(' + teks + ');').setMimeType(ContentService.MimeType.JAVASCRIPT);
   return ContentService.createTextOutput(teks).setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Login Pantau: kata sandi awal dari PANTAU_SANDI, setelah diganti dari aplikasi disimpan sebagai hash. */
+function hashSandi(t) {
+  var b = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 'pantau|' + String(t), Utilities.Charset.UTF_8);
+  return b.map(function (x) { return ('0' + (x & 255).toString(16)).slice(-2); }).join('');
+}
+function sandiBenar(u, p) {
+  if (String(u || '') !== PANTAU_USER) return false;
+  var h = PropertiesService.getScriptProperties().getProperty('PANTAU_SANDI_HASH');
+  return h ? hashSandi(p) === h : String(p || '') === PANTAU_SANDI;
+}
+function bacaPengaturan() {
+  var c = { nama: 'Admin Posyandu', foto: '', banner: '' };
+  try {
+    var it = induk().getFilesByName(NAMA_PENGATURAN);
+    if (it.hasNext()) {
+      var o = JSON.parse(it.next().getBlob().getDataAsString());
+      if (o.nama) c.nama = String(o.nama);
+      c.foto = String(o.foto || ''); c.banner = String(o.banner || '');
+    }
+  } catch (x) {}
+  return c;
+}
+function simpanPengaturan(c) {
+  var teks = JSON.stringify(c), f = induk(), it = f.getFilesByName(NAMA_PENGATURAN);
+  if (it.hasNext()) it.next().setContent(teks); else f.createFile(NAMA_PENGATURAN, teks, MimeType.PLAIN_TEXT);
+}
+function cekGambar(s, maks) {
+  s = String(s || '');
+  if (!s) return '';
+  if (s.length > maks) throw new Error('Foto terlalu besar');
+  if (!/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s)) throw new Error('Format foto tidak valid');
+  return s;
+}
+/** Ubah nama, foto profil, foto banner, atau kata sandi (wajib login). */
+function atur(d) {
+  if (!sandiBenar(d.u, d.p)) { Utilities.sleep(1200); throw new Error('Kata sandi salah'); }
+  var c = bacaPengaturan();
+  if (d.nama !== undefined) {
+    var n = bersih(d.nama, 40);
+    if (!n) throw new Error('Nama tidak boleh kosong');
+    c.nama = n;
+  }
+  if (d.foto !== undefined) c.foto = cekGambar(d.foto, 45000);
+  if (d.banner !== undefined) c.banner = cekGambar(d.banner, 90000);
+  if (d.sandiBaru !== undefined) {
+    var sb = String(d.sandiBaru);
+    if (sb.length < 6 || sb.length > 60) throw new Error('Kata sandi baru minimal 6 karakter');
+    PropertiesService.getScriptProperties().setProperty('PANTAU_SANDI_HASH', hashSandi(sb));
+  }
+  simpanPengaturan(c);
+  return simpanHasil({ ok: true }, 'a');
 }
 
 /** Untuk aplikasi pemantau (hanya setelah login): data laporan beserta angka hasil kegiatan dan nama kader. */
@@ -84,6 +147,7 @@ function doPost(e) {
       kunci.waitLock(30000);
       if (d.aksi === 'catat') { tag = 'c'; return catat(d, cache); }
       if (d.aksi === 'selesai') { tag = 's'; return selesai(d, cache); }
+      if (d.aksi === 'atur') { tag = 'a'; return atur(d); }
       throw new Error('Aksi tidak dikenal');
     } finally {
       try { kunci.releaseLock(); } catch (x) {}
