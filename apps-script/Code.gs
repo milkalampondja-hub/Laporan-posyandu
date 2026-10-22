@@ -31,6 +31,19 @@ function doGet(e) {
     var v = cache.get('hasil_' + p.tag + '_' + p.id);
     hasil = v ? JSON.parse(v) : { ok: false, tunggu: true };
   }
+  else if (p.aksi === 'daftarpos') {
+    // Publik: hanya nama, kelurahan, jenis Posyandu aktif (tanpa nomor HP dan nama kader).
+    hasil = { ok: true, list: bacaPos().filter(function (x) { return x.aktif !== false; })
+      .map(function (x) { return { nama: x.nama, kel: x.kel, jenis: x.jenis }; }) };
+  }
+  else if (p.aksi === 'posyandu') {
+    if (masuk(p.u, p.p)) {
+      hasil = { ok: true, list: bacaPos(), sk: bacaPengaturan(PANTAU_USER).sk };
+    } else {
+      Utilities.sleep(1200);
+      hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
+    }
+  }
   else if (p.aksi === 'daftar') {
     var w1 = masuk(p.u, p.p);
     if (w1) {
@@ -44,8 +57,9 @@ function doGet(e) {
   else if (p.aksi === 'profil') {
     var w2 = masuk(p.u, p.p);
     if (w2) {
-      var c = bacaPengaturan(w2.u);
-      hasil = { ok: true, nama: c.nama, nip: c.nip, foto: c.foto, banner: c.banner, peran: w2.peran };
+      var c = bacaPengaturan(w2.u), bs = bacaPengaturan(PANTAU_USER);
+      hasil = { ok: true, nama: c.nama, nip: c.nip, jabatan: c.jabatan, unit: c.unit, foto: c.foto,
+                banners: bs.banners, batas: bs.batas, sk: bs.sk, peran: w2.peran };
       if (w2.peran === 'utama') hasil.admins = daftarAdmin();
     } else {
       Utilities.sleep(1200);
@@ -102,7 +116,7 @@ function kelola(d) {
     if (ns.length < 6 || ns.length > 60) throw new Error('Kata sandi minimal 6 karakter');
     a[nu] = hashAdmin(nu, ns); simpanAdmin(a);
     var nm = bersih(d.nama, 40);
-    if (nm) simpanPengaturan({ nama: nm, nip: '', foto: '', banner: '' }, nu);
+    if (nm) simpanPengaturan({ nama: nm, nip: '', jabatan: '', unit: '', foto: '' }, nu);
   } else if (d.op === 'sandi') {
     if (!a[nu]) throw new Error('Admin tidak ditemukan');
     if (ns.length < 6 || ns.length > 60) throw new Error('Kata sandi minimal 6 karakter');
@@ -117,16 +131,24 @@ function kelola(d) {
   }
   return simpanHasil({ ok: true, admins: daftarAdmin() }, 'a');
 }
-function bacaPengaturan(u) {
-  var c = { nama: 'Admin Posyandu', nip: '', foto: '', banner: '' };
+function bacaBerkas(nb) {
   try {
-    var it = induk().getFilesByName(berkasProfil(u));
-    if (it.hasNext()) {
-      var o = JSON.parse(it.next().getBlob().getDataAsString());
-      if (o.nama) c.nama = String(o.nama);
-      c.nip = String(o.nip || ''); c.foto = String(o.foto || ''); c.banner = String(o.banner || '');
-    }
+    var it = induk().getFilesByName(nb);
+    if (it.hasNext()) return JSON.parse(it.next().getBlob().getDataAsString());
   } catch (x) {}
+  return {};
+}
+/** Profil satu admin. Untuk admin utama ikut berisi pengaturan bersama: banner (maks 3), batas tanggal, SK. */
+function bacaPengaturan(u) {
+  var o = bacaBerkas(berkasProfil(u));
+  var c = { nama: o.nama ? String(o.nama) : 'Admin Posyandu', nip: String(o.nip || ''), jabatan: String(o.jabatan || ''),
+            unit: String(o.unit || ''), foto: String(o.foto || '') };
+  if (!u || u === PANTAU_USER) {
+    var bn = Array.isArray(o.banners) ? o.banners : (o.banner ? [o.banner] : []);
+    c.banners = [String(bn[0] || ''), String(bn[1] || ''), String(bn[2] || '')];
+    c.batas = parseInt(o.batas, 10) || 25;
+    c.sk = (o.sk && typeof o.sk === 'object') ? o.sk : {};
+  }
   return c;
 }
 function simpanPengaturan(c, u) {
@@ -152,7 +174,20 @@ function atur(d) {
   }
   if (d.nip !== undefined) c.nip = bersih(d.nip, 30).replace(/[^0-9 ]/g, '');
   if (d.foto !== undefined) c.foto = cekGambar(d.foto, 45000);
-  if (d.banner !== undefined) c.banner = cekGambar(d.banner, 90000);
+  if (d.jabatan !== undefined) c.jabatan = bersih(d.jabatan, 60);
+  if (d.unit !== undefined) c.unit = bersih(d.unit, 80);
+  if (d.bannerIdx !== undefined) {
+    if (w.peran !== 'utama') throw new Error('Hanya admin utama yang boleh mengubah banner');
+    var bi = parseInt(d.bannerIdx, 10);
+    if (!(bi >= 0 && bi < 3)) throw new Error('Nomor banner tidak valid');
+    c.banners[bi] = cekGambar(d.banner, 60000);
+  }
+  if (d.batas !== undefined) {
+    if (w.peran !== 'utama') throw new Error('Hanya admin utama yang boleh mengubah batas waktu');
+    var bt = parseInt(d.batas, 10);
+    if (!(bt >= 1 && bt <= 31)) throw new Error('Batas tanggal 1 sampai 31');
+    c.batas = bt;
+  }
   if (d.sandiBaru !== undefined) {
     var sb = String(d.sandiBaru);
     if (sb.length < 6 || sb.length > 60) throw new Error('Kata sandi baru minimal 6 karakter');
@@ -206,6 +241,8 @@ function doPost(e) {
       if (d.aksi === 'selesai') { tag = 's'; return selesai(d, cache); }
       if (d.aksi === 'atur') { tag = 'a'; return atur(d); }
       if (d.aksi === 'kelola') { tag = 'a'; return kelola(d); }
+      if (d.aksi === 'pos') { tag = 'a'; return simpanPos(d); }
+      if (d.aksi === 'sk') { tag = 'a'; return simpanSk(d, cache); }
       throw new Error('Aksi tidak dikenal');
     } finally {
       try { kunci.releaseLock(); } catch (x) {}
@@ -326,153 +363,71 @@ function lembar() {
 function aktifkan() { lembar(); induk(); }
 
 
-// ===================== Pengingat Telegram tanggal 25 =====================
-// Token bot dan chat ID disimpan di Script Properties (bukan di kode / GitHub).
-var URL_PANTAU = 'https://milkalampondja-hub.github.io/Laporan-posyandu/pantau.html';
-
-function dataBulanIni() {
-  var zona = Session.getScriptTimeZone(), now = new Date();
-  var bln = BULAN[parseInt(Utilities.formatDate(now, zona, 'M'), 10) - 1], thn = Utilities.formatDate(now, zona, 'yyyy');
-  var sh = lembar(), n = sh.getLastRow(), uniq = {};
-  if (n > 1) sh.getRange(2, 1, n - 1, HEADER.length).getValues().forEach(function (r) {
-    if (!r[0] || String(r[2]) !== thn || String(r[3]) !== bln) return;
-    uniq[[r[4], String(r[5]).toLowerCase(), r[6]].join('|')] = { kel: String(r[4]), jenis: String(r[6]) };
+// ===================== Data Posyandu (sumber utama nama Posyandu) =====================
+var NAMA_POS = 'data-posyandu.json';
+function bacaPos() {
+  var o = bacaBerkas(NAMA_POS);
+  return Array.isArray(o.list) ? o.list : [];
+}
+function kunciPos(kel, jenis, nama) {
+  return [kel, jenis, String(nama || '').toLowerCase().replace(/posyandu/g, '').replace(/[^a-z0-9]/g, '').replace(/bougenv[a-z]*/, 'bougenvil')].join('|');
+}
+/** Rapikan dan periksa seluruh daftar sebelum disimpan. */
+function bersihPos(arr) {
+  if (!Array.isArray(arr)) throw new Error('Data tidak valid');
+  if (arr.length > 100) throw new Error('Maksimal 100 Posyandu');
+  var pakai = {}, kunci = {}, out = [];
+  arr.forEach(function (x, i) {
+    var nama = bersih(x.nama, 60), kel = String(x.kel || ''), jenis = String(x.jenis || '');
+    if (!nama) throw new Error('Baris ' + (i + 1) + ': nama Posyandu kosong');
+    if (KELURAHAN.indexOf(kel) < 0) throw new Error(nama + ': kelurahan tidak dikenal');
+    if (JENIS.indexOf(jenis) < 0) throw new Error(nama + ': jenis tidak dikenal');
+    var k = kunciPos(kel, jenis, nama);
+    if (kunci[k]) throw new Error('Posyandu ganda: ' + nama + ' (' + kel + ', ' + jenis + ')');
+    kunci[k] = 1;
+    var id = String(x.id || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 12);
+    if (!id || pakai[id]) id = 'p' + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
+    pakai[id] = 1;
+    var kader = (Array.isArray(x.kader) ? x.kader : []).slice(0, 15).map(function (q) {
+      return { nama: bersih(q.nama, 60), jabatan: bersih(q.jabatan, 20), aktif: q.aktif !== false };
+    }).filter(function (q) { return q.nama; });
+    out.push({ id: id, nama: nama, kel: kel, jenis: jenis, alamat: bersih(x.alamat, 120), puskesmas: bersih(x.puskesmas, 40),
+               ketua: bersih(x.ketua, 60), hp: String(x.hp || '').replace(/[^0-9+ \-]/g, '').slice(0, 20),
+               jadwal: bersih(x.jadwal, 80), aktif: x.aktif !== false, kader: kader });
   });
-  var ada = {}, total = 0;
-  Object.keys(uniq).forEach(function (k) { var u = uniq[k]; ada[u.jenis + '|' + u.kel] = (ada[u.jenis + '|' + u.kel] || 0) + 1; total++; });
-  var per = JENIS.map(function (j) {
-    var masuk = 0, belum = [];
-    KELURAHAN.forEach(function (k) { var c = ada[j + '|' + k] || 0; masuk += c; if (!c) belum.push(k); });
-    return { jenis: j, masuk: masuk, belum: belum };
-  });
-  return { bln: bln, thn: thn, total: total, per: per };
+  return out;
 }
-function ringkasJenis(x) {
-  return x.masuk + ' laporan' + (x.belum.length ? ', belum ada dari ' + x.belum.join(', ') : ', semua kelurahan sudah ada');
+/** Hanya admin utama: simpan seluruh daftar Posyandu. */
+function simpanPos(d) {
+  var w = masuk(d.u, d.p);
+  if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh mengubah data Posyandu'); }
+  var list = bersihPos(d.list), teks = JSON.stringify({ list: list, tgl: Date.now() }), f = induk(), it = f.getFilesByName(NAMA_POS);
+  if (it.hasNext()) it.next().setContent(teks); else f.createFile(NAMA_POS, teks, MimeType.PLAIN_TEXT);
+  return simpanHasil({ ok: true, list: list }, 'a');
 }
-function ringkasanBulanIni(d) {
-  d = d || dataBulanIni();
-  var b = ['Pengingat tanggal 25 - Laporan Posyandu ' + d.bln + ' ' + d.thn, 'Total laporan masuk: ' + d.total];
-  d.per.forEach(function (x) { b.push(x.jenis.replace('Posyandu ', '') + ': ' + ringkasJenis(x)); });
-  b.push('Buka Pantau: ' + URL_PANTAU);
-  return b.join('\n');
-}
-
-/** Kirim lewat Telegram Bot API (resmi dan gratis). */
-function kirimTelegram(teks) {
-  var p = PropertiesService.getScriptProperties(), token = p.getProperty('TG_TOKEN'), chat = p.getProperty('TG_CHAT_ID');
-  if (!token || !chat) throw new Error('Pengaturan Telegram belum lengkap');
-  var r = UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
-    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
-    payload: JSON.stringify({ chat_id: chat, text: teks, disable_web_page_preview: true })
-  });
-  if (r.getResponseCode() !== 200) throw new Error('Telegram gagal ' + r.getResponseCode() + ': ' + r.getContentText().slice(0, 200));
-}
-
-// Daftar Posyandu resmi menurut SK Wali Kota (Poskesdes tidak dihitung).
-var DAFTAR_POSYANDU = {
-  'Posyandu Balita': {
-    'Mamboro': ['Kemuning','Asoka','Mekar','Lentora','Bayu Permai','Teratai'],
-    'Mamboro Barat': ['Bougenvil','Rosella','Ratora'],
-    'Taipa': ['Beringin','Anggur','Flamboyan','Anggrek','Ketapang'],
-    'Kayumalue Pajeko': ['Anggrek','Teratai','Melati'],
-    'Kayumalue Ngapa': ['Kemuning','Kenanga','Kamboja','Tulip']
-  },
-  'Posyandu Lansia': {
-    'Mamboro': ['Kemuning','Asoka','Lentora'],
-    'Mamboro Barat': ['Ratora','Bougenvile','Rosella'],
-    'Taipa': ['Beringin','Anggur','Flamboyan','Anggrek','Ketapang'],
-    'Kayumalue Pajeko': ['Palara','Balai Tenun','Kayujati'],
-    'Kayumalue Ngapa': ['Ndatengisi','Tabeo','Tandu Lembah']
+/** Hanya admin utama: simpan berkas PDF SK (Balita atau Lansia) yang dikirim berpotong-potong. */
+function simpanSk(d, cache) {
+  var w = masuk(d.u, d.p);
+  if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh mengunggah SK'); }
+  var jenis = String(d.jenis || '');
+  if (jenis !== 'Balita' && jenis !== 'Lansia') throw new Error('Jenis SK tidak dikenal');
+  var n = parseInt(d.n, 10), bagian = [], kunciCache = [];
+  if (!(n >= 1 && n <= 130)) throw new Error('Jumlah potongan tidak valid');
+  for (var i = 0; i < n; i++) {
+    var k = 'lp_' + d.id + '_' + i, s = cache.get(k);
+    if (s == null) throw new Error('Potongan ' + (i + 1) + ' tidak ditemukan, coba unggah lagi');
+    bagian.push(s); kunciCache.push(k);
   }
-};
-// Ejaan yang sering berbeda dianggap sama.
-function normPos(s) {
-  s = String(s || '').toLowerCase().replace(/posyandu|pos\s/g, '').replace(/[^a-z]/g, '');
-  return s.replace(/bougenvile|bougenville|bougainvillea|bougenvil/, 'bougenvil');
+  var bytes = Utilities.base64Decode(bagian.join(''));
+  if (!bytes.length || bytes.length > 10 * 1024 * 1024) throw new Error('Ukuran SK maksimal 10 MB');
+  if (bytes[0] !== 37 || bytes[1] !== 80 || bytes[2] !== 68 || bytes[3] !== 70) throw new Error('Berkas bukan PDF');
+  var folder = anak(induk(), 'SK'), nama = 'SK Posyandu ' + jenis + '.pdf', lama = folder.getFilesByName(nama);
+  while (lama.hasNext()) lama.next().setTrashed(true);
+  var file = folder.createFile(Utilities.newBlob(bytes, 'application/pdf', nama));
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  var c = bacaPengaturan(PANTAU_USER);
+  c.sk[jenis] = { id: file.getId(), tgl: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm'), ukuran: bytes.length };
+  simpanPengaturan(c, PANTAU_USER);
+  cache.removeAll(kunciCache);
+  return simpanHasil({ ok: true, sk: c.sk }, 'a');
 }
-
-/** Posyandu yang BELUM mengirim bulan ini, per jenis dan kelurahan. */
-function belumKirimBulanIni() {
-  var zona = Session.getScriptTimeZone(), now = new Date();
-  var bln = BULAN[parseInt(Utilities.formatDate(now, zona, 'M'), 10) - 1], thn = Utilities.formatDate(now, zona, 'yyyy');
-  var sh = lembar(), n = sh.getLastRow(), ada = {};
-  if (n > 1) sh.getRange(2, 1, n - 1, HEADER.length).getValues().forEach(function (r) {
-    if (!r[0] || String(r[2]) !== thn || String(r[3]) !== bln) return;
-    ada[[r[6], r[4], normPos(r[5])].join('|')] = true;
-  });
-  var hasil = [], jumlah = 0, total = 0;
-  JENIS.forEach(function (j) {
-    KELURAHAN.forEach(function (k) {
-      var semua = (DAFTAR_POSYANDU[j] || {})[k] || [], belum = [];
-      semua.forEach(function (p) { total++; if (!ada[[j, k, normPos(p)].join('|')]) belum.push(p); });
-      jumlah += belum.length;
-      hasil.push({ jenis: j, kel: k, semua: semua.length, belum: belum });
-    });
-  });
-  return { bln: bln, thn: thn, hasil: hasil, jumlahBelum: jumlah, total: total };
-}
-
-function htmlBelumKirim(b) {
-  var esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
-  var h = '<html><body style="font-family:Arial,sans-serif;font-size:11pt;color:#222">' +
-    '<h2 style="margin:0">Posyandu Belum Mengirim Laporan</h2>' +
-    '<div>Kecamatan Palu Utara - ' + esc(b.bln) + ' ' + esc(b.thn) + '</div>' +
-    '<div style="margin:6px 0 12px"><b>' + b.jumlahBelum + '</b> dari ' + b.total + ' Posyandu belum mengirim (Poskesdes tidak dihitung).</div>';
-  JENIS.forEach(function (j) {
-    h += '<h3 style="background:#f5c400;padding:4px 8px;margin:14px 0 6px">' + esc(j) + '</h3>';
-    var ada = false;
-    b.hasil.filter(function (x) { return x.jenis === j; }).forEach(function (x) {
-      if (!x.belum.length) return;
-      ada = true;
-      h += '<div style="margin:6px 0 2px"><b>Kelurahan ' + esc(x.kel) + '</b> (' + x.belum.length + ' dari ' + x.semua + ' belum)</div><ol style="margin:0 0 4px 18px">';
-      x.belum.forEach(function (p) { h += '<li>' + esc(j) + ' ' + esc(p) + '</li>'; });
-      h += '</ol>';
-    });
-    if (!ada) h += '<div>Semua Posyandu sudah mengirim.</div>';
-  });
-  return h + '<div style="margin-top:16px;font-size:9pt;color:#666">Dibuat otomatis ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') + '. Buka Pantau: ' + URL_PANTAU + '</div></body></html>';
-}
-
-/** Kirim berkas PDF lewat Telegram. */
-function kirimTelegramPdf(blob, keterangan) {
-  var p = PropertiesService.getScriptProperties(), token = p.getProperty('TG_TOKEN'), chat = p.getProperty('TG_CHAT_ID');
-  if (!token || !chat) throw new Error('Pengaturan Telegram belum lengkap');
-  var r = UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendDocument', {
-    method: 'post', muteHttpExceptions: true,
-    payload: { chat_id: chat, caption: keterangan, document: blob }
-  });
-  if (r.getResponseCode() !== 200) throw new Error('Telegram gagal ' + r.getResponseCode() + ': ' + r.getContentText().slice(0, 200));
-}
-
-function kirimPengingat25() {
-  var d = dataBulanIni(), b = belumKirimBulanIni();
-  var ket = 'Pengingat tanggal 25 - ' + b.bln + ' ' + b.thn + '\n' + b.jumlahBelum + ' dari ' + b.total + ' Posyandu belum mengirim laporan.';
-  var pdf = HtmlService.createHtmlOutput(htmlBelumKirim(b)).getBlob().getAs('application/pdf').setName('Belum-Kirim-' + b.bln + '-' + b.thn + '.pdf');
-  try {
-    kirimTelegram(ringkasanBulanIni(d));
-    kirimTelegramPdf(pdf, ket);
-  } catch (err) {
-    MailApp.sendEmail({
-      to: Session.getEffectiveUser().getEmail(), subject: 'Pengingat tanggal 25 - Laporan Posyandu',
-      body: ket + '\n\n' + ringkasanBulanIni(d) + '\n\n(Telegram tidak terkirim: ' + err.message + ')', attachments: [pdf]
-    });
-  }
-}
-
-/** Isi dua nilai dari Telegram, jalankan sekali, lalu kosongkan lagi isinya di kode. */
-function simpanTelegram() {
-  PropertiesService.getScriptProperties().setProperties({
-    TG_TOKEN: 'ISI_TOKEN_BOT',
-    TG_CHAT_ID: 'ISI_CHAT_ID'
-  });
-}
-
-/** Jalankan sekali: pasang jadwal tiap tanggal 25 pukul 08.00 (zona waktu proyek). */
-function pasangPengingat() {
-  ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'kirimPengingat25') ScriptApp.deleteTrigger(t); });
-  ScriptApp.newTrigger('kirimPengingat25').timeBased().onMonthDay(25).atHour(8).create();
-}
-
-/** Untuk mencoba sekarang tanpa menunggu tanggal 25. */
-function ujiPengingat() { kirimPengingat25(); }

@@ -90,11 +90,13 @@ button{cursor:pointer}
 .banner h2{margin:0 0 6px;font-size:19px;line-height:1.15;color:#3a2a00}
 .banner p{margin:0;font-size:12.5px;line-height:1.3;color:#2b2100}
 .banner .bar1{width:46px;height:4px;border-radius:4px;background:#3a2a00;opacity:.7;margin-top:12px}
-.banner .ph{position:absolute;right:0;top:0;bottom:0;width:56%;background:var(--bn,url(banner.jpg)) right center/cover no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 48%);mask-image:linear-gradient(90deg,transparent,#000 48%)}
-.dots{position:absolute;left:30%;bottom:0;transform:translateX(-50%);display:flex;gap:12px;background:var(--bg);padding:6px 22px 4px;border-radius:16px 16px 0 0;z-index:3}
-.dots i{width:12px;height:12px;border-radius:50%;background:#d8d4c4;display:block;cursor:pointer}.dots i.on{background:#ffc800}
-.slide{display:none}.slide.on{display:flex;flex-direction:column}
+.banner .ph{position:absolute;right:0;top:0;bottom:0;width:56%;background-position:right center;background-size:cover;background-repeat:no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 48%);mask-image:linear-gradient(90deg,transparent,#000 48%)}
+.banner.m{height:158px;touch-action:pan-y}
+.slide{position:absolute;inset:0;display:flex;opacity:0;pointer-events:none;transition:opacity .45s}
+.slide.on{opacity:1;pointer-events:auto}
 .banner.d{display:none}
+.bdots{position:absolute;right:12px;bottom:8px;display:flex;gap:7px;z-index:4}
+.bdots i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.75);border:1px solid rgba(58,42,0,.35);cursor:pointer}.bdots i.on{background:#3a2a00}
 
 /* ===== panel filter ===== */
 .panel{margin-bottom:14px}
@@ -166,9 +168,9 @@ footer.dsk{display:none}
 @media (prefers-color-scheme:dark){.st.bad{color:#ff8a80}}
 .hint{font-size:12.5px;color:var(--muted);margin:2px 0 12px}
 /* ===== menu bawah (HP) ===== */
-.bnav{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(4,1fr);background:linear-gradient(180deg,#fff9d8,#ffee8a);
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,1fr);background:linear-gradient(180deg,#fff9d8,#ffee8a);
   border-top:1px solid #f2dc7b;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px rgba(120,90,0,.12)}
-.bnav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 8px;font-size:13px;font-weight:600;color:#3a2f00;position:relative}
+.bnav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 8px;font-size:12px;font-weight:600;color:#3a2f00;position:relative}
 .bnav button .ic{font-size:26px}
 .bnav button.on{color:#c98f00;font-weight:800}
 .bnav button.on .ic{stroke-width:2.8}
@@ -219,8 +221,8 @@ footer.dsk{display:none}
   .sheet{margin-top:0;border-radius:0;padding:22px 24px 40px}
   .cols{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;max-width:1280px}
   .banner.m{display:none}
-  .banner.d{display:flex;min-height:142px;margin-bottom:18px}
-  .banner.d .bt{flex:1.2;flex-direction:row;align-items:center;gap:18px;padding:12px 18px}
+  .banner.d{display:block;height:150px;margin-bottom:18px}
+  .banner.d .bt{flex-direction:row;align-items:center;gap:18px;padding:12px 18px}
   .banner.d img{width:76px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
   .banner.d h2{font-size:25px;letter-spacing:.2px}.banner.d p{font-size:15px;max-width:380px}
   .banner.d .bt{width:66%;flex:none}
@@ -291,7 +293,7 @@ footer.dsk{display:none}
       <button data-go="r"><svg class="ic "><use href="#i-bars"/></svg>Rekapitulasi</button>
       <button data-go="p"><svg class="ic "><use href="#i-gear"/></svg>Pengaturan</button>
     </nav>
-    <button class="acct" data-go="p"><span class="avt"><svg class="ic "><use href="#i-user"/></svg></span><span><b class="nmadmin">Admin Posyandu</b><span class="nipadmin">NIP belum diisi</span></span><svg class="ic "><use href="#i-chev"/></svg></button>
+    <button class="acct acctbtn" type="button"><span class="avt"><svg class="ic "><use href="#i-user"/></svg></span><span><b class="nmadmin">Admin Posyandu</b><span class="nipadmin">NIP belum diisi</span></span><svg class="ic "><use href="#i-chev"/></svg></button>
     <div class="sart"></div>
   </aside>
   <div class="scrim" id="scrim"></div>
@@ -304,16 +306,16 @@ footer.dsk{display:none}
         <div class="tt">PANTAU LAPORAN<br class="only-m"> POSYANDU<small>Kecamatan Palu Utara</small></div>
         <div class="sp"></div>
         <div class="dmeta only-d">
-          <div class="dchip"><svg class="ic "><use href="#i-cal"/></svg><span><span class="dtgl">-</span><br>v10</span></div>
+          <div class="dchip"><svg class="ic "><use href="#i-cal"/></svg><span><span class="dtgl">-</span><br>v11</span></div>
         </div>
         <button class="ibtn" id="bell" aria-label="Pemberitahuan"><svg class="ic "><use href="#i-bell"/></svg><i class="dot hidden" id="belldot"></i></button>
         <button class="ibtn hb" id="hb" aria-label="Menu"><svg class="ic "><use href="#i-menu"/></svg></button>
-        <button class="uacct only-d" data-go="p"><span class="avt"><svg class="ic "><use href="#i-user"/></svg></span><span><b class="nmadmin">Admin Posyandu</b><span class="nipadmin">NIP belum diisi</span></span><svg class="ic "><use href="#i-down"/></svg></button>
+        <button class="uacct only-d acctbtn" type="button"><span class="avt"><svg class="ic "><use href="#i-user"/></svg></span><span><b class="nmadmin">Admin Posyandu</b><span class="nipadmin">NIP belum diisi</span></span><svg class="ic "><use href="#i-down"/></svg></button>
       </div>
-      <div class="hello only-m">
+      <div class="hello only-m acctbtn" role="button" tabindex="0">
         <span class="avt"><svg class="ic "><use href="#i-user"/></svg></span>
         <div class="w">Selamat datang · <span class="dtgl">-</span><b class="nmadmin">Admin Posyandu</b><span class="nipadmin">NIP belum diisi</span></div>
-        <div class="chip"><svg class="ic "><use href="#i-cal"/></svg><span><span class="dtgl">-</span><br>v10</span></div>
+        <svg class="ic hchev"><use href="#i-down"/></svg>
       </div>
     </header>
     <div id="bellpop" class="card hidden" style="position:fixed;right:12px;top:70px;z-index:70;width:min(340px,calc(100vw - 24px));max-height:70vh;overflow:auto"></div>
@@ -323,20 +325,10 @@ footer.dsk{display:none}
         <div id="msg"></div>
 
         <section class="v v-b">
-          <div class="banner m" id="bm">
-            <div class="bt">
-              <div class="slide on"><h2>Bersama Wujudkan<br>Generasi Sehat</h2><p>Melalui Laporan Posyandu<br>yang Akurat dan Tepat Waktu</p><div class="bar1"></div></div>
-              <div class="slide"><h2>Data yang Baik,<br>Layanan Lebih Baik</h2><p>Pantau laporan Posyandu<br>seluruh kelurahan di sini</p><div class="bar1"></div></div>
-              <div class="slide"><h2>Sehat Bersama,<br>Kuat Bersama</h2><p>Terima kasih kepada seluruh<br>kader Posyandu Palu Utara</p><div class="bar1"></div></div>
-            </div>
-            <div class="ph"></div>
-            <div class="dots" id="bdots"><i class="on"></i><i></i><i></i></div>
-          </div>
-          <div class="banner d">
-            <div class="bt"><img src="logo.png" alt=""><div><h2>PANTAU LAPORAN POSYANDU</h2><p>Meningkatkan pelayanan kesehatan masyarakat melalui data yang akurat dan tepat waktu.</p></div></div>
-            <div class="ph"></div>
-          </div>
+          <div class="banner m" id="bm"></div>
+          <div class="banner d" id="bd"></div>
         </section>
+        <section class="v v-b" id="sumB"></section>
 
         <div class="panel big" id="panel">
           <div class="card" id="fcard" style="margin-bottom:14px">
@@ -361,16 +353,14 @@ footer.dsk{display:none}
 
         <section class="v v-b"><div class="card"><h4>Status per kelurahan</h4><div id="mx2"></div></div></section>
         <section class="v v-l"><div class="card"><h4>Laporan yang sudah terkirim</h4><div id="ls"></div></div></section>
-        <section class="v v-d"><div class="card"><h4>Data Posyandu</h4><div id="dp"></div></div></section>
-        <section class="v v-r">
-          <div class="card"><h4>Status per kelurahan</h4><div id="mx"></div></div>
-          <div class="card"><h4>Jumlah angka per kelurahan</h4><div id="tt"></div></div>
-        </section>
+        <section class="v v-d" id="dpBox"></section>
+        <section class="v v-r" id="rkBox"></section>
         <section class="v v-p">
           <div class="card"><h4>Akun</h4>
             <div class="kv"><span>Nama</span><b class="nmadmin">Admin Posyandu</b></div>
             <div class="kv"><span>Nama pengguna</span><b id="pu">-</b></div>
-            <div class="kv"><span>Versi</span><b>v10</b></div>
+            <div class="kv"><span>Peran</span><b id="peranTxt">-</b></div>
+            <div class="kv"><span>Versi</span><b>v11</b></div>
             <div class="kv"><span>Terakhir diperbarui</span><b class="lastt">-</b></div>
             <div class="kv"><span>Status</span><span class="okpill">Online</span></div>
           </div>
@@ -383,19 +373,12 @@ footer.dsk{display:none}
             </div>
             <div class="fld"><label for="inNama">Nama admin</label><input id="inNama" type="text" maxlength="40" autocomplete="off"></div>
             <div class="fld"><label for="inNip">NIP</label><input id="inNip" type="text" inputmode="numeric" maxlength="30" autocomplete="off" placeholder="Contoh: 19800101 200501 1 001"></div>
+            <div class="fld"><label for="inJab">Jabatan</label><input id="inJab" type="text" maxlength="60" autocomplete="off" placeholder="Contoh: Pengelola Program Posyandu"></div>
+            <div class="fld"><label for="inUnit">Unit kerja</label><input id="inUnit" type="text" maxlength="80" autocomplete="off" placeholder="Contoh: Kantor Camat Palu Utara"></div>
             <button class="btn wide" id="svProfil" type="button">Simpan profil</button>
             <div class="st" id="stProfil" role="status"></div>
           </div>
-          <div class="card"><h4>Foto banner beranda</h4>
-            <div class="pvban"><div class="ph" id="pvban"></div></div>
-            <p class="hint">Foto di bagian atas halaman Beranda. Pakai foto mendatar agar hasilnya bagus.</p>
-            <div class="row2">
-              <label class="btn sm fbtn">Pilih foto<input id="inBan" type="file" accept="image/*"></label>
-              <button class="btn sm plain" id="rsBan" type="button">Foto bawaan</button>
-            </div>
-            <button class="btn wide" id="svBan" type="button" style="margin-top:10px">Simpan banner</button>
-            <div class="st" id="stBan" role="status"></div>
-          </div>
+          <div class="card" id="cardBan" style="display:none"></div>
           <div class="card"><h4>Ganti kata sandi</h4>
             <div class="fld"><label for="pwLama">Kata sandi sekarang</label><input id="pwLama" type="password" autocomplete="current-password"></div>
             <div class="fld"><label for="pwBaru">Kata sandi baru</label><input id="pwBaru" type="password" autocomplete="new-password"></div>
@@ -404,8 +387,10 @@ footer.dsk{display:none}
             <button class="btn wide" id="svPw" type="button">Ubah kata sandi</button>
             <div class="st" id="stPw" role="status"></div>
           </div>
-          <div class="card" id="cardAdm" style="display:none"><h4>Kelola admin</h4>
+          <div class="card" id="cardApp" style="display:none"></div>
+          <div class="card" id="cardAdm" style="display:none"><h4>Pengelolaan akun pengguna</h4>
             <p class="hint" id="admInfo"></p>
+            <p class="hint">Anda adalah Admin kecamatan: dapat mengelola data, memeriksa laporan, dan mengatur aplikasi. Akun tambahan berperan sebagai Petugas/operator: dapat melihat, memeriksa, dan merekap laporan, tetapi tidak dapat mengubah data Posyandu, SK, banner, atau akun.</p>
             <div id="admList"></div>
             <div class="fld"><label for="adU">Nama pengguna baru</label><input id="adU" type="text" maxlength="20" autocomplete="off" autocapitalize="none" placeholder="huruf kecil atau angka, 3-20"></div>
             <div class="fld"><label for="adN">Nama admin (boleh dikosongkan)</label><input id="adN" type="text" maxlength="40" autocomplete="off"></div>
@@ -424,7 +409,7 @@ footer.dsk{display:none}
       <aside class="rail only-d">
         <div class="quote"><span class="cp"><svg class="ic "><use href="#i-clip"/></svg></span><p>“Data yang baik adalah langkah awal pelayanan yang lebih baik.”</p></div>
         <div class="card"><div class="ch" style="margin-bottom:6px"><span class="sq" style="width:40px;height:40px;font-size:20px"><svg class="ic "><use href="#i-users"/></svg></span><h3>Informasi Sistem</h3></div>
-          <div class="kv"><span><svg class="ic "><use href="#i-cal"/></svg> Versi</span><b>v10</b></div>
+          <div class="kv"><span><svg class="ic "><use href="#i-cal"/></svg> Versi</span><b>v11</b></div>
           <div class="kv"><span><svg class="ic "><use href="#i-clock"/></svg> Terakhir diperbarui</span><b class="lastt">-</b></div>
           <div class="kv"><span><svg class="ic "><use href="#i-shield"/></svg> Status</span><span class="okpill" id="stt">Online</span></div>
           <div class="okbox" id="okb"><svg class="ic "><use href="#i-check"/></svg><span id="okt">Sistem berjalan dengan baik</span></div>
@@ -439,16 +424,19 @@ footer.dsk{display:none}
   <nav class="bnav only-m" id="bnav">
     <button data-go="b" class="on"><svg class="ic "><use href="#i-home"/></svg>Beranda</button>
     <button data-go="l"><svg class="ic "><use href="#i-doc"/></svg>Laporan</button>
+    <button data-go="d"><svg class="ic "><use href="#i-users"/></svg>Posyandu</button>
     <button data-go="r"><svg class="ic "><use href="#i-bars"/></svg>Rekap</button>
-    <button data-go="p"><svg class="ic "><use href="#i-gear"/></svg>Pengaturan</button>
+    <button data-go="p"><svg class="ic "><use href="#i-gear"/></svg>Atur</button>
   </nav>
 </div>
+<script src="seed-posyandu.js"></script>
+<script src="pantau-ext.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script>
 var ARSIP_URL='https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec';
 var BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 var KEL=['Kayumalue Ngapa','Kayumalue Pajeko','Mamboro','Mamboro Barat','Taipa'];
-var PERAN='',ADM=[];var DATA=[],ADA=false,loading=false,CRED=null,timer=null;
+var PERAN='',ADM=[],POSOK=false;var DATA=[],ADA=false,loading=false,CRED=null,timer=null;
 function $(i){return document.getElementById(i)}
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function opt(s,v,t){var o=document.createElement('option');o.value=v;o.textContent=t;s.appendChild(o)}
@@ -485,11 +473,6 @@ function jam(){var n=new Date();return pad(n.getHours())+'.'+pad(n.getMinutes())
   $('scrim').addEventListener('click',tutupLaci);
   $('bell').addEventListener('click',function(ev){ev.stopPropagation();bel()});
   document.addEventListener('click',function(ev){var p=$('bellpop');if(!p.classList.contains('hidden')&&!p.contains(ev.target))p.classList.add('hidden')});
-  // spanduk geser (HP)
-  var sl=document.querySelectorAll('#bm .slide'),dt=document.querySelectorAll('#bdots i'),ix=0;
-  function pilih(n){ix=n;for(var i=0;i<sl.length;i++){sl[i].classList.toggle('on',i===n);dt[i].classList.toggle('on',i===n)}}
-  for(var i=0;i<dt.length;i++)(function(i){dt[i].addEventListener('click',function(){pilih(i)})})(i);
-  setInterval(function(){pilih((ix+1)%sl.length)},5500);
   tampilView('b');
   try{var sv=sessionStorage.getItem('pantau-cred');if(sv){CRED=JSON.parse(sv);buka();muat()}}catch(x){}
 })();
@@ -498,7 +481,7 @@ function tampilView(v){
   $('app').setAttribute('data-view',v);
   Array.prototype.forEach.call(document.querySelectorAll('.v'),function(s){
     var on=false;VIEWS.forEach(function(x){if(s.classList.contains('v-'+x)&&x===v)on=true});s.classList.toggle('hidden',!on)});
-  $('panel').classList.toggle('hidden',v==='p');
+  $('panel').classList.toggle('hidden',v==='p'||v==='r'||v==='d');
   var dl=document.querySelector('.panel .v-b');if(dl)dl.classList.toggle('hidden',v!=='b');
   Array.prototype.forEach.call(document.querySelectorAll('[data-go]'),function(b){
     if(b.closest('#nav')||b.closest('#bnav'))b.classList.toggle('on',b.getAttribute('data-go')===v)});
@@ -526,8 +509,8 @@ function keluar(msg){
   CRED=null;PERAN='';ADM=[];ADA=false;DATA=[];try{sessionStorage.removeItem('pantau-cred')}catch(x){}
   $('app').classList.add('hidden');$('login').classList.remove('hidden');$('lp').value='';
   $('lb').disabled=false;$('lb').textContent='Masuk';$('lerr').textContent=typeof msg==='string'?msg:'';
-  ['tot','mx','mx2','ls','dp','tt','msg'].forEach(function(i){$(i).textContent=''});tampilView('b');
-  PROFIL={nama:'Admin Posyandu',nip:lsNip(),foto:'',banner:''};PEND={foto:null,banner:null};profilOk=false;pasangProfil();
+  ['tot','mx2','ls','tt','msg'].forEach(function(i){$(i).textContent=''});tampilView('b');if(window.setelahKeluar)setelahKeluar();
+  PROFIL={nama:'Admin Posyandu',nip:lsNip(),jabatan:'',unit:'',foto:''};PEND={foto:null};profilOk=false;pasangProfil();
 }
 function gagalLogin(m){keluar(m)}
 
@@ -550,7 +533,7 @@ function muat(dariLogin){
     if(!r||!r.ok){gagal('Data belum bisa dimuat'+(r&&r.pesan?': '+r.pesan:'. Coba lagi sebentar.'));return}
     PERAN=r.peran||'';pasangAdmin();DATA=r.data||[];ADA=true;last=Date.now();$('msg').textContent='';
     $('stamp').textContent='Diperbarui '+jam();setLast(true);titik();if(!profilOk)ambilProfil();
-    isiTahun();tampil();
+    isiTahun();tampil();if(!POSOK&&window.ambilPos)ambilPos();
   };
   s.onerror=function(){if(selesai)return;bersih();err()};
   s.src=ARSIP_URL+'?aksi=daftar&u='+encodeURIComponent(CRED.u)+'&p='+encodeURIComponent(CRED.p)+'&cb='+cb+'&_='+Date.now();
@@ -630,7 +613,7 @@ function q(v){v=v==null?'':String(v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,
 
 
 /* ===== profil & pengaturan ===== */
-var PROFIL={nama:'Admin Posyandu',foto:'',banner:''},PEND={foto:null,banner:null},profilOk=false;
+var PROFIL={nama:'Admin Posyandu',foto:'',jabatan:'',unit:''},PEND={foto:null},profilOk=false;
 var AV_SVG='<svg class="ic"><use href="#i-user"/></svg>';
 function jsonp(params,ms){
   return new Promise(function(res,rej){
@@ -668,29 +651,27 @@ function pasangProfil(){
     if(e.id==='pvfoto')return;
     e.textContent='';if(PROFIL.foto){var im=document.createElement('img');im.alt='';im.src=PROFIL.foto;e.appendChild(im)}else e.innerHTML=AV_SVG});
   var pv=$('pvfoto');pv.textContent='';if(f){var i2=document.createElement('img');i2.alt='';i2.src=f;pv.appendChild(i2)}else pv.innerHTML=AV_SVG;
-  var bn=PEND.banner!==null?PEND.banner:PROFIL.banner;
-  var v=bn?'url("'+bn+'")':'';
-  if(PROFIL.banner)document.documentElement.style.setProperty('--bn','url("'+PROFIL.banner+'")');else document.documentElement.style.removeProperty('--bn');
-  $('pvban').style.backgroundImage=bn?'url("'+bn+'")':'';
   if(!$('inNama').value||$('inNama').getAttribute('data-auto')!=='0')$('inNama').value=PROFIL.nama||'';
   if(!$('inNip').value||$('inNip').getAttribute('data-auto')!=='0')$('inNip').value=PROFIL.nip||'';
+  ['inJab','inUnit'].forEach(function(i){var k=i==='inJab'?'jabatan':'unit';if(!$(i).value||$(i).getAttribute('data-auto')!=='0')$(i).value=PROFIL[k]||''});
+  if(window.pasangExt)pasangExt();
 }
 function ambilProfil(){
   if(!CRED)return;
   jsonp({aksi:'profil',u:CRED.u,p:CRED.p}).then(function(r){
-    if(r&&r.ok){if(r.peran){PERAN=r.peran}if(r.admins)ADM=r.admins;pasangAdmin();PROFIL={nama:r.nama||'Admin Posyandu',nip:(r.nip!==undefined&&r.nip!==''?r.nip:lsNip()),foto:r.foto||'',banner:r.banner||''};profilOk=true;PEND={foto:null,banner:null};pasangProfil()}
+    if(r&&r.ok){if(r.peran){PERAN=r.peran}if(r.admins)ADM=r.admins;pasangAdmin();PROFIL={nama:r.nama||'Admin Posyandu',nip:(r.nip!==undefined&&r.nip!==''?r.nip:lsNip()),jabatan:r.jabatan||'',unit:r.unit||'',foto:r.foto||''};if(window.terimaProfil)terimaProfil(r);profilOk=true;PEND={foto:null};pasangProfil()}
   }).catch(function(){profilOk=false});
 }
 function tunda(ms){return new Promise(function(r){setTimeout(r,ms)})}
 async function kirimAtur(f){
   if(!CRED)throw new Error('Silakan masuk lagi');
-  var id='a'+Math.random().toString(36).slice(2,12)+Date.now().toString(36);
+  var id=f.id||('a'+Math.random().toString(36).slice(2,12)+Date.now().toString(36));
   var o={aksi:'atur',id:id,t:id,u:CRED.u,p:CRED.p};for(var k in f)o[k]=f[k];
   var fr=document.createElement('iframe');fr.name='af'+id;fr.style.display='none';document.body.appendChild(fr);
   var fm=document.createElement('form');fm.method='POST';fm.action=ARSIP_URL;fm.target=fr.name;fm.style.display='none';
   var i=document.createElement('input');i.type='hidden';i.name='data';i.value=JSON.stringify(o);fm.appendChild(i);document.body.appendChild(fm);fm.submit();
   try{
-    for(var w=0;w<45;w++){
+    for(var w=0,mk=(f.aksi==='sk'?130:45);w<mk;w++){
       await tunda(w?700:500);
       try{var r=await jsonp({aksi:'hasil',id:id,tag:'a'},12000);
         if(r&&r.ok)return r;
@@ -728,8 +709,8 @@ function gambar(file,mode){
   return bacaGambar(file).then(function(im){
     var W=im.naturalWidth,H=im.naturalHeight,c=document.createElement('canvas'),x=c.getContext('2d'),sx=0,sy=0,sw=W,sh=H,tw,th;
     if(mode==='foto'){var m=Math.min(W,H);sx=(W-m)/2;sy=(H-m)/2;sw=sh=m;tw=th=240}
-    else{var sc=Math.min(1,960/W);tw=Math.round(W*sc);th=Math.round(H*sc)}
-    var batas=mode==='foto'?40000:86000,q=.86,out='';
+    else{var sc=Math.min(1,800/W);tw=Math.round(W*sc);th=Math.round(H*sc)}
+    var batas=mode==='foto'?40000:56000,q=.86,out='';
     for(var k=0;k<12;k++){
       c.width=tw;c.height=th;x.fillStyle='#fff';x.fillRect(0,0,tw,th);x.drawImage(im,sx,sy,sw,sh,0,0,tw,th);
       out=c.toDataURL('image/jpeg',q);
@@ -751,22 +732,15 @@ function aman(btn,fn){btn.disabled=true;return fn().then(function(){btn.disabled
     aman($('svAdm'),function(){return kelolaAdm({op:'tambah',nu:u,ns:p,nama:$('adN').value.trim()},'Admin '+u+' ditambahkan.').then(function(ok){if(ok){$('adU').value=$('adN').value=$('adP').value=''}})});
   });
   $('inNip').addEventListener('input',function(){this.setAttribute('data-auto','0')});
+  $('inJab').addEventListener('input',function(){this.setAttribute('data-auto','0')});$('inUnit').addEventListener('input',function(){this.setAttribute('data-auto','0')});
   $('inFoto').addEventListener('change',function(){var f=this.files[0];this.value='';if(!f)return;
     gambar(f,'foto').then(function(d){PEND.foto=d;$('pvfoto').textContent='';var i=document.createElement('img');i.alt='';i.src=d;$('pvfoto').appendChild(i);status('stProfil','Foto dipilih. Tekan Simpan profil.')}).catch(function(e){status('stProfil',e.message,'bad')})});
   $('hpsFoto').addEventListener('click',function(){PEND.foto='';$('pvfoto').innerHTML=AV_SVG;status('stProfil','Foto akan dihapus. Tekan Simpan profil.')});
   $('svProfil').addEventListener('click',function(){
     var n=$('inNama').value.trim();if(!n){status('stProfil','Nama tidak boleh kosong','bad');return}
-    var nip=$('inNip').value.trim().replace(/[^0-9 ]/g,'');var f={nama:n,nip:nip};if(PEND.foto!==null)f.foto=PEND.foto;
+    var nip=$('inNip').value.trim().replace(/[^0-9 ]/g,'');var jb=$('inJab').value.trim(),un=$('inUnit').value.trim();var f={nama:n,nip:nip,jabatan:jb,unit:un};if(PEND.foto!==null)f.foto=PEND.foto;
     status('stProfil','Menyimpan…');
-    aman($('svProfil'),function(){return kirimAtur(f).then(function(){PROFIL.nama=n;PROFIL.nip=nip;try{localStorage.setItem('pantau_nip',nip)}catch(e){}if(PEND.foto!==null)PROFIL.foto=PEND.foto;PEND.foto=null;$('inNama').setAttribute('data-auto','1');$('inNip').setAttribute('data-auto','1');pasangProfil();status('stProfil','Profil tersimpan.','ok')}).catch(function(e){status('stProfil',e.message,'bad')})});
-  });
-  $('inBan').addEventListener('change',function(){var f=this.files[0];this.value='';if(!f)return;
-    gambar(f,'banner').then(function(d){PEND.banner=d;$('pvban').style.backgroundImage='url("'+d+'")';status('stBan','Foto dipilih. Tekan Simpan banner.')}).catch(function(e){status('stBan',e.message,'bad')})});
-  $('rsBan').addEventListener('click',function(){PEND.banner='';$('pvban').style.backgroundImage='';status('stBan','Akan kembali ke foto bawaan. Tekan Simpan banner.')});
-  $('svBan').addEventListener('click',function(){
-    if(PEND.banner===null){status('stBan','Pilih foto dulu.','bad');return}
-    var b=PEND.banner;status('stBan','Menyimpan…');
-    aman($('svBan'),function(){return kirimAtur({banner:b}).then(function(){PROFIL.banner=b;PEND.banner=null;pasangProfil();status('stBan','Banner tersimpan.','ok')}).catch(function(e){status('stBan',e.message,'bad')})});
+    aman($('svProfil'),function(){return kirimAtur(f).then(function(){PROFIL.nama=n;PROFIL.nip=nip;PROFIL.jabatan=jb;PROFIL.unit=un;try{localStorage.setItem('pantau_nip',nip)}catch(e){}if(PEND.foto!==null)PROFIL.foto=PEND.foto;PEND.foto=null;$('inNama').setAttribute('data-auto','1');$('inNip').setAttribute('data-auto','1');pasangProfil();status('stProfil','Profil tersimpan.','ok')}).catch(function(e){status('stProfil',e.message,'bad')})});
   });
   $('svPw').addEventListener('click',function(){
     var a=$('pwLama').value,b=$('pwBaru').value,c=$('pwUlang').value;
@@ -850,8 +824,8 @@ function tampil(){
   tot.appendChild(tile('g','doc',lihat.length,'Laporan masuk',function(){$('fj').value='';go('l');tampil()}));
   tot.appendChild(tile('y','check',tb,'Balita',function(){$('fj').value='Posyandu Balita';go('l');tampil()}));
   tot.appendChild(tile('p','user',tl,'Lansia',function(){$('fj').value='Posyandu Lansia';go('l');tampil()}));
-  matriks($('mx'),uniq,kl,jn);matriks($('mx2'),uniq,kl,jn);
-  jumlahTabel($('tt'),lihat,kl);
+  matriks($('mx2'),uniq,kl,jn);
+  if($('tt'))jumlahTabel($('tt'),lihat,kl);
   // daftar laporan
   var ls=$('ls');ls.textContent='';
   if(!lihat.length){ls.appendChild(el('div','empty',DATA.length?'Belum ada laporan untuk pilihan ini.':'Belum ada laporan yang masuk.'))}
@@ -867,25 +841,7 @@ function tampil(){
     if(d.ver>1)tg.appendChild(el('span','tag g','Revisi ke-'+d.ver));
     it.appendChild(tg);ls.appendChild(it);
   });
-  // data posyandu (semua periode)
-  var dp=$('dp');dp.textContent='';
-  var g={};
-  terbaru(DATA).filter(function(d){return(!kl||d.kel===kl)&&(!q||d.pos.toLowerCase().indexOf(q)>=0)&&(!jn||d.jenis===jn)}).forEach(function(d){
-    var k=d.kel+'|'+d.pos.toLowerCase();
-    if(!g[k])g[k]={kel:d.kel,pos:d.pos,j:{},n:0,l:d};
-    g[k].j[d.jenis]=1;g[k].n++;if(d.n>g[k].l.n)g[k].l=d;
-  });
-  var ks=Object.keys(g);
-  if(!ks.length)dp.appendChild(el('div','empty','Belum ada data Posyandu.'));
-  KEL.forEach(function(k){
-    var arr=ks.filter(function(x){return g[x].kel===k}).map(function(x){return g[x]}).sort(function(a,b){return a.pos.localeCompare(b.pos)});
-    if(!arr.length)return;dp.appendChild(el('div','kh',k));
-    arr.forEach(function(p){
-      var it=el('div','item');it.appendChild(el('div','a',p.pos));
-      it.appendChild(el('div','b',Object.keys(p.j).map(function(j){return j.replace('Posyandu ','')}).join(' + ')+' · '+p.n+' laporan'));
-      it.appendChild(el('div','b','Terakhir: '+p.l.bln+' '+p.l.thn));dp.appendChild(it);
-    });
-  });
+  if(window.tampilBaru)tampilBaru();
 }
 </script>
 </body>
