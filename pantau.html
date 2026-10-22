@@ -80,6 +80,7 @@ button{cursor:pointer}
 .chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.35);border:1.5px solid rgba(255,255,255,.7);border-radius:14px;padding:7px 9px;font-size:11px;line-height:1.25;white-space:nowrap;flex:none}
 .chip .ic{font-size:21px}
 .hello .chip{display:none}.nipadmin{display:block;font-size:10.5px}
+.admrow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}.admt{flex:1;min-width:0}.admt b,.admt span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.admt span{font-size:12px;color:var(--muted)}
 .sheet{position:relative;margin-top:-14px;background:var(--bg);border-radius:22px 22px 0 0;padding:16px max(14px,env(safe-area-inset-left,0px)) 110px}
 .cols{max-width:1100px;margin:0 auto}
 
@@ -303,7 +304,7 @@ footer.dsk{display:none}
         <div class="tt">PANTAU LAPORAN<br class="only-m"> POSYANDU<small>Kecamatan Palu Utara</small></div>
         <div class="sp"></div>
         <div class="dmeta only-d">
-          <div class="dchip"><svg class="ic "><use href="#i-cal"/></svg><span><span class="dtgl">-</span><br>v9</span></div>
+          <div class="dchip"><svg class="ic "><use href="#i-cal"/></svg><span><span class="dtgl">-</span><br>v10</span></div>
         </div>
         <button class="ibtn" id="bell" aria-label="Pemberitahuan"><svg class="ic "><use href="#i-bell"/></svg><i class="dot hidden" id="belldot"></i></button>
         <button class="ibtn hb" id="hb" aria-label="Menu"><svg class="ic "><use href="#i-menu"/></svg></button>
@@ -312,7 +313,7 @@ footer.dsk{display:none}
       <div class="hello only-m">
         <span class="avt"><svg class="ic "><use href="#i-user"/></svg></span>
         <div class="w">Selamat datang · <span class="dtgl">-</span><b class="nmadmin">Admin Posyandu</b><span class="nipadmin">NIP belum diisi</span></div>
-        <div class="chip"><svg class="ic "><use href="#i-cal"/></svg><span><span class="dtgl">-</span><br>v9</span></div>
+        <div class="chip"><svg class="ic "><use href="#i-cal"/></svg><span><span class="dtgl">-</span><br>v10</span></div>
       </div>
     </header>
     <div id="bellpop" class="card hidden" style="position:fixed;right:12px;top:70px;z-index:70;width:min(340px,calc(100vw - 24px));max-height:70vh;overflow:auto"></div>
@@ -369,7 +370,7 @@ footer.dsk{display:none}
           <div class="card"><h4>Akun</h4>
             <div class="kv"><span>Nama</span><b class="nmadmin">Admin Posyandu</b></div>
             <div class="kv"><span>Nama pengguna</span><b id="pu">-</b></div>
-            <div class="kv"><span>Versi</span><b>v9</b></div>
+            <div class="kv"><span>Versi</span><b>v10</b></div>
             <div class="kv"><span>Terakhir diperbarui</span><b class="lastt">-</b></div>
             <div class="kv"><span>Status</span><span class="okpill">Online</span></div>
           </div>
@@ -403,6 +404,15 @@ footer.dsk{display:none}
             <button class="btn wide" id="svPw" type="button">Ubah kata sandi</button>
             <div class="st" id="stPw" role="status"></div>
           </div>
+          <div class="card" id="cardAdm" style="display:none"><h4>Kelola admin</h4>
+            <p class="hint" id="admInfo"></p>
+            <div id="admList"></div>
+            <div class="fld"><label for="adU">Nama pengguna baru</label><input id="adU" type="text" maxlength="20" autocomplete="off" autocapitalize="none" placeholder="huruf kecil atau angka, 3-20"></div>
+            <div class="fld"><label for="adN">Nama admin (boleh dikosongkan)</label><input id="adN" type="text" maxlength="40" autocomplete="off"></div>
+            <div class="fld"><label for="adP">Kata sandi (minimal 6 karakter)</label><input id="adP" type="password" autocomplete="new-password"></div>
+            <button class="btn wide" id="svAdm" type="button">Tambah admin</button>
+            <div class="st" id="stAdm" role="status"></div>
+          </div>
           <div class="card"><div class="btns" style="display:grid;gap:10px">
             <button class="btn" id="re2" type="button"><svg class="ic "><use href="#i-filter"/></svg>Muat ulang data</button>
             <a class="btn line" href="./" style="text-decoration:none">Ke aplikasi laporan</a>
@@ -414,7 +424,7 @@ footer.dsk{display:none}
       <aside class="rail only-d">
         <div class="quote"><span class="cp"><svg class="ic "><use href="#i-clip"/></svg></span><p>“Data yang baik adalah langkah awal pelayanan yang lebih baik.”</p></div>
         <div class="card"><div class="ch" style="margin-bottom:6px"><span class="sq" style="width:40px;height:40px;font-size:20px"><svg class="ic "><use href="#i-users"/></svg></span><h3>Informasi Sistem</h3></div>
-          <div class="kv"><span><svg class="ic "><use href="#i-cal"/></svg> Versi</span><b>v9</b></div>
+          <div class="kv"><span><svg class="ic "><use href="#i-cal"/></svg> Versi</span><b>v10</b></div>
           <div class="kv"><span><svg class="ic "><use href="#i-clock"/></svg> Terakhir diperbarui</span><b class="lastt">-</b></div>
           <div class="kv"><span><svg class="ic "><use href="#i-shield"/></svg> Status</span><span class="okpill" id="stt">Online</span></div>
           <div class="okbox" id="okb"><svg class="ic "><use href="#i-check"/></svg><span id="okt">Sistem berjalan dengan baik</span></div>
@@ -438,7 +448,7 @@ footer.dsk{display:none}
 var ARSIP_URL='https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec';
 var BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 var KEL=['Kayumalue Ngapa','Kayumalue Pajeko','Mamboro','Mamboro Barat','Taipa'];
-var DATA=[],ADA=false,loading=false,CRED=null,timer=null;
+var PERAN='',ADM=[];var DATA=[],ADA=false,loading=false,CRED=null,timer=null;
 function $(i){return document.getElementById(i)}
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function opt(s,v,t){var o=document.createElement('option');o.value=v;o.textContent=t;s.appendChild(o)}
@@ -513,7 +523,7 @@ function buka(){$('login').classList.add('hidden');$('app').classList.remove('hi
   $('pu').textContent=CRED?CRED.u:'-';
   if(!timer)timer=setInterval(function(){if(CRED&&!document.hidden)muat()},60000)}
 function keluar(msg){
-  CRED=null;ADA=false;DATA=[];try{sessionStorage.removeItem('pantau-cred')}catch(x){}
+  CRED=null;PERAN='';ADM=[];ADA=false;DATA=[];try{sessionStorage.removeItem('pantau-cred')}catch(x){}
   $('app').classList.add('hidden');$('login').classList.remove('hidden');$('lp').value='';
   $('lb').disabled=false;$('lb').textContent='Masuk';$('lerr').textContent=typeof msg==='string'?msg:'';
   ['tot','mx','mx2','ls','dp','tt','msg'].forEach(function(i){$(i).textContent=''});tampilView('b');
@@ -538,7 +548,7 @@ function muat(dariLogin){
     if(r&&r.login===false){gagalLogin(r.pesan||'Nama pengguna atau kata sandi salah');return}
     if(dariLogin){try{sessionStorage.setItem('pantau-cred',JSON.stringify(CRED))}catch(x){}buka()}
     if(!r||!r.ok){gagal('Data belum bisa dimuat'+(r&&r.pesan?': '+r.pesan:'. Coba lagi sebentar.'));return}
-    DATA=r.data||[];ADA=true;last=Date.now();$('msg').textContent='';
+    PERAN=r.peran||'';pasangAdmin();DATA=r.data||[];ADA=true;last=Date.now();$('msg').textContent='';
     $('stamp').textContent='Diperbarui '+jam();setLast(true);titik();if(!profilOk)ambilProfil();
     isiTahun();tampil();
   };
@@ -633,6 +643,22 @@ function jsonp(params,ms){
     var t=setTimeout(function(){end(rej,new Error('Server tidak menjawab'))},ms||20000);
   });
 }
+function pasangAdmin(){
+  var c=$('cardAdm');if(!c)return;c.style.display=PERAN==='utama'?'':'none';if(PERAN!=='utama')return;
+  $('admInfo').textContent='Admin utama: '+CRED.u+'. Admin tambahan: '+ADM.length+' dari 5.';
+  var box=$('admList');box.textContent='';
+  ADM.forEach(function(a){
+    var r=el('div','admrow'),t=el('div','admt');t.appendChild(el('b',null,a.u));t.appendChild(el('span',null,(a.nama||'')+(a.nip?' · NIP '+a.nip:'')));
+    var b1=el('button','btn sm plain','Sandi'),b2=el('button','btn sm plain','Hapus');b1.type=b2.type='button';
+    b1.addEventListener('click',function(){var n=prompt('Kata sandi baru untuk '+a.u+' (minimal 6 karakter):');if(n===null)return;kelolaAdm({op:'sandi',nu:a.u,ns:n},'Kata sandi '+a.u+' diubah.')});
+    b2.addEventListener('click',function(){if(confirm('Hapus admin '+a.u+'?'))kelolaAdm({op:'hapus',nu:a.u},'Admin '+a.u+' dihapus.')});
+    r.appendChild(t);r.appendChild(b1);r.appendChild(b2);box.appendChild(r)});
+  $('svAdm').disabled=ADM.length>=5;
+}
+function kelolaAdm(f,ok){
+  f.aksi='kelola';status('stAdm','Menyimpan…');
+  return kirimAtur(f).then(function(r){if(r.admins)ADM=r.admins;pasangAdmin();status('stAdm',ok,'ok');return true}).catch(function(e){status('stAdm',e.message,'bad')});
+}
 function lsNip(){try{return localStorage.getItem('pantau_nip')||''}catch(e){return ''}}
 function pasangProfil(){
   Array.prototype.forEach.call(document.getElementsByClassName('nipadmin'),function(e){e.textContent=PROFIL.nip?'NIP '+PROFIL.nip:'NIP belum diisi'});
@@ -652,7 +678,7 @@ function pasangProfil(){
 function ambilProfil(){
   if(!CRED)return;
   jsonp({aksi:'profil',u:CRED.u,p:CRED.p}).then(function(r){
-    if(r&&r.ok){PROFIL={nama:r.nama||'Admin Posyandu',nip:(r.nip!==undefined&&r.nip!==''?r.nip:lsNip()),foto:r.foto||'',banner:r.banner||''};profilOk=true;PEND={foto:null,banner:null};pasangProfil()}
+    if(r&&r.ok){if(r.peran){PERAN=r.peran}if(r.admins)ADM=r.admins;pasangAdmin();PROFIL={nama:r.nama||'Admin Posyandu',nip:(r.nip!==undefined&&r.nip!==''?r.nip:lsNip()),foto:r.foto||'',banner:r.banner||''};profilOk=true;PEND={foto:null,banner:null};pasangProfil()}
   }).catch(function(){profilOk=false});
 }
 function tunda(ms){return new Promise(function(r){setTimeout(r,ms)})}
@@ -718,6 +744,12 @@ function status(id,t,k){var e=$(id);e.textContent=t||'';e.className='st'+(k?' '+
 function aman(btn,fn){btn.disabled=true;return fn().then(function(){btn.disabled=false},function(){btn.disabled=false})}
 (function pengaturan(){
   $('inNama').addEventListener('input',function(){this.setAttribute('data-auto','0')});
+  $('svAdm').addEventListener('click',function(){
+    var u=$('adU').value.trim().toLowerCase(),p=$('adP').value;
+    if(!/^[a-z0-9]{3,20}$/.test(u)){status('stAdm','Nama pengguna 3-20 huruf kecil atau angka','bad');return}
+    if(p.length<6){status('stAdm','Kata sandi minimal 6 karakter','bad');return}
+    aman($('svAdm'),function(){return kelolaAdm({op:'tambah',nu:u,ns:p,nama:$('adN').value.trim()},'Admin '+u+' ditambahkan.').then(function(ok){if(ok){$('adU').value=$('adN').value=$('adP').value=''}})});
+  });
   $('inNip').addEventListener('input',function(){this.setAttribute('data-auto','0')});
   $('inFoto').addEventListener('change',function(){var f=this.files[0];this.value='';if(!f)return;
     gambar(f,'foto').then(function(d){PEND.foto=d;$('pvfoto').textContent='';var i=document.createElement('img');i.alt='';i.src=d;$('pvfoto').appendChild(i);status('stProfil','Foto dipilih. Tekan Simpan profil.')}).catch(function(e){status('stProfil',e.message,'bad')})});

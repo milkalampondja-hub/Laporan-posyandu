@@ -32,17 +32,21 @@ function doGet(e) {
     hasil = v ? JSON.parse(v) : { ok: false, tunggu: true };
   }
   else if (p.aksi === 'daftar') {
-    if (sandiBenar(p.u, p.p)) {
+    var w1 = masuk(p.u, p.p);
+    if (w1) {
       hasil = daftarLaporan();
+      hasil.peran = w1.peran;
     } else {
       Utilities.sleep(1200);
       hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
     }
   }
   else if (p.aksi === 'profil') {
-    if (sandiBenar(p.u, p.p)) {
-      var c = bacaPengaturan();
-      hasil = { ok: true, nama: c.nama, nip: c.nip, foto: c.foto, banner: c.banner };
+    var w2 = masuk(p.u, p.p);
+    if (w2) {
+      var c = bacaPengaturan(w2.u);
+      hasil = { ok: true, nama: c.nama, nip: c.nip, foto: c.foto, banner: c.banner, peran: w2.peran };
+      if (w2.peran === 'utama') hasil.admins = daftarAdmin();
     } else {
       Utilities.sleep(1200);
       hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
@@ -63,10 +67,60 @@ function sandiBenar(u, p) {
   var h = PropertiesService.getScriptProperties().getProperty('PANTAU_SANDI_HASH');
   return h ? hashSandi(p) === h : String(p || '') === PANTAU_SANDI;
 }
-function bacaPengaturan() {
+/** Admin tambahan (maksimal 5): nama pengguna dan hash kata sandi di Script Properties. */
+var MAKS_ADMIN = 5;
+function bacaAdmin() {
+  try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('PANTAU_ADMINS') || '{}'); } catch (x) { return {}; }
+}
+function simpanAdmin(a) { PropertiesService.getScriptProperties().setProperty('PANTAU_ADMINS', JSON.stringify(a)); }
+function hashAdmin(k, p) { return hashSandi(k + '|' + String(p || '')); }
+function berkasProfil(u) { return (!u || u === PANTAU_USER) ? NAMA_PENGATURAN : 'pengaturan-pantau-' + u + '.json'; }
+/** Masuk sebagai admin utama atau admin tambahan. Hasil: {u, peran} atau null. */
+function masuk(u, p) {
+  u = String(u || '');
+  if (u === PANTAU_USER) return sandiBenar(u, p) ? { u: u, peran: 'utama' } : null;
+  var k = u.toLowerCase(), a = bacaAdmin();
+  if (a[k] && a[k] === hashAdmin(k, p)) return { u: k, peran: 'admin' };
+  return null;
+}
+function daftarAdmin() {
+  var a = bacaAdmin();
+  return Object.keys(a).sort().map(function (k) { var c = bacaPengaturan(k); return { u: k, nama: c.nama, nip: c.nip }; });
+}
+/** Hanya admin utama: tambah, hapus, atau ganti kata sandi admin tambahan. */
+function kelola(d) {
+  var w = masuk(d.u, d.p);
+  if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh mengelola admin'); }
+  var a = bacaAdmin(), nu = String(d.nu || '').toLowerCase().trim(), ns = String(d.ns || '');
+  if (d.op !== 'daftar') {
+    if (!/^[a-z0-9]{3,20}$/.test(nu)) throw new Error('Nama pengguna 3-20 huruf kecil atau angka');
+    if (nu === PANTAU_USER.toLowerCase()) throw new Error('Nama pengguna itu dipakai admin utama');
+  }
+  if (d.op === 'tambah') {
+    if (a[nu]) throw new Error('Nama pengguna sudah dipakai');
+    if (Object.keys(a).length >= MAKS_ADMIN) throw new Error('Admin tambahan sudah penuh (maksimal ' + MAKS_ADMIN + ')');
+    if (ns.length < 6 || ns.length > 60) throw new Error('Kata sandi minimal 6 karakter');
+    a[nu] = hashAdmin(nu, ns); simpanAdmin(a);
+    var nm = bersih(d.nama, 40);
+    if (nm) simpanPengaturan({ nama: nm, nip: '', foto: '', banner: '' }, nu);
+  } else if (d.op === 'sandi') {
+    if (!a[nu]) throw new Error('Admin tidak ditemukan');
+    if (ns.length < 6 || ns.length > 60) throw new Error('Kata sandi minimal 6 karakter');
+    a[nu] = hashAdmin(nu, ns); simpanAdmin(a);
+  } else if (d.op === 'hapus') {
+    if (!a[nu]) throw new Error('Admin tidak ditemukan');
+    delete a[nu]; simpanAdmin(a);
+    var it = induk().getFilesByName(berkasProfil(nu));
+    while (it.hasNext()) it.next().setTrashed(true);
+  } else if (d.op !== 'daftar') {
+    throw new Error('Perintah tidak dikenal');
+  }
+  return simpanHasil({ ok: true, admins: daftarAdmin() }, 'a');
+}
+function bacaPengaturan(u) {
   var c = { nama: 'Admin Posyandu', nip: '', foto: '', banner: '' };
   try {
-    var it = induk().getFilesByName(NAMA_PENGATURAN);
+    var it = induk().getFilesByName(berkasProfil(u));
     if (it.hasNext()) {
       var o = JSON.parse(it.next().getBlob().getDataAsString());
       if (o.nama) c.nama = String(o.nama);
@@ -75,9 +129,9 @@ function bacaPengaturan() {
   } catch (x) {}
   return c;
 }
-function simpanPengaturan(c) {
-  var teks = JSON.stringify(c), f = induk(), it = f.getFilesByName(NAMA_PENGATURAN);
-  if (it.hasNext()) it.next().setContent(teks); else f.createFile(NAMA_PENGATURAN, teks, MimeType.PLAIN_TEXT);
+function simpanPengaturan(c, u) {
+  var nb = berkasProfil(u), teks = JSON.stringify(c), f = induk(), it = f.getFilesByName(nb);
+  if (it.hasNext()) it.next().setContent(teks); else f.createFile(nb, teks, MimeType.PLAIN_TEXT);
 }
 function cekGambar(s, maks) {
   s = String(s || '');
@@ -88,8 +142,9 @@ function cekGambar(s, maks) {
 }
 /** Ubah nama, foto profil, foto banner, atau kata sandi (wajib login). */
 function atur(d) {
-  if (!sandiBenar(d.u, d.p)) { Utilities.sleep(1200); throw new Error('Kata sandi salah'); }
-  var c = bacaPengaturan();
+  var w = masuk(d.u, d.p);
+  if (!w) { Utilities.sleep(1200); throw new Error('Kata sandi salah'); }
+  var c = bacaPengaturan(w.u);
   if (d.nama !== undefined) {
     var n = bersih(d.nama, 40);
     if (!n) throw new Error('Nama tidak boleh kosong');
@@ -101,9 +156,10 @@ function atur(d) {
   if (d.sandiBaru !== undefined) {
     var sb = String(d.sandiBaru);
     if (sb.length < 6 || sb.length > 60) throw new Error('Kata sandi baru minimal 6 karakter');
-    PropertiesService.getScriptProperties().setProperty('PANTAU_SANDI_HASH', hashSandi(sb));
+    if (w.peran === 'utama') PropertiesService.getScriptProperties().setProperty('PANTAU_SANDI_HASH', hashSandi(sb));
+    else { var ad = bacaAdmin(); ad[w.u] = hashAdmin(w.u, sb); simpanAdmin(ad); }
   }
-  simpanPengaturan(c);
+  simpanPengaturan(c, w.u);
   return simpanHasil({ ok: true }, 'a');
 }
 
@@ -149,6 +205,7 @@ function doPost(e) {
       if (d.aksi === 'catat') { tag = 'c'; return catat(d, cache); }
       if (d.aksi === 'selesai') { tag = 's'; return selesai(d, cache); }
       if (d.aksi === 'atur') { tag = 'a'; return atur(d); }
+      if (d.aksi === 'kelola') { tag = 'a'; return kelola(d); }
       throw new Error('Aksi tidak dikenal');
     } finally {
       try { kunci.releaseLock(); } catch (x) {}
