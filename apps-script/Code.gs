@@ -42,7 +42,7 @@ function doGet(e) {
   else if (p.aksi === 'profil') {
     if (sandiBenar(p.u, p.p)) {
       var c = bacaPengaturan();
-      hasil = { ok: true, nama: c.nama, foto: c.foto, banner: c.banner };
+      hasil = { ok: true, nama: c.nama, nip: c.nip, foto: c.foto, banner: c.banner };
     } else {
       Utilities.sleep(1200);
       hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
@@ -64,13 +64,13 @@ function sandiBenar(u, p) {
   return h ? hashSandi(p) === h : String(p || '') === PANTAU_SANDI;
 }
 function bacaPengaturan() {
-  var c = { nama: 'Admin Posyandu', foto: '', banner: '' };
+  var c = { nama: 'Admin Posyandu', nip: '', foto: '', banner: '' };
   try {
     var it = induk().getFilesByName(NAMA_PENGATURAN);
     if (it.hasNext()) {
       var o = JSON.parse(it.next().getBlob().getDataAsString());
       if (o.nama) c.nama = String(o.nama);
-      c.foto = String(o.foto || ''); c.banner = String(o.banner || '');
+      c.nip = String(o.nip || ''); c.foto = String(o.foto || ''); c.banner = String(o.banner || '');
     }
   } catch (x) {}
   return c;
@@ -95,6 +95,7 @@ function atur(d) {
     if (!n) throw new Error('Nama tidak boleh kosong');
     c.nama = n;
   }
+  if (d.nip !== undefined) c.nip = bersih(d.nip, 30).replace(/[^0-9 ]/g, '');
   if (d.foto !== undefined) c.foto = cekGambar(d.foto, 45000);
   if (d.banner !== undefined) c.banner = cekGambar(d.banner, 90000);
   if (d.sandiBaru !== undefined) {
