@@ -4,28 +4,31 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pantau Laporan Posyandu</title>
-<meta name="theme-color" content="#0a7a35">
+<meta name="theme-color" content="#f2b705">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Pantau Posyandu">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
 <style>
 :root{
-  --bg:#f0f5f1; --surface:#fff; --fg:#14231a; --muted:#566a5d; --line:#d3e0d7;
-  --accent:#0a7a35; --accent-fg:#fff; --accent-soft:#def2e4; --gold:#f2b705;
-  --warn:#8a5a00; --warn-soft:#fff3cf; --none:#eef2ef;
-  --hero1:#0a7a35; --hero2:#075a28;
+  --bg:#fbf6e6; --surface:#fff; --fg:#241c06; --muted:#6b5c2e; --line:#eadfb5;
+  --accent:#f2b705; --accent-fg:#2b2100; --accent-text:#7d5800; --accent-soft:#fff0b8; --gold:#f2b705;
+  --warn:#8a3b00; --warn-soft:#ffe9d2; --none:#f3eed9;
+  --hero1:#f8cd3f; --hero2:#e8a900; --hero-fg:#2b2100;
+  --login-bg:radial-gradient(120% 80% at 50% 0%,#ffe27a 0%,#f2b705 42%,#c98f00 100%);
   --shadow:0 1px 2px rgba(20,33,29,.08),0 8px 24px rgba(20,33,29,.08);
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#0e1611; --surface:#17231b; --fg:#e8f1ea; --muted:#9db3a3; --line:#2b3d31;
-  --accent:#5fd48a; --accent-fg:#06241a; --accent-soft:#1d3a28; --warn:#f2c14e; --warn-soft:#3a2f10; --none:#1b2a20;
+  --bg:#16120a; --surface:#221c0d; --fg:#f6efd8; --muted:#c4b27a; --line:#3d3416;
+  --accent:#f2b705; --accent-fg:#2b2100; --accent-text:#f6c93a; --accent-soft:#3b3010; --warn:#ffb98a; --warn-soft:#4a2a12; --none:#2a2410;
+  --hero1:#7a5a00; --hero2:#4f3a00; --hero-fg:#fff6d6;
+  --login-bg:radial-gradient(120% 80% at 50% 0%,#8a6400 0%,#5a4200 45%,#2a1f00 100%);
 }}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font-size:16px;line-height:1.5;padding-bottom:max(24px,env(safe-area-inset-bottom,0px))}
 button,input,select{font:inherit;color:inherit}
-header{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;
+header{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:var(--hero-fg);
   padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px))}
 .hin{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:12px}
 header img{width:38px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
@@ -37,13 +40,14 @@ main{max-width:860px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-lef
 .filters .full{grid-column:1/-1}
 label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px}
 select,input[type=search]{width:100%;min-height:46px;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:9px 12px}
-:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+:focus-visible{outline:3px solid var(--accent-text);outline-offset:1px}
 .bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;font-size:13px;color:var(--muted)}
 .btn{min-height:44px;padding:8px 16px;border-radius:12px;border:1.5px solid var(--accent);background:var(--accent);color:var(--accent-fg);font-weight:600;cursor:pointer}
 .btn:disabled{opacity:.6}
+.btn:hover{filter:brightness(.96)}
 .tot{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
 .tot div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
-.tot b{display:block;font-size:28px;line-height:1.1;color:var(--accent)}
+.tot b{display:block;font-size:28px;line-height:1.1;color:var(--accent-text)}
 .tot span{font-size:13px;color:var(--muted)}
 h2{font-size:17px;margin:0 0 10px}
 table{width:100%;border-collapse:collapse;font-size:15px}
@@ -52,23 +56,23 @@ th:first-child,td:first-child{text-align:left}
 th{font-size:13px;color:var(--muted);font-weight:600}
 tr:last-child td{border-bottom:0}
 .pill{display:inline-block;white-space:nowrap;padding:3px 9px;border-radius:99px;font-size:13px;font-weight:700}
-.pill.ok{background:var(--accent-soft);color:var(--accent)}
+.pill.ok{background:var(--accent-soft);color:var(--accent-text)}
 .pill.no{background:var(--none);color:var(--muted);font-weight:600}
 .item{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--surface)}
 .item .a{font-weight:700}
 .item .b{font-size:14px;color:var(--muted)}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.tag{font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.tag{font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent-text)}
 .tag.w{background:var(--warn-soft);color:var(--warn)}
 .tag.g{background:var(--none);color:var(--muted)}
 .msg{padding:14px;border-radius:12px;background:var(--warn-soft);color:var(--warn);margin-bottom:16px;font-size:15px}
 .empty{text-align:center;color:var(--muted);padding:22px 8px}
 footer{text-align:center;color:var(--muted);font-size:13px;padding:8px 16px 0}
-a.back{color:var(--accent);font-weight:600;text-decoration:none}
+a.back{color:var(--accent-text);font-weight:600;text-decoration:none}
 
 .login{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:max(24px,env(safe-area-inset-top,0px)) 20px max(24px,env(safe-area-inset-bottom,0px));
-  background:radial-gradient(120% 80% at 50% 0%,#0f9a45 0%,#0a7a35 38%,#06431c 100%);color:#fff;text-align:center}
+  background:var(--login-bg);color:var(--hero-fg);text-align:center}
 .login .av{margin-bottom:18px}
 .login .av img{display:block;width:92px;height:auto;filter:drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff) drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1.5px 0 #fff) drop-shadow(0 4px 8px rgba(0,0,0,.3))}
 .login h1{font-size:22px;line-height:1.2;margin:0 0 4px;letter-spacing:.3px}
@@ -77,19 +81,19 @@ a.back{color:var(--accent);font-weight:600;text-decoration:none}
 .lf label{margin-top:12px}.lf label:first-of-type{margin-top:0}
 .lf input{width:100%;min-height:50px;background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px}
 .pw{position:relative}.pw input{padding-right:78px}
-.pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:38px;border:0;background:none;color:var(--accent);font-weight:700;cursor:pointer;padding:0 10px}
-.lf .btn{width:100%;margin-top:18px;min-height:52px;font-size:16px;background:linear-gradient(135deg,#0a7a35,#075a28);border-color:#075a28;color:#fff;box-shadow:0 6px 16px rgba(10,122,53,.35)}
+.pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:38px;border:0;background:none;color:var(--accent-text);font-weight:700;cursor:pointer;padding:0 10px}
+.lf .btn{width:100%;margin-top:18px;min-height:52px;font-size:16px;background:linear-gradient(135deg,#f8cd3f,#eaa900);border-color:#c98f00;color:#2b2100;box-shadow:0 6px 16px rgba(201,143,0,.4)}
 .lerr{margin-top:12px;font-size:14px;color:#b3261e;min-height:20px;font-weight:600}
 @media (prefers-color-scheme:dark){.lerr{color:#ff8a80}}
 .lfoot{margin-top:22px;font-size:12.5px;opacity:.85}
 .hin .sp{flex:1}
-.out{min-height:40px;padding:6px 14px;border-radius:10px;border:1.5px solid rgba(255,255,255,.55);background:rgba(255,255,255,.12);color:#fff;font-weight:600;cursor:pointer}
+.out{min-height:40px;padding:6px 14px;border-radius:10px;border:1.5px solid currentColor;background:rgba(255,255,255,.22);color:var(--hero-fg);font-weight:600;cursor:pointer}
 header img.lg{width:38px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
 .hidden{display:none!important}
 .chk{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--fg);font-weight:500;margin-top:2px}
 .chk input{width:22px;height:22px;min-height:0;flex:none}
 .btn.wide{width:100%;margin-top:8px}
-.btn.alt{background:var(--surface);color:var(--accent)}
+.btn.alt{background:var(--surface);color:var(--accent-text);border-color:var(--accent)}
 .dl .b{font-size:14px;color:var(--muted)}
 </style>
 </head>
@@ -132,7 +136,7 @@ header img.lg{width:38px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) 
   <div class="card"><h2>Laporan yang sudah terkirim</h2><div id="ls"></div></div>
   <p style="text-align:center;margin:0 0 8px"><a class="back" href="./">Ke aplikasi laporan</a></p>
 </main>
-<footer>Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Pantau Versi 4</span></footer>
+<footer>Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Pantau Versi 5</span></footer>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script>
