@@ -4,100 +4,252 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pantau Laporan Posyandu</title>
-<meta name="theme-color" content="#f2b705">
+<meta name="theme-color" content="#ffd000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Pantau Posyandu">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
 <style>
 :root{
-  --bg:#fbf6e6; --surface:#fff; --fg:#241c06; --muted:#6b5c2e; --line:#eadfb5;
-  --accent:#f2b705; --accent-fg:#2b2100; --accent-text:#7d5800; --accent-soft:#fff0b8; --gold:#f2b705;
-  --warn:#8a3b00; --warn-soft:#ffe9d2; --none:#f3eed9;
-  --hero1:#f8cd3f; --hero2:#e8a900; --hero-fg:#2b2100;
+  --bg:#fffdf3; --surface:#fff; --fg:#1f1800; --muted:#6f6330; --line:#f0e3ac;
+  --accent:#ffc800; --accent-fg:#241b00; --accent-text:#8a6200; --accent-soft:#fff2b8; --gold:#f2b705;
+  --warn:#8a3b00; --warn-soft:#ffe9d2; --none:#f5f0dc; --ok:#1f8a3c; --ok-soft:#e1f5e6;
+  --hero1:#ffe94d; --hero2:#ffd000; --hero-fg:#1f1800;
   --login-bg:radial-gradient(120% 80% at 50% 0%,#ffe27a 0%,#f2b705 42%,#c98f00 100%);
-  --shadow:0 1px 2px rgba(20,33,29,.08),0 8px 24px rgba(20,33,29,.08);
+  --shadow:0 2px 10px rgba(120,90,0,.10);
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root{
   --bg:#16120a; --surface:#221c0d; --fg:#f6efd8; --muted:#c4b27a; --line:#3d3416;
-  --accent:#f2b705; --accent-fg:#2b2100; --accent-text:#f6c93a; --accent-soft:#3b3010; --warn:#ffb98a; --warn-soft:#4a2a12; --none:#2a2410;
-  --hero1:#7a5a00; --hero2:#4f3a00; --hero-fg:#fff6d6;
+  --accent:#f2b705; --accent-fg:#2b2100; --accent-text:#f6c93a; --accent-soft:#3b3010; --warn:#ffb98a; --warn-soft:#4a2a12; --none:#2a2410; --ok:#7be09a; --ok-soft:#173a22;
+  --hero1:#8a6700; --hero2:#5c4400; --hero-fg:#fff6d6;
   --login-bg:radial-gradient(120% 80% at 50% 0%,#8a6400 0%,#5a4200 45%,#2a1f00 100%);
 }}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font-size:16px;line-height:1.5;padding-bottom:max(24px,env(safe-area-inset-bottom,0px))}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-size:16px;line-height:1.5;overflow-x:hidden}
 button,input,select{font:inherit;color:inherit}
-header{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:var(--hero-fg);
-  padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px))}
-.hin{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:12px}
-header img{width:38px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
-header .t{font-weight:700;font-size:16px;line-height:1.2}
-header .s{font-size:13px;opacity:.92}
-main{max-width:860px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left,0px))}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
-.filters{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.filters .full{grid-column:1/-1}
-label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px}
-select,input[type=search]{width:100%;min-height:46px;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:9px 12px}
-:focus-visible{outline:3px solid var(--accent-text);outline-offset:1px}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;font-size:13px;color:var(--muted)}
-.btn{min-height:44px;padding:8px 16px;border-radius:12px;border:1.5px solid var(--accent);background:var(--accent);color:var(--accent-fg);font-weight:600;cursor:pointer}
-.btn:disabled{opacity:.6}
-.btn:hover{filter:brightness(.96)}
-.tot{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-.tot div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
-.tot b{display:block;font-size:28px;line-height:1.1;color:var(--accent-text)}
-.tot span{font-size:13px;color:var(--muted)}
-h2{font-size:17px;margin:0 0 10px}
-table{width:100%;border-collapse:collapse;font-size:15px}
-th,td{padding:10px 6px;border-bottom:1px solid var(--line);text-align:center}
-th:first-child,td:first-child{text-align:left}
-th{font-size:13px;color:var(--muted);font-weight:600}
-tr:last-child td{border-bottom:0}
-.pill{display:inline-block;white-space:nowrap;padding:3px 9px;border-radius:99px;font-size:13px;font-weight:700}
-.pill.ok{background:var(--accent-soft);color:var(--accent-text)}
-.pill.no{background:var(--none);color:var(--muted);font-weight:600}
-.item{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--surface)}
-.item .a{font-weight:700}
-.item .b{font-size:14px;color:var(--muted)}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.tag{font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent-text)}
-.tag.w{background:var(--warn-soft);color:var(--warn)}
-.tag.g{background:var(--none);color:var(--muted)}
-.msg{padding:14px;border-radius:12px;background:var(--warn-soft);color:var(--warn);margin-bottom:16px;font-size:15px}
-.empty{text-align:center;color:var(--muted);padding:22px 8px}
-footer{text-align:center;color:var(--muted);font-size:13px;padding:8px 16px 0}
-a.back{color:var(--accent-text);font-weight:600;text-decoration:none}
+button{cursor:pointer}
+.hidden{display:none!important}
+.ic{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-.2em}
+:focus-visible{outline:3px solid var(--accent-text);outline-offset:2px}
+.only-d{display:none}
 
+/* ===== login ===== */
 .login{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:max(24px,env(safe-area-inset-top,0px)) 20px max(24px,env(safe-area-inset-bottom,0px));
-  background:var(--login-bg);color:var(--hero-fg);text-align:center}
+  padding:max(24px,env(safe-area-inset-top,0px)) 20px max(24px,env(safe-area-inset-bottom,0px));background:var(--login-bg);color:var(--hero-fg);text-align:center}
 .login .av{margin-bottom:18px}
 .login .av img{display:block;width:92px;height:auto;filter:drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff) drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1.5px 0 #fff) drop-shadow(0 4px 8px rgba(0,0,0,.3))}
 .login h1{font-size:22px;line-height:1.2;margin:0 0 4px;letter-spacing:.3px}
 .login p.sub{margin:0 0 24px;opacity:.9;font-size:15px}
 .lf{width:100%;max-width:380px;background:var(--surface);color:var(--fg);border-radius:18px;padding:22px 20px;box-shadow:0 18px 50px rgba(0,0,0,.35);text-align:left}
-.lf label{margin-top:12px}.lf label:first-of-type{margin-top:0}
+.lf label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 4px}.lf label:first-of-type{margin-top:0}
 .lf input{width:100%;min-height:50px;background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px}
 .pw{position:relative}.pw input{padding-right:78px}
-.pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:38px;border:0;background:none;color:var(--accent-text);font-weight:700;cursor:pointer;padding:0 10px}
-.lf .btn{width:100%;margin-top:18px;min-height:52px;font-size:16px;background:linear-gradient(135deg,#f8cd3f,#eaa900);border-color:#c98f00;color:#2b2100;box-shadow:0 6px 16px rgba(201,143,0,.4)}
+.pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:38px;border:0;background:none;color:var(--accent-text);font-weight:700;padding:0 10px}
+.lf .btn{width:100%;margin-top:18px;min-height:52px;font-size:16px}
 .lerr{margin-top:12px;font-size:14px;color:#b3261e;min-height:20px;font-weight:600}
 @media (prefers-color-scheme:dark){.lerr{color:#ff8a80}}
 .lfoot{margin-top:22px;font-size:12.5px;opacity:.85}
-.hin .sp{flex:1}
-.out{min-height:40px;padding:6px 14px;border-radius:10px;border:1.5px solid currentColor;background:rgba(255,255,255,.22);color:var(--hero-fg);font-weight:600;cursor:pointer}
-header img.lg{width:38px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
-.hidden{display:none!important}
-.chk{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--fg);font-weight:500;margin-top:2px}
-.chk input{width:22px;height:22px;min-height:0;flex:none}
-.btn.wide{width:100%;margin-top:8px}
-.btn.alt{background:var(--surface);color:var(--accent-text);border-color:var(--accent)}
-.dl .b{font-size:14px;color:var(--muted)}
+
+/* ===== tombol ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:8px 18px;border-radius:12px;border:1.5px solid #e9b800;
+  background:linear-gradient(180deg,#ffe24a,#ffc800);color:var(--accent-fg);font-weight:700;box-shadow:0 3px 8px rgba(214,160,0,.28)}
+.btn:disabled{opacity:.6}
+.btn:hover{filter:brightness(.97)}
+.btn.line{background:transparent;border:2px dashed #e3b100;color:var(--accent-text);box-shadow:none}
+.btn.wide{width:100%}
+
+/* ===== bingkai halaman ===== */
+#app{min-height:100vh;display:flex}
+.main-col{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--hero1),var(--hero2));color:var(--hero-fg);
+  padding:calc(14px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
+.sky{position:absolute;right:0;bottom:0;width:80%;height:100%;opacity:.3;pointer-events:none;color:#c58f00}
+@media (prefers-color-scheme:dark){.sky{opacity:.25;color:#000}}
+.trow{position:relative;display:flex;align-items:flex-start;gap:10px}
+.trow .lg{width:42px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
+.trow .tt{font-weight:800;font-size:17px;line-height:1.15;letter-spacing:.1px;white-space:nowrap}
+.trow .tt small{display:block;font-weight:500;font-size:14px;margin-top:3px;letter-spacing:0}
+.trow .sp{flex:1}
+.ibtn{position:relative;width:40px;height:40px;border:0;background:none;color:inherit;border-radius:12px;display:grid;place-items:center;font-size:22px}
+.dot{position:absolute;top:8px;right:9px;width:11px;height:11px;border-radius:50%;background:#ef3b2d;border:2px solid #ffe94d}
+.hello{position:relative;display:flex;align-items:center;gap:10px;padding:12px 0 26px}
+.avt{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#ffb800,#ff9f00);display:grid;place-items:center;color:#fff;flex:none;font-size:28px;border:3px solid rgba(255,255,255,.7)}
+.hello .w{flex:1;min-width:0;line-height:1.25;font-size:12px;white-space:nowrap}.hello .w b{display:block;font-size:17px}
+.chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.35);border:1.5px solid rgba(255,255,255,.7);border-radius:14px;padding:7px 9px;font-size:11px;line-height:1.25;white-space:nowrap;flex:none}
+.chip .ic{font-size:21px}
+.sheet{position:relative;margin-top:-14px;background:var(--bg);border-radius:22px 22px 0 0;padding:16px max(14px,env(safe-area-inset-left,0px)) 110px}
+.cols{max-width:1100px;margin:0 auto}
+
+/* ===== banner ===== */
+.banner{position:relative;overflow:hidden;border-radius:18px;margin-bottom:14px;min-height:128px;background:linear-gradient(100deg,#ffd814 0%,#ffe24a 55%,#fff0a0 100%);display:flex;align-items:stretch}
+.banner .bt{position:relative;z-index:2;width:60%;padding:16px 4px 24px 16px;display:flex;flex-direction:column;justify-content:center}
+.banner h2{margin:0 0 6px;font-size:19px;line-height:1.15;color:#3a2a00}
+.banner p{margin:0;font-size:12.5px;line-height:1.3;color:#2b2100}
+.banner .bar1{width:46px;height:4px;border-radius:4px;background:#3a2a00;opacity:.7;margin-top:12px}
+.banner .ph{position:absolute;right:0;top:0;bottom:0;width:56%;background:url(banner.jpg) right center/cover no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 48%);mask-image:linear-gradient(90deg,transparent,#000 48%)}
+.dots{position:absolute;left:30%;bottom:0;transform:translateX(-50%);display:flex;gap:12px;background:var(--bg);padding:6px 22px 4px;border-radius:16px 16px 0 0;z-index:3}
+.dots i{width:12px;height:12px;border-radius:50%;background:#d8d4c4;display:block;cursor:pointer}.dots i.on{background:#ffc800}
+.slide{display:none}.slide.on{display:flex;flex-direction:column}
+.banner.d{display:none}
+
+/* ===== panel filter ===== */
+.panel{margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.ch{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.sq{width:52px;height:52px;border-radius:14px;background:linear-gradient(180deg,#ffd21f,#ffbf00);display:grid;place-items:center;color:#2b2100;font-size:26px;flex:none}
+.ch h3{margin:0;font-size:19px;line-height:1.2}.ch p{margin:2px 0 0;font-size:13.5px;color:var(--muted)}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+.filters .full{grid-column:1/-1}
+.filters label{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;margin-bottom:6px}
+.sel{position:relative}
+.sel select,.sel input{width:100%;min-height:50px;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:10px 40px 10px 14px;appearance:none;-webkit-appearance:none;font-size:16px}
+.sel .ic.dn{position:absolute;right:12px;top:50%;margin-top:-.6em;pointer-events:none;color:var(--fg)}
+.sel input{padding-right:14px}
+.act{margin-top:14px}
+.dl{background:linear-gradient(180deg,#fffbe6,#fff6cc);border-color:#f6e08a}
+.dl .top2{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.dl .cl{width:52px;height:52px;border-radius:50%;background:#ffe27a;display:grid;place-items:center;color:#b88400;font-size:28px;flex:none}
+.dl small{display:block;font-size:12.5px;color:var(--muted)}
+.dl h3{margin:0;font-size:17px}.dl p{margin:0;font-size:13.5px;color:var(--muted)}
+.dl .btns{display:grid;gap:10px}
+.tot{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.tile{display:flex;align-items:center;gap:8px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:9px 8px;text-align:left;box-shadow:var(--shadow)}
+.tile .cc{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:22px;flex:none}
+.tile .cc.g{background:#2fa04a}.tile .cc.y{background:#ffc800;color:#fff}.tile .cc.p{background:#e8317f}
+.tile b{display:block;font-size:20px;line-height:1.1}.tile span{font-size:12px;color:var(--muted);line-height:1.2;display:block}
+.tile .tx{flex:1;min-width:0}.tile .ch2{color:var(--muted);font-size:14px;margin-left:-2px}
+
+/* ===== tabel/daftar ===== */
+h4{font-size:17px;margin:0 0 10px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:10px 6px;border-bottom:1px solid var(--line);text-align:center}
+th:first-child,td:first-child{text-align:left}
+th{font-size:12.5px;color:var(--muted);font-weight:700}
+tr:last-child td{border-bottom:0}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.scroll table{min-width:620px}
+.pill{display:inline-block;white-space:nowrap;padding:3px 9px;border-radius:99px;font-size:13px;font-weight:700}
+.pill.ok{background:var(--accent-soft);color:var(--accent-text)}
+.pill.no{background:var(--none);color:var(--muted);font-weight:600}
+.item{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;background:var(--surface)}
+.item .a{font-weight:700}.item .b{font-size:14px;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent-text)}
+.tag.w{background:var(--warn-soft);color:var(--warn)}.tag.g{background:var(--none);color:var(--muted)}
+.msg{padding:14px;border-radius:12px;background:var(--warn-soft);color:var(--warn);margin-bottom:14px;font-size:15px}
+.empty{text-align:center;color:var(--muted);padding:22px 8px}
+.kh{font-weight:800;margin:14px 0 8px;color:var(--accent-text)}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px}
+.kv:last-child{border-bottom:0}.kv span:first-child{color:var(--muted)}
+.okpill{background:var(--ok-soft);color:var(--ok);font-weight:700;border-radius:99px;padding:2px 12px;font-size:13px}
+.okbox{display:flex;align-items:center;gap:10px;background:var(--ok-soft);color:var(--ok);border-radius:12px;padding:12px;margin-top:10px;font-size:14px}
+.okbox.bad{background:var(--warn-soft);color:var(--warn)}
+footer{text-align:center;color:var(--muted);font-size:12.5px;padding:6px 16px 18px}
+footer.dsk{display:none}
+
+/* ===== menu bawah (HP) ===== */
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(4,1fr);background:linear-gradient(180deg,#fff9d8,#ffee8a);
+  border-top:1px solid #f2dc7b;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px rgba(120,90,0,.12)}
+.bnav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 8px;font-size:13px;font-weight:600;color:#3a2f00;position:relative}
+.bnav button .ic{font-size:26px}
+.bnav button.on{color:#c98f00;font-weight:800}
+.bnav button.on .ic{stroke-width:2.8}
+.bnav button.on::after{content:"";position:absolute;bottom:0;left:24%;right:24%;height:3px;border-radius:3px;background:#ffc800}
+
+/* ===== sidebar / laci ===== */
+.side{position:fixed;z-index:60;left:0;top:0;bottom:0;width:272px;transform:translateX(-102%);transition:transform .22s;display:flex;flex-direction:column;
+  background:linear-gradient(180deg,#fff7bd 0%,#ffe45c 55%,#ffd21f 100%);color:#1f1800;overflow:hidden;box-shadow:6px 0 30px rgba(0,0,0,.25)}
+.side.open{transform:none}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none}.scrim.on{display:block}
+.brand{display:flex;gap:10px;align-items:center;padding:calc(18px + env(safe-area-inset-top,0px)) 16px 14px}
+.brand img{width:44px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
+.brand b{font-size:15px;line-height:1.15;display:block}.brand small{font-size:12.5px}
+.nav{padding:8px 14px;display:grid;gap:6px;position:relative;z-index:2}
+.nav button{display:flex;align-items:center;gap:14px;border:0;background:none;text-align:left;padding:13px 14px;border-radius:12px;font-size:16px;font-weight:600;color:#1f1800}
+.nav button .ic{font-size:24px}
+.nav button.on{background:linear-gradient(180deg,#ffd21f,#ffc400);font-weight:800}
+.nav button.on .ic{stroke-width:2.8}
+.acct{margin:auto 14px 14px;position:relative;z-index:2;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.7);border:0;border-radius:18px;padding:10px 12px;text-align:left;font-size:13px;line-height:1.25}
+.acct .avt{width:42px;height:42px;font-size:22px;background:#1f1800;border:2px solid #ffc800}
+.acct b{display:block;font-size:14px}.acct .ic{margin-left:auto}
+.sart{position:absolute;left:0;right:0;bottom:0;height:260px;background:url(sisi.jpg) center bottom/100% auto no-repeat;opacity:.9;z-index:1;-webkit-mask-image:linear-gradient(180deg,transparent,#000 35%);mask-image:linear-gradient(180deg,transparent,#000 35%)}
+
+/* ===== rel kanan (komputer) ===== */
+.rail .quote{position:relative;overflow:hidden;background:linear-gradient(135deg,#fff3b0,#ffe27a);border:1px solid #f6e08a;border-radius:18px;padding:18px;display:flex;gap:14px;align-items:center;margin-bottom:14px;min-height:150px}
+.rail .quote .cp{width:78px;height:92px;flex:none;border-radius:16px;background:linear-gradient(180deg,#ffd21f,#ffb800);display:grid;place-items:center;color:#fff;font-size:40px;transform:rotate(-4deg)}
+.rail .quote p{margin:0;font-weight:700;font-size:15px;line-height:1.3}
+.sig{font-family:"Segoe Script","Brush Script MT","Snell Roundhand",cursive;font-style:italic;font-size:19px;color:#3a2a00;text-align:right;padding:36px 8px 0;border-bottom:3px solid #ffc800;border-radius:0 0 0 60px;margin-top:10px;padding-bottom:10px}
+
+@media (max-width:420px){.tile .ch2{display:none}}
+/* ===== tampilan komputer ===== */
+@media (min-width:900px){
+  .only-m{display:none!important}.only-d{display:revert}
+  .side{transform:none;box-shadow:none;width:260px}
+  body.collapsed .side{transform:translateX(-102%)}
+  .main-col{margin-left:260px}
+  body.collapsed .main-col{margin-left:0}
+  .top{padding:0 22px 0 18px;min-height:108px;display:flex;align-items:center}
+  .trow{align-items:center;width:100%}
+  .trow .hb{order:-1}
+  .trow .lg{width:50px}
+  .trow .tt{font-size:22px}
+  .dmeta{display:flex;align-items:center;gap:18px}
+  .dchip{display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.25}.dchip .ic{font-size:24px}
+  .uacct{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.55);border:0;border-radius:99px;padding:6px 14px 6px 6px;font-size:12px;line-height:1.2;text-align:left}
+  .uacct .avt{width:42px;height:42px;font-size:22px;background:#1f1800;border:2px solid #ffc800}
+  .uacct b{display:block;font-size:13px}
+  .sheet{margin-top:0;border-radius:0;padding:22px 24px 40px}
+  .cols{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;max-width:1280px}
+  .banner.m{display:none}
+  .banner.d{display:flex;min-height:142px;margin-bottom:18px}
+  .banner.d .bt{flex:1.2;flex-direction:row;align-items:center;gap:18px;padding:12px 18px}
+  .banner.d img{width:76px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
+  .banner.d h2{font-size:25px;letter-spacing:.2px}.banner.d p{font-size:15px;max-width:380px}
+  .banner.d .bt{width:66%;flex:none}
+  .banner.d .ph{width:40%;-webkit-mask-image:linear-gradient(90deg,transparent,#000 40%);mask-image:linear-gradient(90deg,transparent,#000 40%)}
+  .panel.big{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow)}
+  .panel.big .card{box-shadow:none;margin-bottom:14px}
+  .panel.big .tot{margin-bottom:0}
+  .ch h3{font-size:17px}.ch .sq{width:48px;height:48px}
+  .filters{gap:14px 24px}
+  .actrow{display:flex;justify-content:flex-end;margin-top:14px}
+  .actrow .btn.wide{width:auto;min-width:160px;min-height:44px}
+  .dl{position:relative}
+  .dl .btns{grid-template-columns:1fr}
+  .bnav{display:none}
+  footer.dsk{display:block;text-align:left;padding:4px 24px 18px}
+  footer.mob{display:none}
+  .tile b{font-size:21px}
+}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"/></symbol>
+<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="M12 12v9M16 16l-4-4-4 4"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+<symbol id="i-bars" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></symbol>
+<symbol id="i-clip" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M8 12h8M8 16h5"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+<symbol id="i-sky" viewBox="0 0 600 120" preserveAspectRatio="xMaxYMax slice"><g fill="currentColor"><path d="M0 120V84c40-6 70-30 110-34 34-3 52 16 86 4 40-14 62-46 112-46 44 0 64 28 100 40 30 10 60 4 92 12v60z"/><path d="M448 120V30h10V8h14v22h10v90z"/><path d="M468 8l3-8 3 8z"/><rect x="30" y="84" width="46" height="36"/><rect x="84" y="92" width="32" height="28"/><rect x="330" y="88" width="40" height="32"/><rect x="380" y="96" width="30" height="24"/><rect x="520" y="86" width="50" height="34"/><rect x="578" y="96" width="22" height="24"/></g></symbol>
+</defs></svg>
 <section class="login" id="login">
   <div class="av"><img src="logo.png" alt="Logo Kota Palu"></div>
   <h1>PANTAU LAPORAN POSYANDU</h1>
@@ -112,31 +264,129 @@ header img.lg{width:38px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) 
   </form>
   <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved</div>
 </section>
-<div id="app" class="hidden">
-<header><div class="hin"><img class="lg" src="logo.png" alt=""><div><div class="t">PANTAU LAPORAN POSYANDU</div><div class="s">Kecamatan Palu Utara</div></div><div class="sp"></div><button class="out" id="out" type="button">Keluar</button></div></header>
-<main>
-  <div class="card">
-    <div class="filters">
-      <div><label for="fb">Bulan</label><select id="fb"></select></div>
-      <div><label for="ft">Tahun</label><select id="ft"></select></div>
-      <div><label for="fj">Jenis</label><select id="fj"><option value="">Semua jenis</option><option>Posyandu Balita</option><option>Posyandu Lansia</option></select></div>
-      <div><label for="fk">Kelurahan</label><select id="fk"><option value="">Semua</option></select></div>
-      <div class="full"><label for="fq">Cari nama Posyandu</label><input id="fq" type="search" placeholder="Ketik nama Posyandu" autocomplete="off"></div>
-    </div>
+
+<div id="app" class="hidden" data-view="b">
+  <aside class="side" id="side">
+    <div class="brand"><img src="logo.png" alt=""><div><b>PANTAU LAPORAN POSYANDU</b><small>Kecamatan Palu Utara</small></div></div>
+    <nav class="nav" id="nav">
+      <button data-go="b" class="on"><svg class="ic "><use href="#i-home"/></svg>Beranda</button>
+      <button data-go="l"><svg class="ic "><use href="#i-doc"/></svg>Laporan</button>
+      <button data-go="d"><svg class="ic "><use href="#i-users"/></svg>Data Posyandu</button>
+      <button data-go="r"><svg class="ic "><use href="#i-bars"/></svg>Rekapitulasi</button>
+      <button data-go="p"><svg class="ic "><use href="#i-gear"/></svg>Pengaturan</button>
+    </nav>
+    <button class="acct" data-go="p"><span class="avt"><svg class="ic "><use href="#i-user"/></svg></span><span><b>Admin Posyandu</b>Kelurahan / Kecamatan</span><svg class="ic "><use href="#i-chev"/></svg></button>
+    <div class="sart"></div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <div class="main-col">
+    <header class="top">
+      <svg class="sky" aria-hidden="true"><use href="#i-sky"/></svg>
+      <div class="trow">
+        <img class="lg" src="logo.png" alt="">
+        <div class="tt">PANTAU LAPORAN<br class="only-m"> POSYANDU<small>Kecamatan Palu Utara</small></div>
+        <div class="sp"></div>
+        <div class="dmeta only-d">
+          <div class="dchip"><svg class="ic "><use href="#i-cal"/></svg><span><span class="dtgl">-</span><br>v6</span></div>
+        </div>
+        <button class="ibtn" id="bell" aria-label="Pemberitahuan"><svg class="ic "><use href="#i-bell"/></svg><i class="dot hidden" id="belldot"></i></button>
+        <button class="ibtn hb" id="hb" aria-label="Menu"><svg class="ic "><use href="#i-menu"/></svg></button>
+        <button class="uacct only-d" data-go="p"><span class="avt"><svg class="ic "><use href="#i-user"/></svg></span><span><b>Admin Posyandu</b>Kelurahan / Kecamatan</span><svg class="ic "><use href="#i-down"/></svg></button>
+      </div>
+      <div class="hello only-m">
+        <span class="avt"><svg class="ic "><use href="#i-user"/></svg></span>
+        <div class="w">Selamat datang,<b>Admin Posyandu</b>Kelurahan / Kecamatan</div>
+        <div class="chip"><svg class="ic "><use href="#i-cal"/></svg><span><span class="dtgl">-</span><br>v6</span></div>
+      </div>
+    </header>
+    <div id="bellpop" class="card hidden" style="position:fixed;right:12px;top:70px;z-index:70;width:min(340px,calc(100vw - 24px));max-height:70vh;overflow:auto"></div>
+
+    <main class="sheet"><div class="cols">
+      <div class="mainc">
+        <div id="msg"></div>
+
+        <section class="v v-b">
+          <div class="banner m" id="bm">
+            <div class="bt">
+              <div class="slide on"><h2>Bersama Wujudkan<br>Generasi Sehat</h2><p>Melalui Laporan Posyandu<br>yang Akurat dan Tepat Waktu</p><div class="bar1"></div></div>
+              <div class="slide"><h2>Data yang Baik,<br>Layanan Lebih Baik</h2><p>Pantau laporan Posyandu<br>seluruh kelurahan di sini</p><div class="bar1"></div></div>
+              <div class="slide"><h2>Sehat Bersama,<br>Kuat Bersama</h2><p>Terima kasih kepada seluruh<br>kader Posyandu Palu Utara</p><div class="bar1"></div></div>
+            </div>
+            <div class="ph"></div>
+            <div class="dots" id="bdots"><i class="on"></i><i></i><i></i></div>
+          </div>
+          <div class="banner d">
+            <div class="bt"><img src="logo.png" alt=""><div><h2>PANTAU LAPORAN POSYANDU</h2><p>Meningkatkan pelayanan kesehatan masyarakat melalui data yang akurat dan tepat waktu.</p></div></div>
+            <div class="ph"></div>
+          </div>
+        </section>
+
+        <div class="panel big" id="panel">
+          <div class="card" id="fcard" style="margin-bottom:14px">
+            <div class="ch"><span class="sq"><svg class="ic "><use href="#i-cal"/></svg></span><div><h3><span class="only-m">Laporan Posyandu</span><span class="only-d">Filter Data Laporan</span></h3><p>Pilih periode dan kriteria untuk melihat laporan posyandu</p></div></div>
+            <div class="filters">
+              <div><label for="fb"><svg class="ic "><use href="#i-cal"/></svg>Bulan</label><div class="sel"><select id="fb"></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
+              <div><label for="ft"><svg class="ic "><use href="#i-cal"/></svg>Tahun</label><div class="sel"><select id="ft"></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
+              <div><label for="fj"><svg class="ic "><use href="#i-list"/></svg>Jenis</label><div class="sel"><select id="fj"><option value="">Semua Jenis</option><option>Posyandu Balita</option><option>Posyandu Lansia</option></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
+              <div><label for="fk"><svg class="ic "><use href="#i-pin"/></svg>Kelurahan</label><div class="sel"><select id="fk"><option value="">Semua</option></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
+              <div class="full"><label for="fq"><svg class="ic "><use href="#i-search"/></svg>Cari nama Posyandu</label><div class="sel"><input id="fq" type="search" placeholder="Ketik nama Posyandu..." autocomplete="off"></div></div>
+            </div>
+            <div class="actrow act"><button class="btn wide" id="re" type="button"><svg class="ic "><use href="#i-filter"/></svg>Muat Ulang</button></div>
+          </div>
+          <div class="v v-b">
+            <div class="card dl">
+              <div class="top2"><span class="cl"><svg class="ic "><use href="#i-cloud"/></svg></span><div><small id="stamp">Memuat data…</small><h3>Tarik data untuk laporan bulanan</h3><p>Data mengikuti pilihan Bulan, Tahun, Jenis, dan Kelurahan di atas.</p></div></div>
+              <div class="btns"><button class="btn line" id="dx" type="button"><svg class="ic "><use href="#i-cloud"/></svg>Unduh Excel (.xlsx)</button><button class="btn" id="dc" type="button"><svg class="ic "><use href="#i-doc"/></svg>Unduh CSV</button></div>
+            </div>
+            <div class="tot" id="tot"></div>
+          </div>
+        </div>
+
+        <section class="v v-b"><div class="card"><h4>Status per kelurahan</h4><div id="mx2"></div></div></section>
+        <section class="v v-l"><div class="card"><h4>Laporan yang sudah terkirim</h4><div id="ls"></div></div></section>
+        <section class="v v-d"><div class="card"><h4>Data Posyandu</h4><div id="dp"></div></div></section>
+        <section class="v v-r">
+          <div class="card"><h4>Status per kelurahan</h4><div id="mx"></div></div>
+          <div class="card"><h4>Jumlah angka per kelurahan</h4><div id="tt"></div></div>
+        </section>
+        <section class="v v-p">
+          <div class="card"><h4>Akun</h4>
+            <div class="kv"><span>Nama</span><b>Admin Posyandu</b></div>
+            <div class="kv"><span>Nama pengguna</span><b id="pu">-</b></div>
+            <div class="kv"><span>Versi</span><b>v6</b></div>
+            <div class="kv"><span>Terakhir diperbarui</span><b class="lastt">-</b></div>
+            <div class="kv"><span>Status</span><span class="okpill">Online</span></div>
+          </div>
+          <div class="card"><div class="btns" style="display:grid;gap:10px">
+            <button class="btn" id="re2" type="button"><svg class="ic "><use href="#i-filter"/></svg>Muat ulang data</button>
+            <a class="btn line" href="./" style="text-decoration:none">Ke aplikasi laporan</a>
+            <button class="btn line" id="out" type="button" style="border-style:solid"><svg class="ic "><use href="#i-out"/></svg>Keluar</button>
+          </div></div>
+        </section>
+      </div>
+
+      <aside class="rail only-d">
+        <div class="quote"><span class="cp"><svg class="ic "><use href="#i-clip"/></svg></span><p>“Data yang baik adalah langkah awal pelayanan yang lebih baik.”</p></div>
+        <div class="card"><div class="ch" style="margin-bottom:6px"><span class="sq" style="width:40px;height:40px;font-size:20px"><svg class="ic "><use href="#i-users"/></svg></span><h3>Informasi Sistem</h3></div>
+          <div class="kv"><span><svg class="ic "><use href="#i-cal"/></svg> Versi</span><b>v6</b></div>
+          <div class="kv"><span><svg class="ic "><use href="#i-clock"/></svg> Terakhir diperbarui</span><b class="lastt">-</b></div>
+          <div class="kv"><span><svg class="ic "><use href="#i-shield"/></svg> Status</span><span class="okpill" id="stt">Online</span></div>
+          <div class="okbox" id="okb"><svg class="ic "><use href="#i-check"/></svg><span id="okt">Sistem berjalan dengan baik</span></div>
+        </div>
+        <div class="sig">Sehat Bersama, Kuat Bersama</div>
+      </aside>
+    </div></main>
+    <footer class="mob">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved</footer>
+    <footer class="dsk">© 2026 Pantau Laporan Posyandu - Kecamatan Palu Utara · Developed by Max Juniar Ratowo</footer>
   </div>
-  <div class="bar"><span id="stamp">Memuat data…</span><button class="btn" id="re" type="button">Muat ulang</button></div>
-  <div class="card dl"><h2>Tarik data untuk laporan bulanan</h2>
-    <p class="b" style="margin:0 0 12px" id="dlinfo">Data mengikuti pilihan Bulan, Tahun, Jenis, dan Kelurahan di atas.</p>
-    <button class="btn wide" id="dx" type="button">Unduh Excel (.xlsx)</button>
-    <button class="btn wide alt" id="dc" type="button">Unduh CSV</button>
-  </div>
-  <div id="msg"></div>
-  <div class="tot" id="tot"></div>
-  <div class="card"><h2>Status per kelurahan</h2><div id="mx"></div></div>
-  <div class="card"><h2>Laporan yang sudah terkirim</h2><div id="ls"></div></div>
-  <p style="text-align:center;margin:0 0 8px"><a class="back" href="./">Ke aplikasi laporan</a></p>
-</main>
-<footer>Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Pantau Versi 5</span></footer>
+
+  <nav class="bnav only-m" id="bnav">
+    <button data-go="b" class="on"><svg class="ic "><use href="#i-home"/></svg>Beranda</button>
+    <button data-go="l"><svg class="ic "><use href="#i-doc"/></svg>Laporan</button>
+    <button data-go="r"><svg class="ic "><use href="#i-bars"/></svg>Rekap</button>
+    <button data-go="p"><svg class="ic "><use href="#i-gear"/></svg>Pengaturan</button>
+  </nav>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script>
@@ -148,40 +398,94 @@ function $(i){return document.getElementById(i)}
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function opt(s,v,t){var o=document.createElement('option');o.value=v;o.textContent=t;s.appendChild(o)}
 
+
+var VIEWS=['b','l','d','r','p'];
+var VER='v6',HARI=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'],BLN3=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+function pad(n){return String(n).padStart(2,'0')}
+function jam(){var n=new Date();return pad(n.getHours())+'.'+pad(n.getMinutes())+' WITA'}
+
 (function init(){
   var now=new Date(),fb=$('fb'),ft=$('ft'),fk=$('fk');
   opt(fb,'','Semua bulan');BULAN.forEach(function(b){opt(fb,b,b)});
   fb.value=BULAN[now.getMonth()];
   opt(ft,String(now.getFullYear()),String(now.getFullYear()));
   KEL.forEach(function(k){opt(fk,k,k)});
+  var tg=HARI[now.getDay()]+', '+now.getDate()+' '+BLN3[now.getMonth()]+' '+now.getFullYear();
+  Array.prototype.forEach.call(document.getElementsByClassName('dtgl'),function(e){e.textContent=tg});
   ['fb','ft','fj','fk'].forEach(function(i){$(i).addEventListener('change',tampil)});
   $('fq').addEventListener('input',tampil);
   $('dx').addEventListener('click',function(){unduh('xlsx')});$('dc').addEventListener('click',function(){unduh('csv')});
-  $('re').addEventListener('click',muat);
+  $('re').addEventListener('click',muat);$('re2').addEventListener('click',muat);
   document.addEventListener('visibilitychange',function(){if(CRED&&!document.hidden&&Date.now()-last>45000)muat()});
   $('sh').addEventListener('click',function(){var i=$('lp'),t=i.type==='password';i.type=t?'text':'password';this.textContent=t?'Sembunyi':'Lihat'});
   $('out').addEventListener('click',keluar);
   $('lf').addEventListener('submit',function(ev){ev.preventDefault();
     var u=$('lu').value.trim(),p=$('lp').value;if(!u||!p)return;
     CRED={u:u,p:p};$('lb').disabled=true;$('lb').textContent='Memeriksa…';$('lerr').textContent='';muat(true)});
+  // navigasi
+  Array.prototype.forEach.call(document.querySelectorAll('[data-go]'),function(b){b.addEventListener('click',function(){go(b.getAttribute('data-go'))})});
+  $('hb').addEventListener('click',function(){
+    if(window.matchMedia('(min-width:900px)').matches){document.body.classList.toggle('collapsed')}
+    else{$('side').classList.toggle('open');$('scrim').classList.toggle('on')}});
+  $('scrim').addEventListener('click',tutupLaci);
+  $('bell').addEventListener('click',function(ev){ev.stopPropagation();bel()});
+  document.addEventListener('click',function(ev){var p=$('bellpop');if(!p.classList.contains('hidden')&&!p.contains(ev.target))p.classList.add('hidden')});
+  // spanduk geser (HP)
+  var sl=document.querySelectorAll('#bm .slide'),dt=document.querySelectorAll('#bdots i'),ix=0;
+  function pilih(n){ix=n;for(var i=0;i<sl.length;i++){sl[i].classList.toggle('on',i===n);dt[i].classList.toggle('on',i===n)}}
+  for(var i=0;i<dt.length;i++)(function(i){dt[i].addEventListener('click',function(){pilih(i)})})(i);
+  setInterval(function(){pilih((ix+1)%sl.length)},5500);
+  tampilView('b');
   try{var sv=sessionStorage.getItem('pantau-cred');if(sv){CRED=JSON.parse(sv);buka();muat()}}catch(x){}
 })();
+function tutupLaci(){$('side').classList.remove('open');$('scrim').classList.remove('on')}
+function tampilView(v){
+  $('app').setAttribute('data-view',v);
+  Array.prototype.forEach.call(document.querySelectorAll('.v'),function(s){
+    var on=false;VIEWS.forEach(function(x){if(s.classList.contains('v-'+x)&&x===v)on=true});s.classList.toggle('hidden',!on)});
+  $('panel').classList.toggle('hidden',v==='p');
+  var dl=document.querySelector('.panel .v-b');if(dl)dl.classList.toggle('hidden',v!=='b');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-go]'),function(b){
+    if(b.closest('#nav')||b.closest('#bnav'))b.classList.toggle('on',b.getAttribute('data-go')===v)});
+  var ac=document.querySelector('.panel.big'),pl=$('panel');
+  if(v==='b'){pl.classList.add('big')}else{pl.classList.remove('big')}
+}
+function go(v){tutupLaci();tampilView(v);window.scrollTo(0,0);if(ADA)tampil()}
+function bel(){
+  var p=$('bellpop');
+  if(!p.classList.contains('hidden')){p.classList.add('hidden');return}
+  p.textContent='';p.appendChild(el('h4',null,'Laporan terbaru'));
+  var l=DATA.slice().sort(function(a,b){return b.n<a.n?-1:b.n>a.n?1:0}).slice(0,6);
+  if(!l.length)p.appendChild(el('div','empty','Belum ada laporan masuk.'));
+  l.forEach(function(d){var it=el('div','item');it.appendChild(el('div','a',d.pos));it.appendChild(el('div','b',d.kel+' · '+d.jenis.replace('Posyandu ','')+' · '+d.bln));it.appendChild(el('div','b','Terkirim '+(d.tk||'-')));p.appendChild(it)});
+  p.classList.remove('hidden');
+  try{localStorage.setItem('pantau-seen',String(DATA.length))}catch(x){}
+  $('belldot').classList.add('hidden');
+}
+function titik(){var s=0;try{s=parseInt(localStorage.getItem('pantau-seen')||'0',10)||0}catch(x){}
+  $('belldot').classList.toggle('hidden',!(DATA.length>s))}
 function buka(){$('login').classList.add('hidden');$('app').classList.remove('hidden');window.scrollTo(0,0);
+  $('pu').textContent=CRED?CRED.u:'-';
   if(!timer)timer=setInterval(function(){if(CRED&&!document.hidden)muat()},60000)}
 function keluar(msg){
   CRED=null;ADA=false;DATA=[];try{sessionStorage.removeItem('pantau-cred')}catch(x){}
   $('app').classList.add('hidden');$('login').classList.remove('hidden');$('lp').value='';
   $('lb').disabled=false;$('lb').textContent='Masuk';$('lerr').textContent=typeof msg==='string'?msg:'';
-  $('tot').textContent='';$('mx').textContent='';$('ls').textContent='';$('msg').textContent='';
+  ['tot','mx','mx2','ls','dp','tt','msg'].forEach(function(i){$(i).textContent=''});tampilView('b');
 }
 function gagalLogin(m){keluar(m)}
 
 var last=0;
+function setLast(ok){
+  Array.prototype.forEach.call(document.getElementsByClassName('lastt'),function(e){e.textContent=ok?jam():e.textContent});
+  $('stt').textContent=ok?'Online':'Terputus';$('stt').className=ok?'okpill':'okpill';
+  var b=$('okb');b.className='okbox'+(ok?'':' bad');$('okt').textContent=ok?'Sistem berjalan dengan baik':'Data belum bisa dimuat';
+}
 function muat(dariLogin){
-  if(loading||!CRED)return;loading=true;$('re').disabled=true;
+  if(loading||!CRED)return;loading=true;$('re').disabled=true;$('re2').disabled=true;
   var cb='p'+Date.now(),s=document.createElement('script'),selesai=false;
-  function bersih(){selesai=true;clearTimeout(tm);try{delete window[cb]}catch(x){window[cb]=undefined}if(s.parentNode)s.parentNode.removeChild(s);loading=false;$('re').disabled=false}
-  function err(){if(dariLogin===true){$('lb').disabled=false;$('lb').textContent='Masuk';$('lerr').textContent='Belum tersambung. Periksa internet lalu coba lagi.';return}gagal('Data belum bisa dimuat. Periksa sinyal internet lalu tekan Muat ulang.')}
+  function bersih(){selesai=true;clearTimeout(tm);try{delete window[cb]}catch(x){window[cb]=undefined}if(s.parentNode)s.parentNode.removeChild(s);loading=false;$('re').disabled=false;$('re2').disabled=false}
+  function err(){if(dariLogin===true){$('lb').disabled=false;$('lb').textContent='Masuk';$('lerr').textContent='Belum tersambung. Periksa internet lalu coba lagi.';return}gagal('Data belum bisa dimuat. Periksa sinyal internet lalu tekan Muat Ulang.')}
   var tm=setTimeout(function(){if(selesai)return;bersih();err()},25000);
   window[cb]=function(r){
     if(selesai)return;bersih();
@@ -189,7 +493,7 @@ function muat(dariLogin){
     if(dariLogin){try{sessionStorage.setItem('pantau-cred',JSON.stringify(CRED))}catch(x){}buka()}
     if(!r||!r.ok){gagal('Data belum bisa dimuat'+(r&&r.pesan?': '+r.pesan:'. Coba lagi sebentar.'));return}
     DATA=r.data||[];ADA=true;last=Date.now();$('msg').textContent='';
-    var n=new Date();$('stamp').textContent='Diperbarui '+String(n.getHours()).padStart(2,'0')+'.'+String(n.getMinutes()).padStart(2,'0')+' WITA';
+    $('stamp').textContent='Diperbarui '+jam();setLast(true);titik();
     isiTahun();tampil();
   };
   s.onerror=function(){if(selesai)return;bersih();err()};
@@ -197,11 +501,10 @@ function muat(dariLogin){
   document.head.appendChild(s);
 }
 function gagal(t){
-  var m=$('msg');m.textContent='';var d=el('div','msg',t);m.appendChild(d);
-  $('stamp').textContent=ADA?'Menampilkan data terakhir':'Belum ada data';
-  if(!ADA){$('tot').textContent='';$('mx').textContent='';$('ls').textContent=''}
+  var m=$('msg');m.textContent='';m.appendChild(el('div','msg',t));
+  $('stamp').textContent=ADA?'Menampilkan data terakhir':'Belum ada data';setLast(false);
+  if(!ADA){['tot','mx','mx2','ls','dp','tt'].forEach(function(i){$(i).textContent=''})}
 }
-
 var FIELD={'Posyandu Balita':['Sasaran Ibu Hamil','Kunjungan Ibu Hamil','Sasaran Bayi Balita (S)','Memiliki KMS (K)','Kunjungan (D)','BB Naik (N)','BB Tidak Naik (T)','BGM','Stunting'],
  'Posyandu Lansia':['Sasaran lansia','Kunjungan lansia']};
 function esc2(x){return x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
@@ -268,6 +571,7 @@ function unduh(jenis){
   setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1000);
 }
 function q(v){v=v==null?'':String(v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+
 function isiTahun(){
   var ft=$('ft'),cur=ft.value,set={};
   set[String(new Date().getFullYear())]=1;DATA.forEach(function(d){if(d.thn)set[d.thn]=1});
@@ -283,19 +587,15 @@ function terbaru(list){
   });
   return Object.keys(m).map(function(k){return m[k]});
 }
-function tampil(){
-  if(!ADA)return;
-  var th=$('ft').value,bl=$('fb').value,jn=$('fj').value,kl=$('fk').value,q=$('fq').value.trim().toLowerCase();
-  var dasar=DATA.filter(function(d){return d.thn===th&&(!bl||d.bln===bl)});
-  var uniq=terbaru(dasar);
-  var lihat=uniq.filter(function(d){return(!jn||d.jenis===jn)&&(!kl||d.kel===kl)&&(!q||d.pos.toLowerCase().indexOf(q)>=0)});
-  // ringkasan
-  window.LIHAT=lihat;
-  var tb=lihat.filter(function(d){return d.jenis==='Posyandu Balita'}).length,tl=lihat.filter(function(d){return d.jenis==='Posyandu Lansia'}).length;
-  var tot=$('tot');tot.textContent='';
-  [[lihat.length,'Laporan masuk'],[tb,'Balita'],[tl,'Lansia']].forEach(function(x){var d=el('div');d.appendChild(el('b',null,x[0]));d.appendChild(el('span',null,x[1]));tot.appendChild(d)});
-  // matriks
-  var mx=$('mx');mx.textContent='';
+function tile(cls,icn,n,lbl,fn){
+  var b=el('button','tile');b.type='button';
+  var c=el('span','cc '+cls);c.innerHTML='<svg class="ic"><use href="#i-'+icn+'"/></svg>';b.appendChild(c);
+  var t=el('span','tx');t.appendChild(el('b',null,n));t.appendChild(el('span',null,lbl));b.appendChild(t);
+  var ch=el('span','ch2');ch.innerHTML='<svg class="ic"><use href="#i-chev"/></svg>';b.appendChild(ch);
+  b.addEventListener('click',fn);return b;
+}
+function matriks(box,uniq,kl,jn){
+  box.textContent='';
   var t=el('table'),hd=el('tr');['Kelurahan','Balita','Lansia'].forEach(function(h){hd.appendChild(el('th',null,h))});t.appendChild(hd);
   KEL.filter(function(k){return!kl||k===kl}).forEach(function(k){
     var tr=el('tr');tr.appendChild(el('td',null,k));
@@ -307,13 +607,47 @@ function tampil(){
     });
     t.appendChild(tr);
   });
-  mx.appendChild(t);
-  if(!bl)mx.appendChild(el('div','b',''));
-  // daftar
+  box.appendChild(t);
+}
+function jumlahTabel(box,lihat,kl){
+  box.textContent='';
+  var any=false;
+  ['Posyandu Balita','Posyandu Lansia'].forEach(function(j){
+    var fl=FIELD[j],sub=lihat.filter(function(d){return d.jenis===j});
+    if(!sub.length)return;any=true;
+    box.appendChild(el('div','kh',j));
+    var sc=el('div','scroll'),t=el('table'),hd=el('tr');
+    ['Kelurahan','Laporan'].concat(fl).forEach(function(h){hd.appendChild(el('th',null,h))});t.appendChild(hd);
+    var gt=fl.map(function(){return 0}),gl=0;
+    KEL.filter(function(k){return!kl||k===kl}).forEach(function(k){
+      var ds=sub.filter(function(d){return d.kel===k}),tot=fl.map(function(){return 0});
+      ds.forEach(function(d){ambil(d).forEach(function(r){fl.forEach(function(f,i){if(r.v[f]!=='')tot[i]+=r.v[f]})})});
+      var tr=el('tr');tr.appendChild(el('td',null,k));tr.appendChild(el('td',null,ds.length));
+      tot.forEach(function(v,i){tr.appendChild(el('td',null,v));gt[i]+=v});gl+=ds.length;t.appendChild(tr);
+    });
+    var tr=el('tr');tr.style.fontWeight='800';tr.appendChild(el('td',null,'JUMLAH'));tr.appendChild(el('td',null,gl));gt.forEach(function(v){tr.appendChild(el('td',null,v))});t.appendChild(tr);
+    sc.appendChild(t);box.appendChild(sc);
+  });
+  if(!any)box.appendChild(el('div','empty','Belum ada laporan untuk pilihan ini.'));
+}
+function tampil(){
+  if(!ADA)return;
+  var th=$('ft').value,bl=$('fb').value,jn=$('fj').value,kl=$('fk').value,q=$('fq').value.trim().toLowerCase();
+  var dasar=DATA.filter(function(d){return d.thn===th&&(!bl||d.bln===bl)});
+  var uniq=terbaru(dasar);
+  var lihat=uniq.filter(function(d){return(!jn||d.jenis===jn)&&(!kl||d.kel===kl)&&(!q||d.pos.toLowerCase().indexOf(q)>=0)});
+  window.LIHAT=lihat;
+  var tb=lihat.filter(function(d){return d.jenis==='Posyandu Balita'}).length,tl=lihat.filter(function(d){return d.jenis==='Posyandu Lansia'}).length;
+  var tot=$('tot');tot.textContent='';
+  tot.appendChild(tile('g','doc',lihat.length,'Laporan masuk',function(){$('fj').value='';go('l');tampil()}));
+  tot.appendChild(tile('y','check',tb,'Balita',function(){$('fj').value='Posyandu Balita';go('l');tampil()}));
+  tot.appendChild(tile('p','user',tl,'Lansia',function(){$('fj').value='Posyandu Lansia';go('l');tampil()}));
+  matriks($('mx'),uniq,kl,jn);matriks($('mx2'),uniq,kl,jn);
+  jumlahTabel($('tt'),lihat,kl);
+  // daftar laporan
   var ls=$('ls');ls.textContent='';
-  if(!lihat.length){ls.appendChild(el('div','empty',DATA.length?'Belum ada laporan untuk pilihan ini.':'Belum ada laporan yang masuk.'));return}
-  lihat.sort(function(a,b){return b.n<a.n?-1:b.n>a.n?1:0});
-  lihat.forEach(function(d){
+  if(!lihat.length){ls.appendChild(el('div','empty',DATA.length?'Belum ada laporan untuk pilihan ini.':'Belum ada laporan yang masuk.'))}
+  lihat.slice().sort(function(a,b){return b.n<a.n?-1:b.n>a.n?1:0}).forEach(function(d){
     var it=el('div','item');
     it.appendChild(el('div','a',d.pos));
     it.appendChild(el('div','b',d.kel+' · '+d.jenis));
@@ -324,6 +658,25 @@ function tampil(){
     tg.appendChild(el('span','tag '+(d.pdf?'':'w'),d.pdf?'PDF tersimpan':'PDF menunggu'));
     if(d.ver>1)tg.appendChild(el('span','tag g','Revisi ke-'+d.ver));
     it.appendChild(tg);ls.appendChild(it);
+  });
+  // data posyandu (semua periode)
+  var dp=$('dp');dp.textContent='';
+  var g={};
+  terbaru(DATA).filter(function(d){return(!kl||d.kel===kl)&&(!q||d.pos.toLowerCase().indexOf(q)>=0)&&(!jn||d.jenis===jn)}).forEach(function(d){
+    var k=d.kel+'|'+d.pos.toLowerCase();
+    if(!g[k])g[k]={kel:d.kel,pos:d.pos,j:{},n:0,l:d};
+    g[k].j[d.jenis]=1;g[k].n++;if(d.n>g[k].l.n)g[k].l=d;
+  });
+  var ks=Object.keys(g);
+  if(!ks.length)dp.appendChild(el('div','empty','Belum ada data Posyandu.'));
+  KEL.forEach(function(k){
+    var arr=ks.filter(function(x){return g[x].kel===k}).map(function(x){return g[x]}).sort(function(a,b){return a.pos.localeCompare(b.pos)});
+    if(!arr.length)return;dp.appendChild(el('div','kh',k));
+    arr.forEach(function(p){
+      var it=el('div','item');it.appendChild(el('div','a',p.pos));
+      it.appendChild(el('div','b',Object.keys(p.j).map(function(j){return j.replace('Posyandu ','')}).join(' + ')+' · '+p.n+' laporan'));
+      it.appendChild(el('div','b','Terakhir: '+p.l.bln+' '+p.l.thn));dp.appendChild(it);
+    });
   });
 }
 </script>
