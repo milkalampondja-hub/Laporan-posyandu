@@ -268,11 +268,13 @@ function lembar() {
 function aktifkan() { lembar(); induk(); }
 
 
-// ===================== Pengingat WhatsApp tanggal 25 =====================
-// Langkah pasang: lihat penjelasan di aplikasi. Nomor dan kunci disimpan di Script Properties (bukan di GitHub).
+// ===================== Pengingat WhatsApp resmi (Meta Cloud API) tanggal 25 =====================
+// Token, ID nomor, dan nomor tujuan disimpan di Script Properties (bukan di kode / GitHub).
+var GRAPH_VER = 'v26.0';
+var NAMA_TEMPLATE = 'pengingat_laporan_posyandu';
 var URL_PANTAU = 'https://milkalampondja-hub.github.io/Laporan-posyandu/pantau.html';
 
-function ringkasanBulanIni() {
+function dataBulanIni() {
   var zona = Session.getScriptTimeZone(), now = new Date();
   var bln = BULAN[parseInt(Utilities.formatDate(now, zona, 'M'), 10) - 1], thn = Utilities.formatDate(now, zona, 'yyyy');
   var sh = lembar(), n = sh.getLastRow(), uniq = {};
@@ -282,33 +284,52 @@ function ringkasanBulanIni() {
   });
   var ada = {}, total = 0;
   Object.keys(uniq).forEach(function (k) { var u = uniq[k]; ada[u.jenis + '|' + u.kel] = (ada[u.jenis + '|' + u.kel] || 0) + 1; total++; });
-  var baris = ['Pengingat tanggal 25 - Laporan Posyandu ' + bln + ' ' + thn, 'Total laporan masuk: ' + total];
-  JENIS.forEach(function (j) {
+  var per = JENIS.map(function (j) {
     var masuk = 0, belum = [];
     KELURAHAN.forEach(function (k) { var c = ada[j + '|' + k] || 0; masuk += c; if (!c) belum.push(k); });
-    baris.push(j.replace('Posyandu ', '') + ': ' + masuk + ' laporan' + (belum.length ? '. Kelurahan belum ada laporan: ' + belum.join(', ') : '. Semua kelurahan sudah ada.'));
+    return { jenis: j, masuk: masuk, belum: belum };
   });
-  baris.push('Buka Pantau: ' + URL_PANTAU);
-  return baris.join('\n');
+  return { bln: bln, thn: thn, total: total, per: per };
+}
+function ringkasJenis(x) {
+  return x.masuk + ' laporan' + (x.belum.length ? ', belum ada dari ' + x.belum.join(', ') : ', semua kelurahan sudah ada');
+}
+function ringkasanBulanIni(d) {
+  d = d || dataBulanIni();
+  var b = ['Pengingat tanggal 25 - Laporan Posyandu ' + d.bln + ' ' + d.thn, 'Total laporan masuk: ' + d.total];
+  d.per.forEach(function (x) { b.push(x.jenis.replace('Posyandu ', '') + ': ' + ringkasJenis(x)); });
+  b.push('Buka Pantau: ' + URL_PANTAU);
+  return b.join('\n');
 }
 
-function kirimWA(teks) {
-  var p = PropertiesService.getScriptProperties(), nomor = p.getProperty('WA_NOMOR'), kunci = p.getProperty('WA_APIKEY');
-  if (!nomor || !kunci) throw new Error('Nomor WhatsApp belum diatur');
-  var r = UrlFetchApp.fetch('https://api.callmebot.com/whatsapp.php?phone=' + encodeURIComponent(nomor) +
-    '&text=' + encodeURIComponent(teks) + '&apikey=' + encodeURIComponent(kunci), { muteHttpExceptions: true });
-  if (r.getResponseCode() !== 200) throw new Error('WhatsApp gagal: ' + r.getResponseCode() + ' ' + r.getContentText().slice(0, 120));
+/** Kirim lewat WhatsApp Business Platform. Template harus sudah disetujui Meta (lihat panduan). */
+function kirimWA(d) {
+  var p = PropertiesService.getScriptProperties(), token = p.getProperty('WA_TOKEN'), idNomor = p.getProperty('WA_PHONE_ID'), tujuan = p.getProperty('WA_NOMOR');
+  if (!token || !idNomor || !tujuan) throw new Error('Pengaturan WhatsApp belum lengkap');
+  var teks = function (t) { return String(t).replace(/\s+/g, ' ').trim().slice(0, 900); };
+  var isi = [d.bln + ' ' + d.thn, String(d.total), ringkasJenis(d.per[0]), ringkasJenis(d.per[1])].map(function (t) { return { type: 'text', text: teks(t) }; });
+  var r = UrlFetchApp.fetch('https://graph.facebook.com/' + GRAPH_VER + '/' + encodeURIComponent(idNomor) + '/messages', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { Authorization: 'Bearer ' + token },
+    payload: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: tujuan, type: 'template',
+      template: { name: NAMA_TEMPLATE, language: { code: 'id' }, components: [{ type: 'body', parameters: isi }] } })
+  });
+  if (r.getResponseCode() !== 200) throw new Error('WhatsApp gagal ' + r.getResponseCode() + ': ' + r.getContentText().slice(0, 200));
 }
 
 function kirimPengingat25() {
-  var teks = ringkasanBulanIni();
-  try { kirimWA(teks); }
-  catch (err) { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), 'Pengingat tanggal 25 - Laporan Posyandu', teks + '\n\n(WhatsApp tidak terkirim: ' + err.message + ')'); }
+  var d = dataBulanIni();
+  try { kirimWA(d); }
+  catch (err) { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), 'Pengingat tanggal 25 - Laporan Posyandu', ringkasanBulanIni(d) + '\n\n(WhatsApp tidak terkirim: ' + err.message + ')'); }
 }
 
-/** Isi nomor (awali 62, tanpa + dan tanpa 0) dan kunci dari CallMeBot, jalankan sekali, lalu kosongkan lagi isinya. */
+/** Isi tiga nilai dari Meta, jalankan sekali, lalu kosongkan lagi isinya di kode. */
 function simpanWA() {
-  PropertiesService.getScriptProperties().setProperties({ WA_NOMOR: '628xxxxxxxxxx', WA_APIKEY: 'ISI_KUNCI_DI_SINI' });
+  PropertiesService.getScriptProperties().setProperties({
+    WA_TOKEN: 'ISI_TOKEN_PERMANEN',
+    WA_PHONE_ID: 'ISI_PHONE_NUMBER_ID',
+    WA_NOMOR: '628xxxxxxxxxx'
+  });
 }
 
 /** Jalankan sekali: pasang jadwal tiap tanggal 25 pukul 08.00 (zona waktu proyek). */
