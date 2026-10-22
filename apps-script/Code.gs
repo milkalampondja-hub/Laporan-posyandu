@@ -311,10 +311,95 @@ function kirimTelegram(teks) {
   if (r.getResponseCode() !== 200) throw new Error('Telegram gagal ' + r.getResponseCode() + ': ' + r.getContentText().slice(0, 200));
 }
 
+// Daftar Posyandu resmi menurut SK Wali Kota (Poskesdes tidak dihitung).
+var DAFTAR_POSYANDU = {
+  'Posyandu Balita': {
+    'Mamboro': ['Kemuning','Asoka','Mekar','Lentora','Bayu Permai','Teratai'],
+    'Mamboro Barat': ['Bougenvil','Rosella','Ratora'],
+    'Taipa': ['Beringin','Anggur','Flamboyan','Anggrek','Ketapang'],
+    'Kayumalue Pajeko': ['Anggrek','Teratai','Melati'],
+    'Kayumalue Ngapa': ['Kemuning','Kenanga','Kamboja','Tulip']
+  },
+  'Posyandu Lansia': {
+    'Mamboro': ['Kemuning','Asoka','Lentora'],
+    'Mamboro Barat': ['Ratora','Bougenvile','Rosella'],
+    'Taipa': ['Beringin','Anggur','Flamboyan','Anggrek','Ketapang'],
+    'Kayumalue Pajeko': ['Palara','Balai Tenun','Kayujati'],
+    'Kayumalue Ngapa': ['Ndatengisi','Tabeo','Tandu Lembah']
+  }
+};
+// Ejaan yang sering berbeda dianggap sama.
+function normPos(s) {
+  s = String(s || '').toLowerCase().replace(/posyandu|pos\s/g, '').replace(/[^a-z]/g, '');
+  return s.replace(/bougenvile|bougenville|bougainvillea|bougenvil/, 'bougenvil');
+}
+
+/** Posyandu yang BELUM mengirim bulan ini, per jenis dan kelurahan. */
+function belumKirimBulanIni() {
+  var zona = Session.getScriptTimeZone(), now = new Date();
+  var bln = BULAN[parseInt(Utilities.formatDate(now, zona, 'M'), 10) - 1], thn = Utilities.formatDate(now, zona, 'yyyy');
+  var sh = lembar(), n = sh.getLastRow(), ada = {};
+  if (n > 1) sh.getRange(2, 1, n - 1, HEADER.length).getValues().forEach(function (r) {
+    if (!r[0] || String(r[2]) !== thn || String(r[3]) !== bln) return;
+    ada[[r[6], r[4], normPos(r[5])].join('|')] = true;
+  });
+  var hasil = [], jumlah = 0, total = 0;
+  JENIS.forEach(function (j) {
+    KELURAHAN.forEach(function (k) {
+      var semua = (DAFTAR_POSYANDU[j] || {})[k] || [], belum = [];
+      semua.forEach(function (p) { total++; if (!ada[[j, k, normPos(p)].join('|')]) belum.push(p); });
+      jumlah += belum.length;
+      hasil.push({ jenis: j, kel: k, semua: semua.length, belum: belum });
+    });
+  });
+  return { bln: bln, thn: thn, hasil: hasil, jumlahBelum: jumlah, total: total };
+}
+
+function htmlBelumKirim(b) {
+  var esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+  var h = '<html><body style="font-family:Arial,sans-serif;font-size:11pt;color:#222">' +
+    '<h2 style="margin:0">Posyandu Belum Mengirim Laporan</h2>' +
+    '<div>Kecamatan Palu Utara - ' + esc(b.bln) + ' ' + esc(b.thn) + '</div>' +
+    '<div style="margin:6px 0 12px"><b>' + b.jumlahBelum + '</b> dari ' + b.total + ' Posyandu belum mengirim (Poskesdes tidak dihitung).</div>';
+  JENIS.forEach(function (j) {
+    h += '<h3 style="background:#f5c400;padding:4px 8px;margin:14px 0 6px">' + esc(j) + '</h3>';
+    var ada = false;
+    b.hasil.filter(function (x) { return x.jenis === j; }).forEach(function (x) {
+      if (!x.belum.length) return;
+      ada = true;
+      h += '<div style="margin:6px 0 2px"><b>Kelurahan ' + esc(x.kel) + '</b> (' + x.belum.length + ' dari ' + x.semua + ' belum)</div><ol style="margin:0 0 4px 18px">';
+      x.belum.forEach(function (p) { h += '<li>' + esc(j) + ' ' + esc(p) + '</li>'; });
+      h += '</ol>';
+    });
+    if (!ada) h += '<div>Semua Posyandu sudah mengirim.</div>';
+  });
+  return h + '<div style="margin-top:16px;font-size:9pt;color:#666">Dibuat otomatis ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') + '. Buka Pantau: ' + URL_PANTAU + '</div></body></html>';
+}
+
+/** Kirim berkas PDF lewat Telegram. */
+function kirimTelegramPdf(blob, keterangan) {
+  var p = PropertiesService.getScriptProperties(), token = p.getProperty('TG_TOKEN'), chat = p.getProperty('TG_CHAT_ID');
+  if (!token || !chat) throw new Error('Pengaturan Telegram belum lengkap');
+  var r = UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendDocument', {
+    method: 'post', muteHttpExceptions: true,
+    payload: { chat_id: chat, caption: keterangan, document: blob }
+  });
+  if (r.getResponseCode() !== 200) throw new Error('Telegram gagal ' + r.getResponseCode() + ': ' + r.getContentText().slice(0, 200));
+}
+
 function kirimPengingat25() {
-  var d = dataBulanIni();
-  try { kirimTelegram(ringkasanBulanIni(d)); }
-  catch (err) { MailApp.sendEmail(Session.getEffectiveUser().getEmail(), 'Pengingat tanggal 25 - Laporan Posyandu', ringkasanBulanIni(d) + '\n\n(Telegram tidak terkirim: ' + err.message + ')'); }
+  var d = dataBulanIni(), b = belumKirimBulanIni();
+  var ket = 'Pengingat tanggal 25 - ' + b.bln + ' ' + b.thn + '\n' + b.jumlahBelum + ' dari ' + b.total + ' Posyandu belum mengirim laporan.';
+  var pdf = HtmlService.createHtmlOutput(htmlBelumKirim(b)).getBlob().getAs('application/pdf').setName('Belum-Kirim-' + b.bln + '-' + b.thn + '.pdf');
+  try {
+    kirimTelegram(ringkasanBulanIni(d));
+    kirimTelegramPdf(pdf, ket);
+  } catch (err) {
+    MailApp.sendEmail({
+      to: Session.getEffectiveUser().getEmail(), subject: 'Pengingat tanggal 25 - Laporan Posyandu',
+      body: ket + '\n\n' + ringkasanBulanIni(d) + '\n\n(Telegram tidak terkirim: ' + err.message + ')', attachments: [pdf]
+    });
+  }
 }
 
 /** Isi dua nilai dari Telegram, jalankan sekali, lalu kosongkan lagi isinya di kode. */
