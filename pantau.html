@@ -669,25 +669,44 @@ async function kirimAtur(f){
     throw new Error('Server belum menjawab. Periksa internet lalu coba lagi.');
   }finally{try{fm.remove();fr.remove()}catch(e){}}
 }
-function gambar(file,mode){
+function muatGbr(blob){
   return new Promise(function(res,rej){
-    var u=URL.createObjectURL(file),im=new Image();
-    im.onerror=function(){URL.revokeObjectURL(u);rej(new Error('Berkas bukan gambar yang bisa dibaca'))};
-    im.onload=function(){
-      URL.revokeObjectURL(u);
-      var W=im.naturalWidth,H=im.naturalHeight,c=document.createElement('canvas'),x=c.getContext('2d'),sx=0,sy=0,sw=W,sh=H,tw,th;
-      if(mode==='foto'){var m=Math.min(W,H);sx=(W-m)/2;sy=(H-m)/2;sw=sh=m;tw=th=240}
-      else{var sc=Math.min(1,960/W);tw=Math.round(W*sc);th=Math.round(H*sc)}
-      var batas=mode==='foto'?40000:86000,q=.86,out='';
-      for(var k=0;k<12;k++){
-        c.width=tw;c.height=th;x.fillStyle='#fff';x.fillRect(0,0,tw,th);x.drawImage(im,sx,sy,sw,sh,0,0,tw,th);
-        out=c.toDataURL('image/jpeg',q);
-        if(out.length<=batas)break;
-        if(q>.5)q-=.12;else{tw=Math.round(tw*.85);th=Math.round(th*.85)}
-      }
-      if(out.length>batas)rej(new Error('Foto terlalu besar, pilih foto lain'));else res(out);
-    };
+    var u=URL.createObjectURL(blob),im=new Image();
+    im.onerror=function(){URL.revokeObjectURL(u);rej(new Error('x'))};
+    im.onload=function(){URL.revokeObjectURL(u);res(im)};
     im.src=u;
+  });
+}
+function muatHeic(){
+  return new Promise(function(res,rej){
+    if(window.heic2any)return res();
+    var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js';
+    s.onload=function(){window.heic2any?res():rej(new Error('x'))};s.onerror=function(){rej(new Error('x'))};document.head.appendChild(s);
+  });
+}
+function bacaGambar(file){
+  var heic=/\.(heic|heif)$/i.test(file.name||'')||/hei[cf]/i.test(file.type||'');
+  function ubah(){
+    return muatHeic().then(function(){return window.heic2any({blob:file,toType:'image/jpeg',quality:.85})}).then(function(r){return muatGbr(Array.isArray(r)?r[0]:r)});
+  }
+  var gagalMsg='Foto tidak bisa dibaca. Coba foto lain, atau simpan dulu sebagai JPG atau PNG.';
+  if(heic)return ubah().catch(function(){throw new Error(gagalMsg)});
+  return muatGbr(file).catch(function(){return ubah()}).catch(function(){throw new Error(gagalMsg)});
+}
+function gambar(file,mode){
+  return bacaGambar(file).then(function(im){
+    var W=im.naturalWidth,H=im.naturalHeight,c=document.createElement('canvas'),x=c.getContext('2d'),sx=0,sy=0,sw=W,sh=H,tw,th;
+    if(mode==='foto'){var m=Math.min(W,H);sx=(W-m)/2;sy=(H-m)/2;sw=sh=m;tw=th=240}
+    else{var sc=Math.min(1,960/W);tw=Math.round(W*sc);th=Math.round(H*sc)}
+    var batas=mode==='foto'?40000:86000,q=.86,out='';
+    for(var k=0;k<12;k++){
+      c.width=tw;c.height=th;x.fillStyle='#fff';x.fillRect(0,0,tw,th);x.drawImage(im,sx,sy,sw,sh,0,0,tw,th);
+      out=c.toDataURL('image/jpeg',q);
+      if(out.length<=batas)break;
+      if(q>.5)q-=.12;else{tw=Math.round(tw*.85);th=Math.round(th*.85)}
+    }
+    if(out.length>batas)throw new Error('Foto terlalu besar, pilih foto lain');
+    return out;
   });
 }
 function status(id,t,k){var e=$(id);e.textContent=t||'';e.className='st'+(k?' '+k:'')}
