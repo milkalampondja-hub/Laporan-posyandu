@@ -100,6 +100,11 @@ button{cursor:pointer}
 
 /* ===== panel filter ===== */
 .panel{margin-bottom:14px}
+.buatlap{display:flex;align-items:center;gap:14px;margin:0 0 14px;padding:16px 18px;border-radius:16px;background:linear-gradient(135deg,#0a7a35,#12a04a);color:#fff;text-decoration:none;box-shadow:0 6px 18px rgba(10,122,53,.35);border:2px solid #fff3}
+.buatlap .ic{width:34px;height:34px;flex:none}
+.buatlap span{display:flex;flex-direction:column;gap:2px}
+.buatlap b{font-size:18px}
+.buatlap small{font-size:13px;opacity:.9}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
 .ch{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .sq{width:52px;height:52px;border-radius:14px;background:linear-gradient(180deg,#ffd21f,#ffbf00);display:grid;place-items:center;color:#2b2100;font-size:26px;flex:none}
@@ -329,6 +334,7 @@ footer.dsk{display:none}
           <div class="banner m" id="bm"></div>
           <div class="banner d" id="bd"></div>
         </section>
+        <section class="v v-b"><a class="buatlap" id="btnBuat" href="./" style="display:none"><svg class="ic"><use href="#i-doc"/></svg><span><b>Buatkan Laporan Posyandu</b><small>Buka aplikasi laporan untuk kelurahan <i id="btnBuatKel"></i></small></span></a></section>
         <section class="v v-b" id="sumB"></section>
 
         <div class="panel big" id="panel">
@@ -402,7 +408,7 @@ footer.dsk{display:none}
           </div>
           <div class="card"><div class="btns" style="display:grid;gap:10px">
             <button class="btn" id="re2" type="button"><svg class="ic "><use href="#i-filter"/></svg>Muat ulang data</button>
-            <a class="btn line" href="./" style="text-decoration:none">Ke aplikasi laporan</a>
+            <a class="btn line" id="lnkApp" href="./" style="text-decoration:none">Ke aplikasi laporan</a>
             <button class="btn line" id="out" type="button" style="border-style:solid"><svg class="ic "><use href="#i-out"/></svg>Keluar</button>
           </div></div>
         </section>

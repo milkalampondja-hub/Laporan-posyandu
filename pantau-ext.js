@@ -62,6 +62,9 @@ var KELSAYA = '';
 function dasarPos() { var l = POS.length ? POS : (window.SEED_POS || []); return KELSAYA ? l.filter(function (p) { return p.kel === KELSAYA; }) : l; }
 window.terapKel = function (k) {
   KELSAYA = k || '';
+  var op = !!KELSAYA, bb = $('btnBuat'), la = $('lnkApp');
+  if (bb) { bb.style.display = op ? 'flex' : 'none'; var bk = $('btnBuatKel'); if (bk) bk.textContent = KELSAYA === '-' ? '' : KELSAYA; }
+  if (la) la.style.display = op ? 'none' : '';
   KEL.length = 0; (KELSAYA ? [KELSAYA] : KEL_SEMUA).forEach(function (x) { KEL.push(x); });
 };
 function posAktif() { return dasarPos().filter(function (p) { return p.aktif !== false; }); }
