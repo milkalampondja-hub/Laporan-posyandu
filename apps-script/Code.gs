@@ -32,9 +32,12 @@ function doGet(e) {
     hasil = v ? JSON.parse(v) : { ok: false, tunggu: true };
   }
   else if (p.aksi === 'daftarpos') {
-    // Publik: hanya nama, kelurahan, jenis Posyandu aktif (tanpa nomor HP dan nama kader).
+    // Publik (untuk aplikasi kader): nama, kelurahan, jenis, dan nama kader aktif sesuai SK. Nomor HP tidak ikut.
     hasil = { ok: true, list: bacaPos().filter(function (x) { return x.aktif !== false; })
-      .map(function (x) { return { nama: x.nama, kel: x.kel, jenis: x.jenis }; }) };
+      .map(function (x) {
+        return { nama: x.nama, kel: x.kel, jenis: x.jenis,
+                 kader: (x.kader || []).filter(function (k) { return k.aktif !== false; }).map(function (k) { return { nama: k.nama, jabatan: k.jabatan }; }) };
+      }) };
   }
   else if (p.aksi === 'posyandu') {
     if (masuk(p.u, p.p)) {
@@ -278,7 +281,7 @@ function catat(d, cache) {
   if (ada) return simpanHasil(JSON.parse(ada), 'c');
   var v = validasi(d), sh = lembar(), nb = nomorBaru(sh, v);
   sh.appendRow([nb.nomor, new Date(), v.thn, v.bln, v.kel, v.pos, v.jenis, bersih(d.tanggalKegiatan, 120),
-                bersih(d.kader, 300), nb.versi, '', '', bersih(d.hasilText, 800), 'PDF menunggu']);
+                bersih(d.kader, 900), nb.versi, '', '', bersih(d.hasilText, 800), 'PDF menunggu']);
   var info = { ok: true, nomor: nb.nomor, versi: nb.versi };
   cache.put('info_' + d.id, JSON.stringify(info), 21600);
   return simpanHasil(info, 'c');
@@ -314,7 +317,7 @@ function selesai(d, cache) {
     sh.getRange(baris, 14).setValue('PDF tersimpan');
   } else {
     sh.appendRow([nb.nomor, new Date(), v.thn, v.bln, v.kel, v.pos, v.jenis, bersih(d.tanggalKegiatan, 120),
-                  bersih(d.kader, 300), nb.versi, nama, file.getUrl(), bersih(d.hasilText, 800), 'PDF tersimpan']);
+                  bersih(d.kader, 900), nb.versi, nama, file.getUrl(), bersih(d.hasilText, 800), 'PDF tersimpan']);
   }
   cache.removeAll(kunciCache);
   return simpanHasil({ ok: true, nomor: nb.nomor, versi: nb.versi }, 's');

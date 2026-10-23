@@ -202,6 +202,31 @@ function renderBeranda() {
     c2.appendChild(ch);
   });
   box.appendChild(c2);
+  var pg = penggantiSementara();
+  if (pg.length) {
+    var c3 = el('div', 'card'); c3.appendChild(el('h4', null, 'Kader pengganti sementara'));
+    c3.appendChild(el('div', 'lt', 'Menurut laporan terakhir tiap Posyandu. Segera urus perubahan SK. Setelah SK baru terbit, ubah nama kader di menu Data Posyandu.'));
+    pg.forEach(function (x) {
+      var it = el('div', 'item'); it.appendChild(el('div', 'a', x.p.nama + ' (' + x.p.jenis.replace('Posyandu ', '') + ') - ' + x.p.kel));
+      x.pasangan.forEach(function (q) { it.appendChild(el('div', 'b', q.lama + ' digantikan ' + q.baru)); });
+      it.appendChild(el('div', 'b', 'Tercatat di laporan ' + x.d.bln + ' ' + x.d.thn)); c3.appendChild(it);
+    });
+    box.appendChild(c3);
+  }
+}
+/* Posyandu yang laporan terakhirnya memuat "Nama (Pengganti — Kader Pengganti Sementara)". */
+function penggantiSementara() {
+  var akhir = {};
+  DATA.forEach(function (d) { var k = kunci(d.kel, d.jenis, d.pos); if (!akhir[k] || d.n > akhir[k].n) akhir[k] = d; });
+  var out = [];
+  Object.keys(akhir).forEach(function (k) {
+    var d = akhir[k], re = /([^,()]+?)\s*\(([^()]+?)\s+\u2014\s+Kader Pengganti Sementara\)/g, m, ps = [];
+    while ((m = re.exec(d.kader || ''))) ps.push({ lama: m[1].trim(), baru: m[2].trim() });
+    if (!ps.length) return;
+    var p = dasarPos().filter(function (x) { return kunci(x.kel, x.jenis, x.nama) === k; })[0] || { nama: d.pos, kel: d.kel, jenis: d.jenis };
+    out.push({ p: p, d: d, pasangan: ps });
+  });
+  return out.sort(function (a, b) { return a.p.kel.localeCompare(b.p.kel) || a.p.nama.localeCompare(b.p.nama); });
 }
 
 /* ---------- Rekapitulasi ---------- */

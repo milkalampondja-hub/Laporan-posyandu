@@ -113,6 +113,9 @@ details.opt{margin-top:4px}details.opt summary{cursor:pointer;font-weight:600;co
 .pg.t1{padding:40px 62px 36px;font-size:14px;line-height:1.28}
 .pg.t1 .rule{margin:5px 0 12px}.pg.t1 .jd{margin:0 0 10px}
 .pg.t1 table.kv td{padding:3px 0}.pg.t1 table.hk td,.pg.t1 table.hk th{padding:1px 6px}
+.pg .cat{position:absolute;left:58px;right:66px;bottom:24px;font-size:8.5pt;line-height:1.3;color:#333;text-align:left}.pg .cat b{font-weight:700}
+.pg.has-cat{padding-bottom:104px}.pg.t1.has-cat{padding-bottom:96px}.pg.t2.has-cat{padding-bottom:90px}
+.lock{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line,#e5e0cf)}.lock .nm{flex:1;min-width:0;font-weight:600}.lock .nm small{display:block;font-weight:400;opacity:.7}.lock input{flex:0 0 46%;min-width:0}
 .pg.t1 .sign{margin-top:16px}.pg.t1 .sign .nm{margin-top:46px}
 .pg.t2{padding:30px 58px 26px;font-size:13px;line-height:1.2}
 .pg.t2 .kop{min-height:80px}.pg.t2 .kop img{width:66px}.pg.t2 .kop .k1{font-size:18px}.pg.t2 .kop .k2{font-size:20px}
@@ -194,7 +197,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 22</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 23</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -247,7 +250,7 @@ function freshActivity(S){
   S.evaluasi="";S.tglLaporan=todayISO();S.rows=[newRow("")];
 }
 function blank(){
-  var S={jenis:"",kelurahan:"",posyandu:"",kader:[""],alamat:"",jabatan:"",lurah:"",nip:"",kota:"Palu",dasarO:"",tujuanO:"",sasaranO:""};
+  var S={peng:{},jenis:"",kelurahan:"",posyandu:"",kader:[""],alamat:"",jabatan:"",lurah:"",nip:"",kota:"Palu",dasarO:"",tujuanO:"",sasaranO:""};
   freshActivity(S);return S;
 }
 var S=blank(), restored=false, step=-1;
@@ -263,7 +266,7 @@ try{
     }}
 }catch(e){}
 function save(){
-  try{var c=JSON.parse(JSON.stringify(S));c.rows=S.rows.map(function(r){return {bulan:r.bulan,v:r.v}});localStorage.setItem(KEY,JSON.stringify(c))}catch(e){}
+  try{var c=JSON.parse(JSON.stringify(S));delete c.peng;c.rows=S.rows.map(function(r){return {bulan:r.bulan,v:r.v}});localStorage.setItem(KEY,JSON.stringify(c))}catch(e){}
 }
 
 /* ---------- teks otomatis ---------- */
@@ -291,7 +294,33 @@ function evaluasiText(){return (S.evaluasi||"").trim()||evaluasiAuto()}
 function applyKel(){var d=KEL[S.kelurahan]||{alamat:"",jabatan:"",lurah:"",nip:""};S.alamat=d.alamat;S.jabatan=d.jabatan;S.lurah=d.lurah;S.nip=d.nip}
 
 /* ---------- validasi ---------- */
-function kaderList(){return S.kader.map(function(s){return s.trim()}).filter(Boolean)}
+var POSLIST=[];
+try{var pc=localStorage.getItem("lp-poslist");if(pc){var pj=JSON.parse(pc);if(Array.isArray(pj))POSLIST=pj}}catch(e){}
+function labelJenis(){return J()?J().label:""}
+function daftarNama(){
+  if(!S.jenis||!S.kelurahan)return[];
+  return POSLIST.filter(function(p){return p.kel===S.kelurahan&&p.jenis===labelJenis()}).map(function(p){return p.nama}).sort();
+}
+function entri(){
+  if(!S.jenis||!S.kelurahan||!S.posyandu)return null;
+  return POSLIST.filter(function(p){return p.kel===S.kelurahan&&p.jenis===labelJenis()&&p.nama===S.posyandu})[0]||null;
+}
+function bersihPeng(v){return String(v||"").replace(/[()—\r\n]/g," ").replace(/\s+/g," ").trim().slice(0,40)}
+function kaderList(){
+  var e=entri();
+  if(e&&(e.kader||[]).length)return e.kader.map(function(k,i){var p=bersihPeng(S.peng&&S.peng[i]);return k.nama+(p?" ("+p+" — Kader Pengganti Sementara)":"")});
+  return S.kader.map(function(s){return s.trim()}).filter(Boolean);
+}
+function penggantiList(){
+  var e=entri();if(!e||!(e.kader||[]).length)return[];
+  return e.kader.map(function(k,i){return bersihPeng(S.peng&&S.peng[i])}).filter(Boolean);
+}
+function gabungNama(a){return a.length<2?(a[0]||""):a.slice(0,-1).join(", ")+(a.length>2?",":"")+" dan "+a[a.length-1]}
+function muatDaftarPos(){
+  tanya({aksi:"daftarpos"},15000).then(function(r){
+    if(r&&r.ok&&Array.isArray(r.list)&&r.list.length){POSLIST=r.list;try{localStorage.setItem("lp-poslist",JSON.stringify(r.list))}catch(e){}if(typeof step!=="undefined"&&step===0)render(true)}
+  }).catch(function(){});
+}
 function photoCount(){return S.rows.reduce(function(n,r){return n+r.photos.length},0)}
 function validate(i){
   var e=[];
@@ -357,10 +386,23 @@ function viewHome(){
   '<p class="save">Data posyandu dan kader diingat di HP ini, jadi tidak perlu mengisi ulang.</p>';
 }
 function viewPosyandu(){
-  var kd=S.kader.map(function(n,i){
-    return '<div class="rowline"><input type="text" id="kader'+i+'" data-kader="'+i+'" value="'+esc(n)+'" placeholder="Nama kader '+(i+1)+'" autocomplete="off" autocapitalize="words">'+
-    (S.kader.length>1?'<button type="button" class="x" data-delkader="'+i+'" aria-label="Hapus kader '+(i+1)+'">×</button>':'')+'</div>';
-  }).join("");
+  var daftar=daftarNama(),e=entri(),kd;
+  if(S.posyandu&&daftar.length&&daftar.indexOf(S.posyandu)<0){S.posyandu="";e=null}
+  if(e&&(e.kader||[]).length){
+    kd='<p class="help">Nama kader mengikuti SK yang berlaku dan tidak bisa diubah. Isi kolom pengganti hanya jika ada kader pengganti sementara.</p>'+
+      e.kader.map(function(k,i){
+        return '<div class="lock"><div class="nm">'+esc(k.nama)+(k.jabatan?'<small>'+esc(k.jabatan)+'</small>':'')+'</div>'+
+          '<input type="text" data-peng="'+i+'" value="'+esc((S.peng&&S.peng[i])||"")+'" placeholder="Pengganti (jika ada)" autocomplete="off" autocapitalize="words" maxlength="40"></div>';
+      }).join("");
+  }else{
+    kd='<p class="help">Tulis satu nama di setiap kotak.</p>'+S.kader.map(function(n,i){
+      return '<div class="rowline"><input type="text" id="kader'+i+'" data-kader="'+i+'" value="'+esc(n)+'" placeholder="Nama kader '+(i+1)+'" autocomplete="off" autocapitalize="words">'+
+      (S.kader.length>1?'<button type="button" class="x" data-delkader="'+i+'" aria-label="Hapus kader '+(i+1)+'">×</button>':'')+'</div>';
+    }).join("")+'<button type="button" class="btn sm" id="add-kader">+ Tambah kader</button>';
+  }
+  var namaField=daftar.length?
+    '<div class="f"><label class="l" for="posyandu">Nama posyandu<span class="hint">Pilih dari daftar</span></label><select id="posyandu" data-k="posyandu">'+opt(daftar,S.posyandu,"Pilih posyandu")+'</select></div>':
+    '<div class="f"><label class="l" for="posyandu">Nama posyandu<span class="hint">Contoh: ROSELLA</span></label><input type="text" id="posyandu" data-k="posyandu" value="'+esc(S.posyandu)+'" autocomplete="off" autocapitalize="characters"></div>';
   var jc=Object.keys(JENIS).map(function(k){
     var on=S.jenis===k;
     return '<button type="button" class="jcard'+(on?' on':'')+'" data-jenis="'+k+'" aria-pressed="'+on+'"><span class="ji">'+ic(k==="balita"?"baby":"heart",24)+'</span><span><b>'+JENIS[k].label+'</b><span>'+JENIS[k].desc+'</span></span></button>';
@@ -368,9 +410,8 @@ function viewPosyandu(){
   return '<div class="eyebrow">Langkah 1 dari 5</div><h1>Data posyandu</h1><p class="lead">Isi sekali saja. Data ini tersimpan otomatis di HP ini untuk laporan berikutnya.</p>'+
   '<section class="card"><h2>Jenis laporan</h2><p class="help">Pilih sesuai posyandu yang dilaporkan.</p><div class="jgrid" id="jenis-grp">'+jc+'</div></section>'+
   '<section class="card"><div class="f"><label class="l" for="kelurahan">Pilih kelurahan</label><select id="kelurahan" data-k="kelurahan">'+opt(Object.keys(KEL),S.kelurahan,"Pilih kelurahan")+'</select></div>'+
-  '<div class="f"><label class="l" for="posyandu">Nama posyandu<span class="hint">Contoh: ROSELLA</span></label><input type="text" id="posyandu" data-k="posyandu" value="'+esc(S.posyandu)+'" autocomplete="off" autocapitalize="characters"></div></section>'+
-  '<section class="card"><h2>Nama kader</h2><p class="help">Tulis satu nama di setiap kotak.</p>'+kd+
-  '<button type="button" class="btn sm" id="add-kader">+ Tambah kader</button></section>'+
+  namaField+'</section>'+
+  '<section class="card"><h2>Nama kader</h2>'+kd+'</section>'+
   '<section class="card"><details class="opt"><summary>Isi otomatis surat (boleh diubah)</summary>'+
   '<p class="help" style="margin-top:6px">Terisi sesuai jenis laporan dan kelurahan. Ubah hanya jika ada yang tidak sesuai.</p>'+
   '<div class="f"><label class="l" for="alamat">Alamat di kop surat</label><textarea id="alamat" data-k="alamat" rows="2">'+esc(S.alamat)+'</textarea></div>'+
@@ -470,12 +511,14 @@ main.addEventListener("input",function(e){
   if(t.dataset.k){S[t.dataset.k]=t.value;save();if(t.dataset.k==="posyandu")refreshAuto();if(t.dataset.k==="kota"||t.dataset.k==="tglLaporan")refreshSign()}
   else if(t.dataset.ov){var k=t.dataset.ov;S[k]=(t.value.trim()===autoText(k).trim())?"":t.value;save()}
   else if(t.dataset.kader!=null){S.kader[+t.dataset.kader]=t.value;save()}
+  else if(t.dataset.peng!=null){S.peng[+t.dataset.peng]=t.value}
   else if(t.dataset.f){var r=rowById(t.closest(".mcard").dataset.id);if(t.dataset.f==="bulan")r.bulan=t.value;else r.v[t.dataset.f]=t.value;save()}
   if(t.classList.contains("bad")){t.classList.remove("bad");var n=(t.closest(".rowline")||t).nextElementSibling;if(n&&n.classList.contains("err"))n.remove()}
 });
 main.addEventListener("change",function(e){
   var t=e.target;
-  if(t.id==="kelurahan"){S.kelurahan=t.value;applyKel();save();refreshAuto()}
+  if(t.id==="kelurahan"){S.kelurahan=t.value;S.posyandu="";S.peng={};applyKel();save();refreshAuto();render(true);return}
+  if(t.id==="posyandu"&&t.tagName==="SELECT"){S.posyandu=t.value;S.peng={};save();refreshAuto();render(true);return}
   if(t.dataset.up){addPhotos(t.dataset.up,t.files);t.value=""}
 });
 var wipeArm=0;
@@ -483,7 +526,7 @@ main.addEventListener("click",function(e){
   var b=e.target.closest("button");if(!b)return;
   if(b.dataset.start!=null){go(+b.dataset.start);return}
   if(b.dataset.goto!=null){var g=+b.dataset.goto;if(g<=step||b.classList.contains("go"))go(g);return}
-  if(b.dataset.jenis){S.jenis=b.dataset.jenis;save();render(true);return}
+  if(b.dataset.jenis){if(S.jenis!==b.dataset.jenis){S.posyandu="";S.peng={}}S.jenis=b.dataset.jenis;save();render(true);return}
   if(b.dataset.date){
     S.tglLaporan=b.dataset.date==="today"?todayISO():(S.tanggal||todayISO());save();
     var inp=document.getElementById("tglLaporan");if(inp)inp.value=S.tglLaporan;refreshSign();return}
@@ -556,10 +599,12 @@ function hasilHtml(rs){
 function pagesHtml(){
   var kel=(S.kelurahan||"").toUpperCase(),pos=(S.posyandu||"").trim();
   var kader=kaderList().map(function(n){return "- "+esc(n)}).join("<br>");
+  var peng=penggantiList();
+  var cat=peng.length?'<div class="cat"><b>Keterangan:</b><br>Nama kader masih mengacu pada SK yang berlaku. '+esc(gabungNama(peng))+' merupakan kader pengganti sementara selama proses perubahan SK.</div>':"";
   var tempat=(S.tempat||"").trim()||(pos?"Posyandu "+pos:"");
   function kv(l,v,raw){return '<tr><td class="l">'+l+'</td><td class="c">:</td><td>'+(raw?v:esc(v))+'</td></tr>'}
   function pre(v){return '<span class="pre">'+esc(v)+'</span>'}
-  var p1='<section class="pg"><div class="kop"><img src="'+LOGO+'" alt="">'+
+  var p1='<section class="pg'+(peng.length?' has-cat':'')+'"><div class="kop"><img src="'+LOGO+'" alt="">'+
     '<div class="k1">PEMERINTAH KOTA PALU</div><div class="k2">KECAMATAN PALU UTARA</div><div class="k2">KELURAHAN '+esc(kel)+'</div>'+
     (S.alamat?'<div class="k3">'+esc(S.alamat)+'</div>':'')+'</div><div class="rule"></div>'+
     '<h2 class="jd">'+esc(judul())+'</h2><table class="kv">'+
@@ -571,7 +616,7 @@ function pagesHtml(){
     kv("Hasil Kegiatan",hasilHtml(rowsOk()),true)+kv("Masalah di Temukan",pre(S.masalah),true)+kv("Penyelesaian Masalah",pre(S.selesai),true)+
     kv("Tindak Lanjut",pre(S.tindak),true)+kv("Evaluasi",pre(evaluasiText()),true)+
     '</table><div class="sign"><div>'+esc((S.kota||"").trim())+(S.tglLaporan?", "+tgl(S.tglLaporan):"")+'</div><div>Mengetahui</div><div>'+esc(S.jabatan)+'</div>'+
-    '<div class="nm">'+esc(S.lurah)+'</div><div>'+(S.nip?"NIP. "+esc(fmtNip(S.nip)):"")+'</div></div></section>';
+    '<div class="nm">'+esc(S.lurah)+'</div><div>'+(S.nip?"NIP. "+esc(fmtNip(S.nip)):"")+'</div></div>'+cat+'</section>';
   var out=[p1];
   S.rows.forEach(function(r){
     if(!r.photos.length)return;
@@ -747,6 +792,7 @@ async function makePdf(btn){
 }
 
 render();
+muatDaftarPos();
 })();
 </script>
 </body>
