@@ -157,6 +157,7 @@ footer.dsk{display:none}
 .pf{display:flex;align-items:center;gap:14px;margin-bottom:14px}
 .pf .avt.big{width:84px;height:84px;font-size:40px;border-width:3px}
 .fld{margin-bottom:12px}.fld label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+.fld select{width:100%;min-height:50px;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;font-size:16px}
 .fld input{width:100%;min-height:50px;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;font-size:16px}
 .fbtn{position:relative;overflow:hidden}.fbtn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;font-size:0}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -393,6 +394,7 @@ footer.dsk{display:none}
             <p class="hint">Anda adalah Admin kecamatan: dapat mengelola data, memeriksa laporan, dan mengatur aplikasi. Akun tambahan berperan sebagai Petugas/operator: dapat melihat, memeriksa, dan merekap laporan, tetapi tidak dapat mengubah data Posyandu, SK, banner, atau akun.</p>
             <div id="admList"></div>
             <div class="fld"><label for="adU">Nama pengguna baru</label><input id="adU" type="text" maxlength="20" autocomplete="off" autocapitalize="none" placeholder="huruf kecil atau angka, 3-20"></div>
+            <div class="fld"><label for="adK">Kelurahan operator (hanya melihat data kelurahan ini)</label><select id="adK"><option value="">Pilih kelurahan…</option><option>Kayumalue Ngapa</option><option>Kayumalue Pajeko</option><option>Mamboro</option><option>Mamboro Barat</option><option>Taipa</option></select></div>
             <div class="fld"><label for="adN">Nama admin (boleh dikosongkan)</label><input id="adN" type="text" maxlength="40" autocomplete="off"></div>
             <div class="fld"><label for="adP">Kata sandi (minimal 6 karakter)</label><input id="adP" type="password" autocomplete="new-password"></div>
             <button class="btn wide" id="svAdm" type="button">Tambah admin</button>
@@ -435,7 +437,7 @@ footer.dsk{display:none}
 <script>
 var ARSIP_URL='https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec';
 var BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-var KEL=['Kayumalue Ngapa','Kayumalue Pajeko','Mamboro','Mamboro Barat','Taipa'];
+var KEL=['Kayumalue Ngapa','Kayumalue Pajeko','Mamboro','Mamboro Barat','Taipa'];var KEL_SEMUA=KEL.slice();
 var PERAN='',ADM=[],POSOK=false;var DATA=[],ADA=false,loading=false,CRED=null,timer=null;
 function $(i){return document.getElementById(i)}
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
@@ -531,7 +533,7 @@ function muat(dariLogin){
     if(r&&r.login===false){gagalLogin(r.pesan||'Nama pengguna atau kata sandi salah');return}
     if(dariLogin){try{sessionStorage.setItem('pantau-cred',JSON.stringify(CRED))}catch(x){}buka()}
     if(!r||!r.ok){gagal('Data belum bisa dimuat'+(r&&r.pesan?': '+r.pesan:'. Coba lagi sebentar.'));return}
-    PERAN=r.peran||'';pasangAdmin();DATA=r.data||[];ADA=true;last=Date.now();$('msg').textContent='';
+    PERAN=r.peran||'';if(window.terapKel)terapKel(r.peran==='admin'?(r.kel||'-'):'');pasangAdmin();DATA=(r.data||[]).filter(function(d){return r.peran!=='admin'||d.kel===r.kel});ADA=true;last=Date.now();$('msg').textContent='';
     $('stamp').textContent='Diperbarui '+jam();setLast(true);titik();if(!profilOk)ambilProfil();
     isiTahun();tampil();if(!POSOK&&window.ambilPos)ambilPos();
   };
@@ -631,11 +633,12 @@ function pasangAdmin(){
   $('admInfo').textContent='Admin utama: '+CRED.u+'. Admin tambahan: '+ADM.length+' dari 5.';
   var box=$('admList');box.textContent='';
   ADM.forEach(function(a){
-    var r=el('div','admrow'),t=el('div','admt');t.appendChild(el('b',null,a.u));t.appendChild(el('span',null,(a.nama||'')+(a.nip?' · NIP '+a.nip:'')));
-    var b1=el('button','btn sm plain','Sandi'),b2=el('button','btn sm plain','Hapus');b1.type=b2.type='button';
+    var r=el('div','admrow'),t=el('div','admt');t.appendChild(el('b',null,a.u));t.appendChild(el('span',null,'Kelurahan '+(a.kel||'belum dipilih')+(a.nama?' · '+a.nama:'')+(a.nip?' · NIP '+a.nip:'')));
+    var b0=el('button','btn sm plain','Kelurahan'),b1=el('button','btn sm plain','Sandi'),b2=el('button','btn sm plain','Hapus');b0.type=b1.type=b2.type='button';
+    b0.addEventListener('click',function(){var n=prompt('Kelurahan untuk '+a.u+':\n'+KEL_SEMUA.map(function(k,i){return (i+1)+'. '+k}).join('\n')+'\n\nKetik nomor 1-'+KEL_SEMUA.length+':');if(n===null)return;var k=KEL_SEMUA[parseInt(n,10)-1];if(!k){status('stAdm','Nomor tidak valid','bad');return}kelolaAdm({op:'kel',nu:a.u,kel:k},a.u+' sekarang hanya melihat '+k+'.')});
     b1.addEventListener('click',function(){var n=prompt('Kata sandi baru untuk '+a.u+' (minimal 6 karakter):');if(n===null)return;kelolaAdm({op:'sandi',nu:a.u,ns:n},'Kata sandi '+a.u+' diubah.')});
     b2.addEventListener('click',function(){if(confirm('Hapus admin '+a.u+'?'))kelolaAdm({op:'hapus',nu:a.u},'Admin '+a.u+' dihapus.')});
-    r.appendChild(t);r.appendChild(b1);r.appendChild(b2);box.appendChild(r)});
+    r.appendChild(t);r.appendChild(b0);r.appendChild(b1);r.appendChild(b2);box.appendChild(r)});
   $('svAdm').disabled=ADM.length>=5;
 }
 function kelolaAdm(f,ok){
@@ -659,7 +662,7 @@ function pasangProfil(){
 function ambilProfil(){
   if(!CRED)return;
   jsonp({aksi:'profil',u:CRED.u,p:CRED.p}).then(function(r){
-    if(r&&r.ok){if(r.peran){PERAN=r.peran}if(r.admins)ADM=r.admins;pasangAdmin();PROFIL={nama:r.nama||'Admin Posyandu',nip:(r.nip!==undefined&&r.nip!==''?r.nip:lsNip()),jabatan:r.jabatan||'',unit:r.unit||'',foto:r.foto||''};if(window.terimaProfil)terimaProfil(r);profilOk=true;PEND={foto:null};pasangProfil()}
+    if(r&&r.ok){if(r.peran){PERAN=r.peran}if(window.terapKel&&r.peran)terapKel(r.peran==='admin'?(r.kel||'-'):'');if(r.admins)ADM=r.admins;pasangAdmin();PROFIL={nama:r.nama||'Admin Posyandu',nip:(r.nip!==undefined&&r.nip!==''?r.nip:lsNip()),jabatan:r.jabatan||'',unit:r.unit||'',foto:r.foto||''};if(window.terimaProfil)terimaProfil(r);profilOk=true;PEND={foto:null};pasangProfil()}
   }).catch(function(){profilOk=false});
 }
 function tunda(ms){return new Promise(function(r){setTimeout(r,ms)})}
@@ -729,7 +732,8 @@ function aman(btn,fn){btn.disabled=true;return fn().then(function(){btn.disabled
     var u=$('adU').value.trim().toLowerCase(),p=$('adP').value;
     if(!/^[a-z0-9]{3,20}$/.test(u)){status('stAdm','Nama pengguna 3-20 huruf kecil atau angka','bad');return}
     if(p.length<6){status('stAdm','Kata sandi minimal 6 karakter','bad');return}
-    aman($('svAdm'),function(){return kelolaAdm({op:'tambah',nu:u,ns:p,nama:$('adN').value.trim()},'Admin '+u+' ditambahkan.').then(function(ok){if(ok){$('adU').value=$('adN').value=$('adP').value=''}})});
+    if(!$('adK').value){status('stAdm','Pilih kelurahan operator','bad');return}
+    aman($('svAdm'),function(){return kelolaAdm({op:'tambah',nu:u,ns:p,kel:$('adK').value,nama:$('adN').value.trim()},'Admin '+u+' ditambahkan.').then(function(ok){if(ok){$('adU').value=$('adN').value=$('adP').value=''}})});
   });
   $('inNip').addEventListener('input',function(){this.setAttribute('data-auto','0')});
   $('inJab').addEventListener('input',function(){this.setAttribute('data-auto','0')});$('inUnit').addEventListener('input',function(){this.setAttribute('data-auto','0')});

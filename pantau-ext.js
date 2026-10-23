@@ -58,7 +58,12 @@ function kunci(kel, jenis, nama) {
   return [kel, jenis, String(nama || '').toLowerCase().replace(/posyandu/g, '').replace(/[^a-z0-9]/g, '').replace(/bougenv[a-z]*/, 'bougenvil')].join('|');
 }
 function aktifKader(p) { return (p.kader || []).filter(function (k) { return k.aktif !== false; }); }
-function dasarPos() { return POS.length ? POS : (window.SEED_POS || []); }
+var KELSAYA = '';
+function dasarPos() { var l = POS.length ? POS : (window.SEED_POS || []); return KELSAYA ? l.filter(function (p) { return p.kel === KELSAYA; }) : l; }
+window.terapKel = function (k) {
+  KELSAYA = k || '';
+  KEL.length = 0; (KELSAYA ? [KELSAYA] : KEL_SEMUA).forEach(function (x) { KEL.push(x); });
+};
 function posAktif() { return dasarPos().filter(function (p) { return p.aktif !== false; }); }
 function persen(a, b) { return b ? Math.round(a * 100 / b) : 0; }
 function pilihEl(id, opts, val) { var s = $(id); s.textContent = ''; opts.forEach(function (o) { var op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; s.appendChild(op); }); if (val != null) s.value = val; }
@@ -603,7 +608,7 @@ window.ambilPos = function () {
   }).catch(function () { });
 };
 window.tampilBaru = function () { renderBeranda(); renderRekap(); renderData(); };
-window.setelahKeluar = function () { POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
+window.setelahKeluar = function () { terapKel(''); POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
 document.addEventListener('DOMContentLoaded', function () { bangunBanner(); });
 if (document.readyState !== 'loading') bangunBanner();
 })();

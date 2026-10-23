@@ -41,7 +41,9 @@ function doGet(e) {
   }
   else if (p.aksi === 'posyandu') {
     if (masuk(p.u, p.p)) {
-      hasil = { ok: true, list: bacaPos(), sk: bacaPengaturan(PANTAU_USER).sk };
+      var w0 = masuk(p.u, p.p);
+      hasil = { ok: true, list: bacaPos().filter(function (x) { return w0.peran !== 'admin' || x.kel === w0.kel; }),
+                sk: bacaPengaturan(PANTAU_USER).sk, kel: w0.kel || '' };
     } else {
       Utilities.sleep(1200);
       hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
@@ -50,8 +52,8 @@ function doGet(e) {
   else if (p.aksi === 'daftar') {
     var w1 = masuk(p.u, p.p);
     if (w1) {
-      hasil = daftarLaporan();
-      hasil.peran = w1.peran;
+      hasil = daftarLaporan(w1.peran === 'admin' ? w1.kel : '');
+      hasil.peran = w1.peran; hasil.kel = w1.kel || '';
     } else {
       Utilities.sleep(1200);
       hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
@@ -62,7 +64,7 @@ function doGet(e) {
     if (w2) {
       var c = bacaPengaturan(w2.u), bs = bacaPengaturan(PANTAU_USER);
       hasil = { ok: true, nama: c.nama, nip: c.nip, jabatan: c.jabatan, unit: c.unit, foto: c.foto,
-                banners: bs.banners, batas: bs.batas, sk: bs.sk, peran: w2.peran };
+                banners: bs.banners, batas: bs.batas, sk: bs.sk, peran: w2.peran, kel: w2.kel || '' };
       if (w2.peran === 'utama') hasil.admins = daftarAdmin();
     } else {
       Utilities.sleep(1200);
@@ -89,6 +91,10 @@ var MAKS_ADMIN = 5;
 function bacaAdmin() {
   try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('PANTAU_ADMINS') || '{}'); } catch (x) { return {}; }
 }
+function bacaKelAdmin() {
+  try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('PANTAU_ADMIN_KEL') || '{}'); } catch (x) { return {}; }
+}
+function simpanKelAdmin(a) { PropertiesService.getScriptProperties().setProperty('PANTAU_ADMIN_KEL', JSON.stringify(a)); }
 function simpanAdmin(a) { PropertiesService.getScriptProperties().setProperty('PANTAU_ADMINS', JSON.stringify(a)); }
 function hashAdmin(k, p) { return hashSandi(k + '|' + String(p || '')); }
 function berkasProfil(u) { return (!u || u === PANTAU_USER) ? NAMA_PENGATURAN : 'pengaturan-pantau-' + u + '.json'; }
@@ -97,12 +103,12 @@ function masuk(u, p) {
   u = String(u || '');
   if (u === PANTAU_USER) return sandiBenar(u, p) ? { u: u, peran: 'utama' } : null;
   var k = u.toLowerCase(), a = bacaAdmin();
-  if (a[k] && a[k] === hashAdmin(k, p)) return { u: k, peran: 'admin' };
+  if (a[k] && a[k] === hashAdmin(k, p)) return { u: k, peran: 'admin', kel: bacaKelAdmin()[k] || '-' };
   return null;
 }
 function daftarAdmin() {
   var a = bacaAdmin();
-  return Object.keys(a).sort().map(function (k) { var c = bacaPengaturan(k); return { u: k, nama: c.nama, nip: c.nip }; });
+  return Object.keys(a).sort().map(function (k) { var c = bacaPengaturan(k); return { u: k, nama: c.nama, nip: c.nip, kel: bacaKelAdmin()[k] || '' }; });
 }
 /** Hanya admin utama: tambah, hapus, atau ganti kata sandi admin tambahan. */
 function kelola(d) {
@@ -117,16 +123,24 @@ function kelola(d) {
     if (a[nu]) throw new Error('Nama pengguna sudah dipakai');
     if (Object.keys(a).length >= MAKS_ADMIN) throw new Error('Admin tambahan sudah penuh (maksimal ' + MAKS_ADMIN + ')');
     if (ns.length < 6 || ns.length > 60) throw new Error('Kata sandi minimal 6 karakter');
+    var kl = String(d.kel || '');
+    if (KELURAHAN.indexOf(kl) < 0) throw new Error('Pilih kelurahan untuk operator');
     a[nu] = hashAdmin(nu, ns); simpanAdmin(a);
+    var km = bacaKelAdmin(); km[nu] = kl; simpanKelAdmin(km);
     var nm = bersih(d.nama, 40);
     if (nm) simpanPengaturan({ nama: nm, nip: '', jabatan: '', unit: '', foto: '' }, nu);
   } else if (d.op === 'sandi') {
     if (!a[nu]) throw new Error('Admin tidak ditemukan');
     if (ns.length < 6 || ns.length > 60) throw new Error('Kata sandi minimal 6 karakter');
     a[nu] = hashAdmin(nu, ns); simpanAdmin(a);
+  } else if (d.op === 'kel') {
+    if (!a[nu]) throw new Error('Admin tidak ditemukan');
+    if (KELURAHAN.indexOf(String(d.kel || '')) < 0) throw new Error('Kelurahan tidak dikenal');
+    var k2 = bacaKelAdmin(); k2[nu] = String(d.kel); simpanKelAdmin(k2);
   } else if (d.op === 'hapus') {
     if (!a[nu]) throw new Error('Admin tidak ditemukan');
     delete a[nu]; simpanAdmin(a);
+    var k3 = bacaKelAdmin(); delete k3[nu]; simpanKelAdmin(k3);
     var it = induk().getFilesByName(berkasProfil(nu));
     while (it.hasNext()) it.next().setTrashed(true);
   } else if (d.op !== 'daftar') {
@@ -202,7 +216,7 @@ function atur(d) {
 }
 
 /** Untuk aplikasi pemantau (hanya setelah login): data laporan beserta angka hasil kegiatan dan nama kader. */
-function daftarLaporan() {
+function daftarLaporan(kel) {
   try {
     var sh = lembar(), n = sh.getLastRow();
     if (n < 2) return { ok: true, data: [], waktu: Date.now() };
@@ -212,6 +226,7 @@ function daftarLaporan() {
     var data = [];
     rows.forEach(function (r) {
       if (!r[0]) return;
+      if (kel && String(r[4]) !== kel) return;
       data.push({ n: String(r[0]), tk: tgl(r[1]), thn: String(r[2]), bln: String(r[3]), kel: String(r[4]), pos: String(r[5]),
                   jenis: String(r[6]), tgl: tgl(r[7]), kader: String(r[8] || ''), hasil: String(r[12] || ''),
                   ver: parseInt(r[9], 10) || 1, pdf: String(r[13] || '') === 'PDF tersimpan' });
