@@ -62,6 +62,15 @@ var KELSAYA = '';
 function dasarPos() { var l = POS.length ? POS : (window.SEED_POS || []); return KELSAYA ? l.filter(function (p) { return p.kel === KELSAYA; }) : l; }
 window.terapKel = function (k) {
   KELSAYA = k || '';
+  Array.prototype.forEach.call(document.getElementsByClassName('wil'), function (w) {
+    w.textContent = '';
+    if (KELSAYA && KELSAYA !== '-') {
+      w.classList.add('op');
+      var l1 = document.createElement('span'); l1.textContent = 'Kecamatan Palu Utara';
+      var l2 = document.createElement('span'); l2.textContent = 'Kelurahan ' + KELSAYA;
+      w.appendChild(l1); w.appendChild(l2);
+    } else { w.classList.remove('op'); w.textContent = 'Kecamatan Palu Utara'; }
+  });
   var op = !!KELSAYA, bb = $('btnBuat'), la = $('lnkApp');
   if (bb) { bb.style.display = op ? 'flex' : 'none'; var bk = $('btnBuatKel'); if (bk) bk.textContent = KELSAYA === '-' ? '' : KELSAYA; }
   if (la) la.style.display = op ? 'none' : '';

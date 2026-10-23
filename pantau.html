@@ -70,6 +70,9 @@ button{cursor:pointer}
 .trow{position:relative;display:flex;align-items:flex-start;gap:10px}
 .trow .lg{width:42px;height:auto;flex:none;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
 .trow .tt{font-weight:800;font-size:17px;line-height:1.15;letter-spacing:.1px;white-space:nowrap}
+.wil.op{font-weight:700;letter-spacing:.04em;text-transform:uppercase;line-height:1.35}
+.wil.op span{display:block}
+.wil.op span+span{margin-top:1px;padding-top:2px;border-top:1.5px solid currentColor;border-top-color:rgba(60,40,0,.28);width:max-content;max-width:100%}
 .trow .tt small{display:block;font-weight:500;font-size:14px;margin-top:3px;letter-spacing:0}
 .trow .sp{flex:1}
 .ibtn{position:relative;width:40px;height:40px;border:0;background:none;color:inherit;border-radius:12px;display:grid;place-items:center;font-size:22px}
@@ -291,7 +294,7 @@ footer.dsk{display:none}
 
 <div id="app" class="hidden" data-view="b">
   <aside class="side" id="side">
-    <div class="brand"><img src="logo.png" alt=""><div><b>PANTAU LAPORAN POSYANDU</b><small>Kecamatan Palu Utara</small></div></div>
+    <div class="brand"><img src="logo.png" alt=""><div><b>PANTAU LAPORAN POSYANDU</b><small class="wil">Kecamatan Palu Utara</small></div></div>
     <nav class="nav" id="nav">
       <button data-go="b" class="on"><svg class="ic "><use href="#i-home"/></svg>Beranda</button>
       <button data-go="l"><svg class="ic "><use href="#i-doc"/></svg>Laporan</button>
@@ -309,7 +312,7 @@ footer.dsk{display:none}
       <svg class="sky" aria-hidden="true"><use href="#i-sky"/></svg>
       <div class="trow">
         <img class="lg" src="logo.png" alt="">
-        <div class="tt">PANTAU LAPORAN<br class="only-m"> POSYANDU<small>Kecamatan Palu Utara</small></div>
+        <div class="tt">PANTAU LAPORAN<br class="only-m"> POSYANDU<small class="wil">Kecamatan Palu Utara</small></div>
         <div class="sp"></div>
         <div class="dmeta only-d">
           <div class="dchip"><svg class="ic "><use href="#i-cal"/></svg><span><span class="dtgl">-</span><br>v11</span></div>
