@@ -105,6 +105,11 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .dock .btn{flex:1}.dock .btn.back{flex:0 0 36%}
 .dock .btn[hidden]{display:none}
 details.opt{margin-top:4px}details.opt summary{cursor:pointer;font-weight:600;color:var(--accent);min-height:44px;display:flex;align-items:center}
+.info{display:flex;flex-direction:column;gap:3px;background:#fff8e1;border:1px solid #f0d27a;border-left:5px solid #e3a600;border-radius:12px;padding:14px 16px;margin-bottom:16px;color:#4a3500;font-size:15px;line-height:1.45}
+.info b{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#8a5f00}
+.pasang summary{cursor:pointer;font-weight:700;font-size:16px;color:var(--text,#1a1a1a)}
+.pasang h3{font-size:15px;margin:16px 0 6px}.pasang ol{margin:0;padding-left:22px;display:grid;gap:6px;font-size:15px;line-height:1.45}
+.pasang .btn{margin-top:12px}
 .save{font-size:13px;color:var(--muted);text-align:center;margin:4px 0 16px}
 .banner{background:var(--warn-soft);color:var(--fg);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:14px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
@@ -197,7 +202,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 23</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 24</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -294,7 +299,11 @@ function evaluasiText(){return (S.evaluasi||"").trim()||evaluasiAuto()}
 function applyKel(){var d=KEL[S.kelurahan]||{alamat:"",jabatan:"",lurah:"",nip:""};S.alamat=d.alamat;S.jabatan=d.jabatan;S.lurah=d.lurah;S.nip=d.nip}
 
 /* ---------- validasi ---------- */
-var POSLIST=[];
+var POSLIST=[],INFO="",PASANG=null;
+try{INFO=localStorage.getItem("lp-info")||""}catch(e){}
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();PASANG=e;if(typeof step!=="undefined"&&step===-1&&typeof render==="function")render(true)});
+window.addEventListener("appinstalled",function(){PASANG=null});
+function sudahTerpasang(){try{return (window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true}catch(e){return false}}
 try{var pc=localStorage.getItem("lp-poslist");if(pc){var pj=JSON.parse(pc);if(Array.isArray(pj))POSLIST=pj}}catch(e){}
 function labelJenis(){return J()?J().label:""}
 function daftarNama(){
@@ -318,7 +327,10 @@ function penggantiList(){
 function gabungNama(a){return a.length<2?(a[0]||""):a.slice(0,-1).join(", ")+(a.length>2?",":"")+" dan "+a[a.length-1]}
 function muatDaftarPos(){
   tanya({aksi:"daftarpos"},15000).then(function(r){
-    if(r&&r.ok&&Array.isArray(r.list)&&r.list.length){POSLIST=r.list;try{localStorage.setItem("lp-poslist",JSON.stringify(r.list))}catch(e){}if(typeof step!=="undefined"&&step===0)render(true)}
+    var ubah=false;
+    if(r&&r.ok&&typeof r.info==="string"&&r.info!==INFO){INFO=r.info;ubah=true;try{localStorage.setItem("lp-info",INFO)}catch(e){}}
+    if(r&&r.ok&&Array.isArray(r.list)&&r.list.length){POSLIST=r.list;ubah=true;try{localStorage.setItem("lp-poslist",JSON.stringify(r.list))}catch(e){}}
+    if(ubah&&typeof step!=="undefined"&&(step===0||step===-1))render(true)
   }).catch(function(){});
 }
 function photoCount(){return S.rows.reduce(function(n,r){return n+r.photos.length},0)}
@@ -381,9 +393,19 @@ function viewHome(){
   var how=[["users","Data posyandu","Pilih jenis laporan dan kelurahan, isi nama posyandu dan kader."],["calendar","Kegiatan","Tanggal, tempat, dan hasil kegiatan bulan ini."],["camera","Foto","Tambahkan foto dokumentasi dari galeri atau kamera."],["edit","Catatan","Masalah, tindak lanjut, dan tanggal tanda tangan lurah."],["filecheck","Download","Periksa pratinjau, lalu simpan PDF dan cetak."]];
   return '<section class="hero"><div class="badge-logo"><img src="'+LOGO+'" alt=""></div><h1>LAPORAN POSYANDU<br>KECAMATAN PALU UTARA</h1><p>Posyandu Balita dan Lansia</p></section>'+
   (has?'<section class="card resume"><div class="rl">Laporan terakhir</div><div class="rt">'+esc(S.posyandu||"Belum diberi nama")+'</div><div class="rs">'+esc((J()?J().label+" · ":"")+(S.kelurahan?"Kelurahan "+S.kelurahan:"Belum memilih kelurahan"))+'</div><div class="btnrow"><button type="button" class="btn primary" data-start="0">Lanjutkan laporan</button><button type="button" class="btn" id="new-report">Laporan bulan baru</button></div></section>':'')+
+  (INFO?'<section class="info" role="note"><b>Pengumuman</b><span>'+esc(INFO)+'</span></section>':'')+
   '<section class="card"><h2>Cara mengisi laporan</h2><ol class="how">'+how.map(function(h){return '<li><span class="hi">'+ic(h[0],22)+'</span><div><b>'+h[1]+'</b><span>'+h[2]+'</span></div></li>'}).join("")+'</ol></section>'+
   (has?'':'<button type="button" class="btn primary block big" data-start="0">Mulai laporan</button>')+
-  '<p class="save">Data posyandu dan kader diingat di HP ini, jadi tidak perlu mengisi ulang.</p>';
+  '<p class="save">Data posyandu dan kader diingat di HP ini, jadi tidak perlu mengisi ulang.</p>'+pasangHtml();
+}
+function pasangHtml(){
+  if(sudahTerpasang())return "";
+  return '<section class="card pasang"><details><summary>Pasang aplikasi di layar utama HP</summary>'+
+    '<p class="help">Supaya aplikasi bisa dibuka dengan satu ketukan seperti aplikasi biasa.</p>'+
+    (PASANG?'<button type="button" class="btn primary block" id="pasang-btn">Pasang sekarang</button>':'')+
+    '<h3>iPhone / iPad</h3><ol><li>Buka alamat aplikasi ini di <b>Safari</b>.</li><li>Ketuk tombol <b>Bagikan</b> (kotak dengan panah ke atas) di bagian bawah layar.</li><li>Gulir ke bawah, ketuk <b>Tambah ke Layar Utama</b>.</li><li>Ketuk <b>Tambah</b>.</li></ol>'+
+    '<h3>Android</h3><ol><li>Buka alamat aplikasi ini di <b>Chrome</b>.</li><li>Ketuk <b>titik tiga</b> di pojok kanan atas.</li><li>Ketuk <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</li><li>Ketuk <b>Instal</b> atau <b>Tambahkan</b>.</li></ol>'+
+    '</details></section>';
 }
 function viewPosyandu(){
   var daftar=daftarNama(),e=entri(),kd;
@@ -524,6 +546,7 @@ main.addEventListener("change",function(e){
 var wipeArm=0;
 main.addEventListener("click",function(e){
   var b=e.target.closest("button");if(!b)return;
+  if(b.id==="pasang-btn"){if(PASANG){PASANG.prompt();PASANG.userChoice.then(function(){PASANG=null;if(step===-1)render(true)}).catch(function(){})}return}
   if(b.dataset.start!=null){go(+b.dataset.start);return}
   if(b.dataset.goto!=null){var g=+b.dataset.goto;if(g<=step||b.classList.contains("go"))go(g);return}
   if(b.dataset.jenis){if(S.jenis!==b.dataset.jenis){S.posyandu="";S.peng={}}S.jenis=b.dataset.jenis;save();render(true);return}

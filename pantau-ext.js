@@ -1,7 +1,7 @@
 /* Pantau Laporan Posyandu - tambahan: banner geser, menu akun, Beranda, Rekapitulasi, Data Posyandu, Pengaturan lanjutan. */
 (function () {
 'use strict';
-var POS = [], SK = {}, BATAS = 25, BANNERS = ['', '', ''], POSDIMUAT = false;
+var PENGUMUMAN = '', POS = [], SK = {}, BATAS = 25, BANNERS = ['', '', ''], POSDIMUAT = false;
 var EXT_CSS = [
 '.grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}',
 '.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}',
@@ -251,13 +251,13 @@ var rkDibuat = false;
 function rkSiap() {
   var box = $('rkBox'); if (!box || rkDibuat) return; rkDibuat = true;
   box.innerHTML = '<div class="card"><h4>Periode rekap</h4><div class="fl2"><select id="rb"></select><select id="rt"></select></div>' +
-    '<div class="toolbar"><button class="btn sm" id="rkx" type="button">Unduh rekap (Excel)</button></div></div><div id="rkIsi"></div>';
+    '<div class="toolbar"><button class="btn sm" id="rkp" type="button">Cetak rekap (PDF)</button> <button class="btn sm plain" id="rkx" type="button">Unduh rekap (Excel)</button></div></div><div id="rkIsi"></div>';
   var now = new Date();
   pilihEl('rb', BULAN.map(function (b) { return [b, b]; }), BULAN[now.getMonth()]);
   var th = {}; th[now.getFullYear()] = 1; DATA.forEach(function (d) { if (d.thn) th[d.thn] = 1; });
   pilihEl('rt', Object.keys(th).sort().reverse().map(function (t) { return [t, t]; }), String(now.getFullYear()));
   $('rb').addEventListener('change', renderRekap); $('rt').addEventListener('change', renderRekap);
-  $('rkx').addEventListener('click', unduhRekap);
+  $('rkx').addEventListener('click', unduhRekap); $('rkp').addEventListener('click', cetakRekap);
 }
 function barRow(lbl, a, b) { var pc = persen(a, b), r = el('div', 'barrow'), l = el('div', 'l'); l.appendChild(el('span', null, lbl)); l.appendChild(el('b', null, a + ' dari ' + b + ' · ' + pc + '%')); r.appendChild(l); var bar = el('div', 'bar'); bar.appendChild(document.createElement('i')).style.width = pc + '%'; r.appendChild(bar); return r; }
 function tabel(heads, rows, pcCol) {
@@ -345,6 +345,46 @@ function renderRekap() {
   // 7 angka
   var c7 = el('div', 'card'); c7.appendChild(el('h4', null, 'Jumlah angka hasil kegiatan per kelurahan - ' + R.bl)); var tt = el('div'); tt.id = 'tt'; c7.appendChild(tt); isi.appendChild(c7);
   jumlahTabel(tt, h.uniq, '');
+}
+function esc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function cetakRekap() {
+  if (!ADA) { alert('Data belum dimuat.'); return; }
+  var R = rkData(), h = R.h, now = new Date(), op = KELSAYA && KELSAYA !== '-';
+  var pf = (typeof PROFIL !== 'undefined' && PROFIL) ? PROFIL : {};
+  var ST = { tepat: 'Sudah masuk', telat: 'Masuk terlambat', lewat: 'Belum, lewat batas', belum: 'Belum masuk' };
+  var gt = { b: [0, 0], l: [0, 0] };
+  var rk = KEL.map(function (k) {
+    var a = sub(h, function (r) { return r.p.kel === k && r.p.jenis === J_B(); }), b = sub(h, function (r) { return r.p.kel === k && r.p.jenis === J_L(); });
+    gt.b[0] += a.masuk; gt.b[1] += a.total; gt.l[0] += b.masuk; gt.l[1] += b.total;
+    return '<tr><td>' + esc(k) + '</td><td class="c">' + a.masuk + ' / ' + a.total + '</td><td class="c">' + b.masuk + ' / ' + b.total + '</td><td class="c">' + (a.masuk + b.masuk) + ' / ' + (a.total + b.total) + '</td><td class="c">' + persen(a.masuk + b.masuk, a.total + b.total) + '%</td></tr>';
+  }).join('');
+  if (KEL.length > 1) rk += '<tr class="jm"><td>JUMLAH</td><td class="c">' + gt.b[0] + ' / ' + gt.b[1] + '</td><td class="c">' + gt.l[0] + ' / ' + gt.l[1] + '</td><td class="c">' + (gt.b[0] + gt.l[0]) + ' / ' + (gt.b[1] + gt.l[1]) + '</td><td class="c">' + persen(gt.b[0] + gt.l[0], gt.b[1] + gt.l[1]) + '%</td></tr>';
+  var no = 0, rin = h.rows.slice().sort(function (x, y) { return x.p.kel.localeCompare(y.p.kel) || x.p.jenis.localeCompare(y.p.jenis) || x.p.nama.localeCompare(y.p.nama); }).map(function (r) {
+    return '<tr><td class="c">' + (++no) + '</td><td>' + esc(r.p.nama) + '</td><td>' + esc(r.p.kel) + '</td><td>' + esc(r.p.jenis.replace('Posyandu ', '')) + '</td><td>' + ST[r.st] + '</td><td class="c">' + esc(r.d ? (r.d.tk || '').slice(0, 10) : '-') + '</td></tr>';
+  }).join('');
+  var tot = h.rows.length, msk = h.masuk.length;
+  var tgl = now.getDate() + ' ' + BULAN[now.getMonth()] + ' ' + now.getFullYear();
+  var logo = new URL('logo.png', location.href).href;
+  var html = '<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rekap Laporan Posyandu ' + esc(R.bl) + ' ' + esc(R.th) + '</title><style>' +
+    '@page{size:A4;margin:16mm 15mm}*{box-sizing:border-box}body{font:11pt/1.4 "Times New Roman",Tinos,serif;color:#000;margin:0;padding:14px}' +
+    '.kop{display:flex;align-items:center;gap:14px;border-bottom:3px double #000;padding-bottom:8px;margin-bottom:12px}.kop img{width:64px;height:auto}.kop div{flex:1;text-align:center;line-height:1.25}' +
+    '.kop b{display:block;font-size:13pt;letter-spacing:.02em}.kop small{font-size:10pt}h1{font-size:13pt;text-align:center;margin:6px 0 2px;text-transform:uppercase}.sb{text-align:center;margin:0 0 12px}' +
+    'h2{font-size:11.5pt;margin:14px 0 5px}table{border-collapse:collapse;width:100%;font-size:10pt}th,td{border:1px solid #000;padding:4px 6px;vertical-align:top}th{background:#eee}.c{text-align:center}.jm td{font-weight:700;background:#f4f4f4}' +
+    'tr{page-break-inside:avoid}.ring{margin:0 0 4px}.ttd{margin-top:26px;margin-left:55%;text-align:center;page-break-inside:avoid}.ttd .sp{height:64px}.ttd u{font-weight:700}' +
+    '.bar{position:sticky;top:0;background:#0a7a35;color:#fff;padding:10px 12px;margin:-14px -14px 14px;font:14px/1.4 sans-serif}.bar button{margin-left:10px;padding:6px 14px;border:0;border-radius:6px;font-weight:700}' +
+    '@media print{.bar{display:none}body{padding:0}}</style></head><body>' +
+    '<div class="bar">Pilih <b>Cetak</b>, lalu tujuan <b>Simpan sebagai PDF</b> untuk membuat berkas PDF. <button onclick="print()">Cetak / PDF</button></div>' +
+    '<div class="kop"><img src="' + logo + '" alt=""><div><b>PEMERINTAH KOTA PALU</b><b>KECAMATAN PALU UTARA</b>' + (op ? '<b>KELURAHAN ' + esc(KELSAYA.toUpperCase()) + '</b>' : '') + '<small>Rekapitulasi Laporan Posyandu</small></div></div>' +
+    '<h1>Rekapitulasi Laporan Posyandu</h1><p class="sb">Bulan ' + esc(R.bl) + ' ' + esc(R.th) + ' &middot; Batas pengumpulan tanggal ' + BATAS + '</p>' +
+    '<h2>1. Ringkasan</h2><p class="ring">Total Posyandu terdaftar: <b>' + tot + '</b>. Laporan sudah masuk: <b>' + msk + '</b>. Belum masuk: <b>' + (tot - msk) + '</b>. Terlambat: <b>' + h.terlambat.length + '</b>. Capaian: <b>' + persen(msk, tot) + '%</b>.</p>' +
+    '<h2>2. Rekap per kelurahan</h2><table><tr><th>Kelurahan</th><th>Balita</th><th>Lansia</th><th>Total</th><th>%</th></tr>' + rk + '</table>' +
+    '<h2>3. Rincian per Posyandu</h2><table><tr><th>No</th><th>Nama Posyandu</th><th>Kelurahan</th><th>Jenis</th><th>Status</th><th>Tanggal kirim</th></tr>' + rin + '</table>' +
+    '<div class="ttd">Palu, ' + tgl + '<br>' + esc(pf.jabatan || 'Petugas Pengelola Laporan Posyandu') + '<div class="sp"></div><u>' + esc(pf.nama || 'Admin Posyandu') + '</u>' + (pf.nip ? '<br>NIP. ' + esc(pf.nip) : '') + '</div>' +
+    '</body></html>';
+  var w = null; try { w = window.open('', '_blank'); } catch (x) { }
+  if (!w) { alert('Jendela cetak diblokir. Izinkan pop-up untuk situs ini lalu coba lagi.'); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+  setTimeout(function () { try { w.focus(); } catch (x) { } }, 300);
 }
 function unduhRekap() {
   if (!ADA) { alert('Data belum dimuat.'); return; }
@@ -588,6 +628,29 @@ function pasangSetelan() {
     st.textContent = 'Menyimpan…'; st.className = 'st';
     kirimAtur({ batas: v }).then(function () { BATAS = v; st.textContent = 'Tersimpan.'; st.className = 'st ok'; renderBeranda(); renderRekap(); }).catch(function (e) { st.textContent = e.message; st.className = 'st bad'; });
   })); ca.appendChild(st);
+  ca.appendChild(el('div', 'kh', 'Pengumuman untuk kader'));
+  var pw = el('div', 'fld'), pa = document.createElement('textarea'); pa.maxLength = 300; pa.rows = 3; pa.value = PENGUMUMAN; pa.placeholder = 'Contoh: Laporan bulan ini paling lambat tanggal 25.';
+  pa.style.cssText = 'width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;font-size:16px;font-family:inherit;background:var(--surface);resize:vertical';
+  pw.appendChild(pa); ca.appendChild(pw);
+  ca.appendChild(el('p', 'hint', 'Tampil di halaman awal aplikasi kader. Maksimal 300 huruf. Kosongkan lalu simpan untuk menghapus.'));
+  var sp = el('div', 'st'); ca.appendChild(btn('Simpan pengumuman', 'wide', function () {
+    var v = pa.value.replace(/\s+/g, ' ').trim(); sp.textContent = 'Menyimpan…'; sp.className = 'st';
+    kirimAtur({ pengumuman: v }).then(function () { PENGUMUMAN = v; pa.value = v; sp.textContent = v ? 'Pengumuman tersimpan.' : 'Pengumuman dihapus.'; sp.className = 'st ok'; }).catch(function (e) { sp.textContent = e.message; sp.className = 'st bad'; });
+  })); ca.appendChild(sp);
+  ca.appendChild(el('div', 'kh', 'Catatan perubahan'));
+  ca.appendChild(el('p', 'hint', 'Daftar perubahan terakhir pada data Posyandu, SK, operator, banner, dan pengaturan (300 terakhir).'));
+  var lg = el('div'), sl2 = el('div', 'st');
+  ca.appendChild(btn('Tampilkan catatan perubahan', 'sm line', function () {
+    sl2.textContent = 'Memuat…'; sl2.className = 'st'; lg.textContent = '';
+    jsonp({ aksi: 'log', u: CRED.u, p: CRED.p }).then(function (r) {
+      if (!r || !r.ok) { sl2.textContent = (r && r.pesan) || 'Gagal memuat'; sl2.className = 'st bad'; return; }
+      sl2.textContent = r.log.length ? '' : 'Belum ada catatan.'; sl2.className = 'st';
+      r.log.slice(0, 100).forEach(function (x) {
+        var it = el('div', 'item'); it.appendChild(el('div', 'a', x.a.charAt(0).toUpperCase() + x.a.slice(1)));
+        it.appendChild(el('div', 'b', x.t + ' · ' + x.u)); lg.appendChild(it);
+      });
+    }).catch(function (e) { sl2.textContent = e.message; sl2.className = 'st bad'; });
+  })); ca.appendChild(sl2); ca.appendChild(lg);
   ca.appendChild(el('div', 'kh', 'Jenis Posyandu dan kelurahan'));
   ca.appendChild(el('div', 'lt', 'Jenis: Posyandu Balita, Posyandu Lansia. Kelurahan: ' + KEL.join(', ') + '. Ditetapkan sistem agar laporan seragam.'));
   ca.appendChild(el('div', 'kh', 'Cadangkan dan pulihkan'));
@@ -609,7 +672,7 @@ function pasangSetelan() {
 /* ---------- kait ke aplikasi utama ---------- */
 window.terimaProfil = function (r) {
   BANNERS = (r.banners || ['', '', '']).slice(0, 3); while (BANNERS.length < 3) BANNERS.push('');
-  if (r.batas) BATAS = r.batas; if (r.sk) SK = r.sk;
+  if (r.batas) BATAS = r.batas; if (r.sk) SK = r.sk; if (r.pengumuman !== undefined) PENGUMUMAN = r.pengumuman || '';
   bangunBanner(); renderBeranda();
 };
 window.pasangExt = function () { pasangSetelan(); };

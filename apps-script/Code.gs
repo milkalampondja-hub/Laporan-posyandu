@@ -37,7 +37,7 @@ function doGet(e) {
       .map(function (x) {
         return { nama: x.nama, kel: x.kel, jenis: x.jenis,
                  kader: (x.kader || []).filter(function (k) { return k.aktif !== false; }).map(function (k) { return { nama: k.nama, jabatan: k.jabatan }; }) };
-      }) };
+      }), info: bacaPengaturan(PANTAU_USER).pengumuman };
   }
   else if (p.aksi === 'posyandu') {
     if (masuk(p.u, p.p)) {
@@ -64,11 +64,21 @@ function doGet(e) {
     if (w2) {
       var c = bacaPengaturan(w2.u), bs = bacaPengaturan(PANTAU_USER);
       hasil = { ok: true, nama: c.nama, nip: c.nip, jabatan: c.jabatan, unit: c.unit, foto: c.foto,
-                banners: bs.banners, batas: bs.batas, sk: bs.sk, peran: w2.peran, kel: w2.kel || '' };
+                banners: bs.banners, batas: bs.batas, sk: bs.sk, pengumuman: bs.pengumuman, peran: w2.peran, kel: w2.kel || '' };
       if (w2.peran === 'utama') hasil.admins = daftarAdmin();
     } else {
       Utilities.sleep(1200);
       hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
+    }
+  }
+  else if (p.aksi === 'log') {
+    var w3 = masuk(p.u, p.p);
+    if (w3 && w3.peran === 'utama') {
+      var zl = Session.getScriptTimeZone();
+      hasil = { ok: true, log: bacaLog().map(function (x) { return { t: Utilities.formatDate(new Date(x.t), zl, 'dd/MM/yyyy HH:mm'), u: x.u, a: x.a }; }) };
+    } else {
+      Utilities.sleep(1200);
+      hasil = { ok: false, login: false, pesan: 'Hanya admin utama yang boleh melihat catatan perubahan' };
     }
   }
   var teks = JSON.stringify(hasil);
@@ -129,20 +139,24 @@ function kelola(d) {
     var km = bacaKelAdmin(); km[nu] = kl; simpanKelAdmin(km);
     var nm = bersih(d.nama, 40);
     if (nm) simpanPengaturan({ nama: nm, nip: '', jabatan: '', unit: '', foto: '' }, nu);
+    catatLog(w.u, 'menambah operator ' + nu + ' (Kelurahan ' + kl + ')');
   } else if (d.op === 'sandi') {
     if (!a[nu]) throw new Error('Admin tidak ditemukan');
     if (ns.length < 6 || ns.length > 60) throw new Error('Kata sandi minimal 6 karakter');
     a[nu] = hashAdmin(nu, ns); simpanAdmin(a);
+    catatLog(w.u, 'mengganti kata sandi operator ' + nu);
   } else if (d.op === 'kel') {
     if (!a[nu]) throw new Error('Admin tidak ditemukan');
     if (KELURAHAN.indexOf(String(d.kel || '')) < 0) throw new Error('Kelurahan tidak dikenal');
     var k2 = bacaKelAdmin(); k2[nu] = String(d.kel); simpanKelAdmin(k2);
+    catatLog(w.u, 'memindahkan operator ' + nu + ' ke Kelurahan ' + d.kel);
   } else if (d.op === 'hapus') {
     if (!a[nu]) throw new Error('Admin tidak ditemukan');
     delete a[nu]; simpanAdmin(a);
     var k3 = bacaKelAdmin(); delete k3[nu]; simpanKelAdmin(k3);
     var it = induk().getFilesByName(berkasProfil(nu));
     while (it.hasNext()) it.next().setTrashed(true);
+    catatLog(w.u, 'menghapus operator ' + nu);
   } else if (d.op !== 'daftar') {
     throw new Error('Perintah tidak dikenal');
   }
@@ -165,6 +179,7 @@ function bacaPengaturan(u) {
     c.banners = [String(bn[0] || ''), String(bn[1] || ''), String(bn[2] || '')];
     c.batas = parseInt(o.batas, 10) || 25;
     c.sk = (o.sk && typeof o.sk === 'object') ? o.sk : {};
+    c.pengumuman = String(o.pengumuman || '');
   }
   return c;
 }
@@ -205,6 +220,10 @@ function atur(d) {
     if (!(bt >= 1 && bt <= 31)) throw new Error('Batas tanggal 1 sampai 31');
     c.batas = bt;
   }
+  if (d.pengumuman !== undefined) {
+    if (w.peran !== 'utama') throw new Error('Hanya admin utama yang boleh mengubah pengumuman');
+    c.pengumuman = String(d.pengumuman).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
+  }
   if (d.sandiBaru !== undefined) {
     var sb = String(d.sandiBaru);
     if (sb.length < 6 || sb.length > 60) throw new Error('Kata sandi baru minimal 6 karakter');
@@ -212,6 +231,14 @@ function atur(d) {
     else { var ad = bacaAdmin(); ad[w.u] = hashAdmin(w.u, sb); simpanAdmin(ad); }
   }
   simpanPengaturan(c, w.u);
+  var cl = [];
+  if (d.nama !== undefined || d.nip !== undefined || d.jabatan !== undefined || d.unit !== undefined) cl.push('mengubah data profil');
+  if (d.foto !== undefined) cl.push('mengubah foto profil');
+  if (d.bannerIdx !== undefined) cl.push('mengubah banner ' + (parseInt(d.bannerIdx, 10) + 1));
+  if (d.batas !== undefined) cl.push('mengubah batas waktu menjadi tanggal ' + c.batas);
+  if (d.pengumuman !== undefined) cl.push(c.pengumuman ? 'mengubah pengumuman untuk kader' : 'menghapus pengumuman untuk kader');
+  if (d.sandiBaru !== undefined) cl.push('mengganti kata sandi');
+  if (cl.length) catatLog(w.u, cl.join(', '));
   return simpanHasil({ ok: true }, 'a');
 }
 
@@ -419,8 +446,9 @@ function bersihPos(arr) {
 function simpanPos(d) {
   var w = masuk(d.u, d.p);
   if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh mengubah data Posyandu'); }
-  var list = bersihPos(d.list), teks = JSON.stringify({ list: list, tgl: Date.now() }), f = induk(), it = f.getFilesByName(NAMA_POS);
+  var lama = bacaPos(), list = bersihPos(d.list), teks = JSON.stringify({ list: list, tgl: Date.now() }), f = induk(), it = f.getFilesByName(NAMA_POS);
   if (it.hasNext()) it.next().setContent(teks); else f.createFile(NAMA_POS, teks, MimeType.PLAIN_TEXT);
+  try { catatLog(w.u, ringkasPos(lama, list)); } catch (x) {}
   return simpanHasil({ ok: true, list: list }, 'a');
 }
 /** Hanya admin utama: simpan berkas PDF SK (Balita atau Lansia) yang dikirim berpotong-potong. */
@@ -447,5 +475,45 @@ function simpanSk(d, cache) {
   c.sk[jenis] = { id: file.getId(), tgl: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm'), ukuran: bytes.length };
   simpanPengaturan(c, PANTAU_USER);
   cache.removeAll(kunciCache);
+  catatLog(w.u, 'mengunggah SK Posyandu ' + jenis + ' (' + (Math.round(bytes.length / 104857.6) / 10) + ' MB)');
   return simpanHasil({ ok: true, sk: c.sk }, 'a');
+}
+
+
+// ===================== Catatan perubahan =====================
+var NAMA_LOG = 'log-aktivitas.json';
+function bacaLog() {
+  var o = bacaBerkas(NAMA_LOG);
+  return Array.isArray(o.l) ? o.l : [];
+}
+/** Catat satu perubahan (maksimal 300 terakhir). Kegagalan mencatat tidak boleh menggagalkan perubahan itu sendiri. */
+function catatLog(user, teks) {
+  try {
+    var l = bacaLog();
+    l.unshift({ t: Date.now(), u: String(user || ''), a: String(teks || '').slice(0, 300) });
+    l = l.slice(0, 300);
+    var t = JSON.stringify({ l: l }), f = induk(), it = f.getFilesByName(NAMA_LOG);
+    if (it.hasNext()) it.next().setContent(t); else f.createFile(NAMA_LOG, t, MimeType.PLAIN_TEXT);
+  } catch (x) {}
+}
+/** Ringkasan perbedaan daftar Posyandu lama dan baru. */
+function ringkasPos(lama, baru) {
+  var m = {}, o = {}, tambah = [], hapus = [], ubah = [], nonaktif = [], aktif = [];
+  lama.forEach(function (x) { m[x.id] = x; });
+  baru.forEach(function (x) {
+    o[x.id] = 1;
+    var y = m[x.id], nm = x.nama + ' (' + x.kel + ')';
+    if (!y) { tambah.push(nm); return; }
+    if (y.aktif !== false && x.aktif === false) nonaktif.push(nm);
+    else if (y.aktif === false && x.aktif !== false) aktif.push(nm);
+    else if (JSON.stringify(y) !== JSON.stringify(x)) ubah.push(nm);
+  });
+  lama.forEach(function (x) { if (!o[x.id]) hapus.push(x.nama + ' (' + x.kel + ')'); });
+  var bag = [], daftar = function (a) { return a.slice(0, 4).join(', ') + (a.length > 4 ? ' dan ' + (a.length - 4) + ' lainnya' : ''); };
+  if (tambah.length) bag.push('menambah ' + daftar(tambah));
+  if (hapus.length) bag.push('menghapus ' + daftar(hapus));
+  if (nonaktif.length) bag.push('menonaktifkan ' + daftar(nonaktif));
+  if (aktif.length) bag.push('mengaktifkan ' + daftar(aktif));
+  if (ubah.length) bag.push('mengubah data ' + daftar(ubah));
+  return bag.length ? 'Data Posyandu: ' + bag.join('; ') : 'Menyimpan data Posyandu (tanpa perubahan)';
 }
