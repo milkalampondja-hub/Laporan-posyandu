@@ -105,8 +105,14 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .dock .btn{flex:1}.dock .btn.back{flex:0 0 36%}
 .dock .btn[hidden]{display:none}
 details.opt{margin-top:4px}details.opt summary{cursor:pointer;font-weight:600;color:var(--accent);min-height:44px;display:flex;align-items:center}
-.info{display:flex;flex-direction:column;gap:3px;background:#fff8e1;border:1px solid #f0d27a;border-left:5px solid #e3a600;border-radius:12px;padding:14px 16px;margin-bottom:16px;color:#4a3500;font-size:15px;line-height:1.45}
-.info b{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#8a5f00}
+.info{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#fffbe6,#fff3c4);border:1px solid #f0d27a;border-left:6px solid #f2b705;border-radius:16px;padding:14px 16px;margin-bottom:16px;color:#1f2a44;box-shadow:0 4px 14px rgba(227,166,0,.15)}
+.info .toa{flex:none;width:54px;height:54px;border-radius:50%;background:#f9dc55;display:flex;align-items:center;justify-content:center;animation:kedip 1.1s ease-in-out infinite}
+.info .toa svg{width:28px;height:28px;fill:#1f2a44}
+.info .isi{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0}
+.info b{display:inline-block;background:#f9dc55;color:#5a4300;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:999px}
+.info .teks{font-size:16px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}
+@keyframes kedip{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(242,183,5,.55)}50%{opacity:.35;transform:scale(.92);box-shadow:0 0 0 8px rgba(242,183,5,0)}}
+@media (prefers-reduced-motion:reduce){.info .toa{animation:none}}
 .pasang summary{cursor:pointer;font-weight:700;font-size:16px;color:var(--text,#1a1a1a)}
 .pasang h3{font-size:15px;margin:16px 0 6px}.pasang ol{margin:0;padding-left:22px;display:grid;gap:6px;font-size:15px;line-height:1.45}
 .pasang .btn{margin-top:12px}
@@ -202,7 +208,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 24</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 25</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -393,7 +399,7 @@ function viewHome(){
   var how=[["users","Data posyandu","Pilih jenis laporan dan kelurahan, isi nama posyandu dan kader."],["calendar","Kegiatan","Tanggal, tempat, dan hasil kegiatan bulan ini."],["camera","Foto","Tambahkan foto dokumentasi dari galeri atau kamera."],["edit","Catatan","Masalah, tindak lanjut, dan tanggal tanda tangan lurah."],["filecheck","Download","Periksa pratinjau, lalu simpan PDF dan cetak."]];
   return '<section class="hero"><div class="badge-logo"><img src="'+LOGO+'" alt=""></div><h1>LAPORAN POSYANDU<br>KECAMATAN PALU UTARA</h1><p>Posyandu Balita dan Lansia</p></section>'+
   (has?'<section class="card resume"><div class="rl">Laporan terakhir</div><div class="rt">'+esc(S.posyandu||"Belum diberi nama")+'</div><div class="rs">'+esc((J()?J().label+" · ":"")+(S.kelurahan?"Kelurahan "+S.kelurahan:"Belum memilih kelurahan"))+'</div><div class="btnrow"><button type="button" class="btn primary" data-start="0">Lanjutkan laporan</button><button type="button" class="btn" id="new-report">Laporan bulan baru</button></div></section>':'')+
-  (INFO?'<section class="info" role="note"><b>Pengumuman</b><span>'+esc(INFO)+'</span></section>':'')+
+  (INFO?'<section class="info" role="note"><span class="toa" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10v4a1 1 0 0 0 1 1h2l3.5 5h2.2l-1.6-5H11l7 4V5l-7 4H4a1 1 0 0 0-1 1zm16-1.5v7a3.5 3.5 0 0 0 0-7zM21 4.5v1.6a6 6 0 0 1 0 11.8v1.6a7.5 7.5 0 0 0 0-15z"/></svg></span><span class="isi"><b>Pengumuman</b><span class="teks">'+esc(INFO)+'</span></span></section>':'')+
   '<section class="card"><h2>Cara mengisi laporan</h2><ol class="how">'+how.map(function(h){return '<li><span class="hi">'+ic(h[0],22)+'</span><div><b>'+h[1]+'</b><span>'+h[2]+'</span></div></li>'}).join("")+'</ol></section>'+
   (has?'':'<button type="button" class="btn primary block big" data-start="0">Mulai laporan</button>')+
   '<p class="save">Data posyandu dan kader diingat di HP ini, jadi tidak perlu mengisi ulang.</p>'+pasangHtml();
