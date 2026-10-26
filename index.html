@@ -113,6 +113,12 @@ details.opt{margin-top:4px}details.opt summary{cursor:pointer;font-weight:600;co
 .info .teks{font-size:16px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}
 @keyframes kedip{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(242,183,5,.55)}50%{opacity:.35;transform:scale(.92);box-shadow:0 0 0 8px rgba(242,183,5,0)}}
 @media (prefers-reduced-motion:reduce){.info .toa{animation:none}}
+.info{position:relative}.info small{font-size:12px;color:#7a6320;font-weight:500}
+.info .tutup{position:absolute;top:6px;right:8px;width:36px;height:36px;border:0;background:transparent;font-size:26px;line-height:1;color:#7a6320;cursor:pointer;border-radius:50%}
+.info .isi{padding-right:26px}
+.cara summary{cursor:pointer;font-weight:700;font-size:17px;min-height:30px}
+.cara .how{margin-top:14px}
+a.btn.wa{display:flex;align-items:center;justify-content:center;text-decoration:none;background:#25d366;color:#08331a;font-weight:700;margin:0 0 14px;min-height:48px;border-radius:14px;border:0;padding:10px 14px;text-align:center}
 .pasang summary{cursor:pointer;font-weight:700;font-size:16px;color:var(--text,#1a1a1a)}
 .pasang h3{font-size:15px;margin:16px 0 6px}.pasang ol{margin:0;padding-left:22px;display:grid;gap:6px;font-size:15px;line-height:1.45}
 .pasang .btn{margin-top:12px}
@@ -208,7 +214,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 25</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 26</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -305,8 +311,12 @@ function evaluasiText(){return (S.evaluasi||"").trim()||evaluasiAuto()}
 function applyKel(){var d=KEL[S.kelurahan]||{alamat:"",jabatan:"",lurah:"",nip:""};S.alamat=d.alamat;S.jabatan=d.jabatan;S.lurah=d.lurah;S.nip=d.nip}
 
 /* ---------- validasi ---------- */
-var POSLIST=[],INFO="",PASANG=null;
-try{INFO=localStorage.getItem("lp-info")||""}catch(e){}
+var POSLIST=[],INFO="",INFOTGL="",WA="",PASANG=null;
+try{INFO=localStorage.getItem("lp-info")||"";INFOTGL=localStorage.getItem("lp-infotgl")||"";WA=localStorage.getItem("lp-wa")||""}catch(e){}
+function lsGet(k){try{return localStorage.getItem(k)||""}catch(e){return ""}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function infoTertutup(){return lsGet("lp-infotutup")===INFO+"|"+INFOTGL+"|"+todayISO()}
+function tglIndo(iso){var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(iso||"");if(!m)return"";return +m[3]+" "+BULAN[+m[2]-1].slice(0,3)+" "+m[1]}
 window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();PASANG=e;if(typeof step!=="undefined"&&step===-1&&typeof render==="function")render(true)});
 window.addEventListener("appinstalled",function(){PASANG=null});
 function sudahTerpasang(){try{return (window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true}catch(e){return false}}
@@ -334,7 +344,8 @@ function gabungNama(a){return a.length<2?(a[0]||""):a.slice(0,-1).join(", ")+(a.
 function muatDaftarPos(){
   tanya({aksi:"daftarpos"},15000).then(function(r){
     var ubah=false;
-    if(r&&r.ok&&typeof r.info==="string"&&r.info!==INFO){INFO=r.info;ubah=true;try{localStorage.setItem("lp-info",INFO)}catch(e){}}
+    if(r&&r.ok&&typeof r.info==="string"&&(r.info!==INFO||(r.infoTgl||"")!==INFOTGL)){INFO=r.info;INFOTGL=r.infoTgl||"";ubah=true;lsSet("lp-info",INFO);lsSet("lp-infotgl",INFOTGL)}
+    if(r&&r.ok&&typeof r.wa==="string"&&r.wa!==WA){WA=r.wa;ubah=true;lsSet("lp-wa",WA)}
     if(r&&r.ok&&Array.isArray(r.list)&&r.list.length){POSLIST=r.list;ubah=true;try{localStorage.setItem("lp-poslist",JSON.stringify(r.list))}catch(e){}}
     if(ubah&&typeof step!=="undefined"&&(step===0||step===-1))render(true)
   }).catch(function(){});
@@ -399,10 +410,16 @@ function viewHome(){
   var how=[["users","Data posyandu","Pilih jenis laporan dan kelurahan, isi nama posyandu dan kader."],["calendar","Kegiatan","Tanggal, tempat, dan hasil kegiatan bulan ini."],["camera","Foto","Tambahkan foto dokumentasi dari galeri atau kamera."],["edit","Catatan","Masalah, tindak lanjut, dan tanggal tanda tangan lurah."],["filecheck","Download","Periksa pratinjau, lalu simpan PDF dan cetak."]];
   return '<section class="hero"><div class="badge-logo"><img src="'+LOGO+'" alt=""></div><h1>LAPORAN POSYANDU<br>KECAMATAN PALU UTARA</h1><p>Posyandu Balita dan Lansia</p></section>'+
   (has?'<section class="card resume"><div class="rl">Laporan terakhir</div><div class="rt">'+esc(S.posyandu||"Belum diberi nama")+'</div><div class="rs">'+esc((J()?J().label+" · ":"")+(S.kelurahan?"Kelurahan "+S.kelurahan:"Belum memilih kelurahan"))+'</div><div class="btnrow"><button type="button" class="btn primary" data-start="0">Lanjutkan laporan</button><button type="button" class="btn" id="new-report">Laporan bulan baru</button></div></section>':'')+
-  (INFO?'<section class="info" role="note"><span class="toa" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10v4a1 1 0 0 0 1 1h2l3.5 5h2.2l-1.6-5H11l7 4V5l-7 4H4a1 1 0 0 0-1 1zm16-1.5v7a3.5 3.5 0 0 0 0-7zM21 4.5v1.6a6 6 0 0 1 0 11.8v1.6a7.5 7.5 0 0 0 0-15z"/></svg></span><span class="isi"><b>Pengumuman</b><span class="teks">'+esc(INFO)+'</span></span></section>':'')+
-  '<section class="card"><h2>Cara mengisi laporan</h2><ol class="how">'+how.map(function(h){return '<li><span class="hi">'+ic(h[0],22)+'</span><div><b>'+h[1]+'</b><span>'+h[2]+'</span></div></li>'}).join("")+'</ol></section>'+
+  (INFO&&!infoTertutup()?'<section class="info" role="note"><span class="toa" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10v4a1 1 0 0 0 1 1h2l3.5 5h2.2l-1.6-5H11l7 4V5l-7 4H4a1 1 0 0 0-1 1zm16-1.5v7a3.5 3.5 0 0 0 0-7zM21 4.5v1.6a6 6 0 0 1 0 11.8v1.6a7.5 7.5 0 0 0 0-15z"/></svg></span><span class="isi"><b>Pengumuman</b><span class="teks">'+esc(INFO)+'</span>'+(tglIndo(INFOTGL)?'<small>Diperbarui '+tglIndo(INFOTGL)+'</small>':'')+'</span><button type="button" class="tutup" id="info-tutup" aria-label="Tutup pengumuman">&times;</button></section>':'')+
   (has?'':'<button type="button" class="btn primary block big" data-start="0">Mulai laporan</button>')+
-  '<p class="save">Data posyandu dan kader diingat di HP ini, jadi tidak perlu mengisi ulang.</p>'+pasangHtml();
+  '<p class="save">Data posyandu dan kader diingat di HP ini, jadi tidak perlu mengisi ulang.</p>'+
+  '<section class="card"><details class="cara"'+(lsGet("lp-pernah")?'':' open')+'><summary>Cara mengisi laporan</summary><ol class="how">'+how.map(function(h){return '<li><span class="hi">'+ic(h[0],22)+'</span><div><b>'+h[1]+'</b><span>'+h[2]+'</span></div></li>'}).join("")+'</ol></details></section>'+
+  bantuanHtml()+pasangHtml();
+}
+function bantuanHtml(){
+  if(!/^\d{9,15}$/.test(WA))return "";
+  var pesan=encodeURIComponent("Halo, saya kader Posyandu dan butuh bantuan mengisi laporan di aplikasi.");
+  return '<a class="btn wa block" href="https://wa.me/'+WA+'?text='+pesan+'" target="_blank" rel="noopener">Butuh bantuan? Hubungi lewat WhatsApp</a>';
 }
 function pasangHtml(){
   if(sudahTerpasang())return "";
@@ -553,7 +570,8 @@ var wipeArm=0;
 main.addEventListener("click",function(e){
   var b=e.target.closest("button");if(!b)return;
   if(b.id==="pasang-btn"){if(PASANG){PASANG.prompt();PASANG.userChoice.then(function(){PASANG=null;if(step===-1)render(true)}).catch(function(){})}return}
-  if(b.dataset.start!=null){go(+b.dataset.start);return}
+  if(b.id==="info-tutup"){lsSet("lp-infotutup",INFO+"|"+INFOTGL+"|"+todayISO());render(true);return}
+  if(b.dataset.start!=null){lsSet("lp-pernah","1");go(+b.dataset.start);return}
   if(b.dataset.goto!=null){var g=+b.dataset.goto;if(g<=step||b.classList.contains("go"))go(g);return}
   if(b.dataset.jenis){if(S.jenis!==b.dataset.jenis){S.posyandu="";S.peng={}}S.jenis=b.dataset.jenis;save();render(true);return}
   if(b.dataset.date){

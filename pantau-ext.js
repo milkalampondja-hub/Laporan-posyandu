@@ -1,7 +1,7 @@
 /* Pantau Laporan Posyandu - tambahan: banner geser, menu akun, Beranda, Rekapitulasi, Data Posyandu, Pengaturan lanjutan. */
 (function () {
 'use strict';
-var PENGUMUMAN = '', POS = [], SK = {}, BATAS = 25, BANNERS = ['', '', ''], POSDIMUAT = false;
+var PENGUMUMAN = '', WABANTU = '', POS = [], SK = {}, BATAS = 25, BANNERS = ['', '', ''], POSDIMUAT = false;
 var EXT_CSS = [
 '.grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}',
 '.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}',
@@ -637,6 +637,13 @@ function pasangSetelan() {
     var v = pa.value.replace(/\s+/g, ' ').trim(); sp.textContent = 'Menyimpan…'; sp.className = 'st';
     kirimAtur({ pengumuman: v }).then(function () { PENGUMUMAN = v; pa.value = v; sp.textContent = v ? 'Pengumuman tersimpan.' : 'Pengumuman dihapus.'; sp.className = 'st ok'; }).catch(function (e) { sp.textContent = e.message; sp.className = 'st bad'; });
   })); ca.appendChild(sp);
+  ca.appendChild(el('div', 'kh', 'Nomor WhatsApp bantuan untuk kader'));
+  var ww = el('div', 'fld'), wi = document.createElement('input'); wi.type = 'tel'; wi.inputMode = 'tel'; wi.maxLength = 20; wi.value = WABANTU ? '+' + WABANTU : ''; wi.placeholder = 'Contoh: 08123456789'; ww.appendChild(wi); ca.appendChild(ww);
+  ca.appendChild(el('p', 'hint', 'Tombol WhatsApp muncul di halaman awal aplikasi kader. Awalan 0 otomatis menjadi 62. Kosongkan lalu simpan untuk menyembunyikan tombol.'));
+  var swa = el('div', 'st'); ca.appendChild(btn('Simpan nomor', 'wide', function () {
+    var v = wi.value.trim(); swa.textContent = 'Menyimpan…'; swa.className = 'st';
+    kirimAtur({ wa: v }).then(function () { var n = v.replace(/[^0-9]/g, ''); if (n.indexOf('0') === 0) n = '62' + n.slice(1); WABANTU = n; wi.value = n ? '+' + n : ''; swa.textContent = n ? 'Nomor tersimpan.' : 'Nomor dihapus.'; swa.className = 'st ok'; }).catch(function (e) { swa.textContent = e.message; swa.className = 'st bad'; });
+  })); ca.appendChild(swa);
   ca.appendChild(el('div', 'kh', 'Catatan perubahan'));
   ca.appendChild(el('p', 'hint', 'Daftar perubahan terakhir pada data Posyandu, SK, operator, banner, dan pengaturan (300 terakhir).'));
   var lg = el('div'), sl2 = el('div', 'st');
@@ -672,7 +679,7 @@ function pasangSetelan() {
 /* ---------- kait ke aplikasi utama ---------- */
 window.terimaProfil = function (r) {
   BANNERS = (r.banners || ['', '', '']).slice(0, 3); while (BANNERS.length < 3) BANNERS.push('');
-  if (r.batas) BATAS = r.batas; if (r.sk) SK = r.sk; if (r.pengumuman !== undefined) PENGUMUMAN = r.pengumuman || '';
+  if (r.batas) BATAS = r.batas; if (r.sk) SK = r.sk; if (r.pengumuman !== undefined) PENGUMUMAN = r.pengumuman || ''; if (r.wa !== undefined) WABANTU = r.wa || '';
   bangunBanner(); renderBeranda();
 };
 window.pasangExt = function () { pasangSetelan(); };

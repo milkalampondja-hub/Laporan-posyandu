@@ -37,7 +37,7 @@ function doGet(e) {
       .map(function (x) {
         return { nama: x.nama, kel: x.kel, jenis: x.jenis,
                  kader: (x.kader || []).filter(function (k) { return k.aktif !== false; }).map(function (k) { return { nama: k.nama, jabatan: k.jabatan }; }) };
-      }), info: bacaPengaturan(PANTAU_USER).pengumuman };
+      }), info: bacaPengaturan(PANTAU_USER).pengumuman, infoTgl: bacaPengaturan(PANTAU_USER).pengumumanTgl, wa: bacaPengaturan(PANTAU_USER).wa };
   }
   else if (p.aksi === 'posyandu') {
     if (masuk(p.u, p.p)) {
@@ -64,7 +64,7 @@ function doGet(e) {
     if (w2) {
       var c = bacaPengaturan(w2.u), bs = bacaPengaturan(PANTAU_USER);
       hasil = { ok: true, nama: c.nama, nip: c.nip, jabatan: c.jabatan, unit: c.unit, foto: c.foto,
-                banners: bs.banners, batas: bs.batas, sk: bs.sk, pengumuman: bs.pengumuman, peran: w2.peran, kel: w2.kel || '' };
+                banners: bs.banners, batas: bs.batas, sk: bs.sk, pengumuman: bs.pengumuman, wa: bs.wa, peran: w2.peran, kel: w2.kel || '' };
       if (w2.peran === 'utama') hasil.admins = daftarAdmin();
     } else {
       Utilities.sleep(1200);
@@ -180,6 +180,8 @@ function bacaPengaturan(u) {
     c.batas = parseInt(o.batas, 10) || 25;
     c.sk = (o.sk && typeof o.sk === 'object') ? o.sk : {};
     c.pengumuman = String(o.pengumuman || '');
+    c.pengumumanTgl = String(o.pengumumanTgl || '');
+    c.wa = String(o.wa || '');
   }
   return c;
 }
@@ -222,7 +224,16 @@ function atur(d) {
   }
   if (d.pengumuman !== undefined) {
     if (w.peran !== 'utama') throw new Error('Hanya admin utama yang boleh mengubah pengumuman');
-    c.pengumuman = String(d.pengumuman).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
+    var pbaru = String(d.pengumuman).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
+    if (pbaru !== c.pengumuman) c.pengumumanTgl = pbaru ? Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd') : '';
+    c.pengumuman = pbaru;
+  }
+  if (d.wa !== undefined) {
+    if (w.peran !== 'utama') throw new Error('Hanya admin utama yang boleh mengubah nomor bantuan');
+    var nw = String(d.wa).replace(/[^0-9]/g, '');
+    if (nw.indexOf('0') === 0) nw = '62' + nw.slice(1);
+    if (nw && !/^\d{9,15}$/.test(nw)) throw new Error('Nomor WhatsApp tidak valid');
+    c.wa = nw;
   }
   if (d.sandiBaru !== undefined) {
     var sb = String(d.sandiBaru);
@@ -237,6 +248,7 @@ function atur(d) {
   if (d.bannerIdx !== undefined) cl.push('mengubah banner ' + (parseInt(d.bannerIdx, 10) + 1));
   if (d.batas !== undefined) cl.push('mengubah batas waktu menjadi tanggal ' + c.batas);
   if (d.pengumuman !== undefined) cl.push(c.pengumuman ? 'mengubah pengumuman untuk kader' : 'menghapus pengumuman untuk kader');
+  if (d.wa !== undefined) cl.push(c.wa ? 'mengubah nomor WhatsApp bantuan' : 'menghapus nomor WhatsApp bantuan');
   if (d.sandiBaru !== undefined) cl.push('mengganti kata sandi');
   if (cl.length) catatLog(w.u, cl.join(', '));
   return simpanHasil({ ok: true }, 'a');
