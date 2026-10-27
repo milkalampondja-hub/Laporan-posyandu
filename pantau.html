@@ -409,10 +409,10 @@ footer.dsk{display:none}
             <p class="hint" id="admInfo"></p>
             <p class="hint">Anda adalah Admin kecamatan: dapat mengelola data, memeriksa laporan, dan mengatur aplikasi. Akun tambahan berperan sebagai Petugas/operator: dapat melihat, memeriksa, dan merekap laporan, tetapi tidak dapat mengubah data Posyandu, SK, banner, atau akun.</p>
             <div id="admList"></div>
-            <div class="fld"><label for="adU">Nama pengguna baru</label><input id="adU" type="text" maxlength="20" autocomplete="off" autocapitalize="none" placeholder="huruf kecil atau angka, 3-20"></div>
+            <div class="fld"><label for="adU">Nama pengguna baru</label><input id="adU" type="text" name="op-adU-x" readonly onfocus="this.removeAttribute('readonly')" maxlength="20" autocomplete="off" autocapitalize="none" placeholder="huruf kecil atau angka, 3-20"></div>
             <div class="fld"><label for="adK">Kelurahan operator (hanya melihat data kelurahan ini)</label><select id="adK"><option value="">Pilih kelurahan…</option><option>Kayumalue Ngapa</option><option>Kayumalue Pajeko</option><option>Mamboro</option><option>Mamboro Barat</option><option>Taipa</option></select></div>
-            <div class="fld"><label for="adN">Nama admin (boleh dikosongkan)</label><input id="adN" type="text" maxlength="40" autocomplete="off"></div>
-            <div class="fld"><label for="adP">Kata sandi (minimal 6 karakter)</label><input id="adP" type="password" autocomplete="new-password"></div>
+            <div class="fld"><label for="adN">Nama admin (boleh dikosongkan)</label><input id="adN" type="text" name="op-adN-x" readonly onfocus="this.removeAttribute('readonly')" maxlength="40" autocomplete="off"></div>
+            <div class="fld"><label for="adP">Kata sandi (minimal 6 karakter)</label><input id="adP" type="password" name="op-adP-x" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')"></div>
             <button class="btn wide" id="svAdm" type="button">Tambah admin</button>
             <div class="st" id="stAdm" role="status"></div>
           </div>
