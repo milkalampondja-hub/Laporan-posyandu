@@ -208,6 +208,13 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .batas.mep{background:#fff6dc;color:#7a5200;border-color:#f0d27a}
 .batas.dekat{background:#ffe9d6;color:#9a3a00;border-color:#f6c39a}
 .batas.lewat{background:#fde4e4;color:#9b1c1c;border-color:#f4b4b4}
+.mulai{gap:14px}
+.mulai .pn{display:inline-flex;flex:none}
+.mulai .pn.kn svg{transform:scaleX(-1)}
+.mulai .c1{animation:panah 1.3s ease-in-out infinite}
+.mulai .c2{animation:panah 1.3s ease-in-out .22s infinite}
+@keyframes panah{0%,100%{opacity:.25}45%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.mulai .c1,.mulai .c2{animation:none}}
 /* tombol bawah halaman awal: ringkas */
 .card.pasang,.card.cara-card{padding:10px 14px;margin-bottom:10px}
 .cara-card .cara summary,.pasang summary{font-size:14px;font-weight:600;min-height:26px;display:flex;align-items:center}
@@ -230,7 +237,7 @@ a.btn.wa{min-height:40px;padding:6px 14px;font-size:14px;font-weight:600;margin:
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 28</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 29</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -429,11 +436,12 @@ function viewHome(){
   (has?'<section class="card resume"><div class="rl">Laporan terakhir</div><div class="rt">'+esc(S.posyandu||"Belum diberi nama")+'</div><div class="rs">'+esc((J()?J().label+" · ":"")+(S.kelurahan?"Kelurahan "+S.kelurahan:"Belum memilih kelurahan"))+'</div><div class="btnrow"><button type="button" class="btn primary" data-start="0">Lanjutkan laporan</button><button type="button" class="btn" id="new-report">Laporan bulan baru</button></div></section>':'')+
   batasHtml()+
   (INFO&&!infoTertutup()?'<section class="info" role="note"><span class="toa" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10v4a1 1 0 0 0 1 1h2l3.5 5h2.2l-1.6-5H11l7 4V5l-7 4H4a1 1 0 0 0-1 1zm16-1.5v7a3.5 3.5 0 0 0 0-7zM21 4.5v1.6a6 6 0 0 1 0 11.8v1.6a7.5 7.5 0 0 0 0-15z"/></svg></span><span class="isi"><b>Pengumuman</b><span class="teks">'+esc(INFO)+'</span>'+(tglIndo(INFOTGL)?'<small>Diperbarui '+tglIndo(INFOTGL)+'</small>':'')+'</span><button type="button" class="tutup" id="info-tutup" aria-label="Tutup pengumuman">&times;</button></section>':'')+
-  (has?'':'<button type="button" class="btn primary block big" data-start="0">Mulai laporan</button>')+
+  (has?'':'<button type="button" class="btn primary block big mulai" data-start="0"><span class="pn kr" aria-hidden="true">'+PANAH+'</span><span>Mulai laporan</span><span class="pn kn" aria-hidden="true">'+PANAH+'</span></button>')+
   '<p class="save">Data posyandu dan kader diingat di HP ini, jadi tidak perlu mengisi ulang.</p>'+
   '<section class="card cara-card"><details class="cara"'+(lsGet("lp-pernah")?'':' open')+'><summary>Cara mengisi laporan</summary><ol class="how">'+how.map(function(h){return '<li><span class="hi">'+ic(h[0],22)+'</span><div><b>'+h[1]+'</b><span>'+h[2]+'</span></div></li>'}).join("")+'</ol></details></section>'+
   bantuanHtml()+pasangHtml();
 }
+var PANAH='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path class="c1" d="M5 6l6 6-6 6"/><path class="c2" d="M12 6l6 6-6 6"/></svg>';
 function batasHtml(){
   if(!(BATAS>=1&&BATAS<=31))return "";
   var n=new Date(),y=n.getFullYear(),m=n.getMonth(),akhir=new Date(y,m+1,0).getDate(),tg=Math.min(BATAS,akhir);
