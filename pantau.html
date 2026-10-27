@@ -85,7 +85,7 @@ button{cursor:pointer}
 .chip .ic{font-size:21px}
 .hello .chip{display:none}.nipadmin{display:block;font-size:10.5px}
 .admrow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}.admt{flex:1;min-width:0}.admt b,.admt span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.admt span{font-size:12px;color:var(--muted)}
-.sheet{position:relative;margin-top:-14px;background:var(--bg);border-radius:22px 22px 0 0;padding:16px max(14px,env(safe-area-inset-left,0px)) 110px}
+.sheet{position:relative;margin-top:-14px;background:var(--bg);border-radius:22px 22px 0 0;padding:16px max(14px,env(safe-area-inset-left,0px)) 12px}
 .cols{max-width:1100px;margin:0 auto}
 
 /* ===== banner ===== */
@@ -160,6 +160,7 @@ tr:last-child td{border-bottom:0}
 .okbox{display:flex;align-items:center;gap:10px;background:var(--ok-soft);color:var(--ok);border-radius:12px;padding:12px;margin-top:10px;font-size:14px}
 .okbox.bad{background:var(--warn-soft);color:var(--warn)}
 footer{text-align:center;color:var(--muted);font-size:12.5px;padding:6px 16px 18px}
+footer.mob{padding:4px 16px calc(88px + env(safe-area-inset-bottom,0px))}
 footer.dsk{display:none}
 
 .avt img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
