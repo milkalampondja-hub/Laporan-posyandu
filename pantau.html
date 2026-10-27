@@ -38,6 +38,10 @@ button{cursor:pointer}
 /* ===== login ===== */
 .login{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:max(24px,env(safe-area-inset-top,0px)) 20px max(24px,env(safe-area-inset-bottom,0px));background:var(--login-bg);color:var(--hero-fg);text-align:center}
+.login{position:relative;isolation:isolate;overflow:hidden}
+.login::before{content:"";position:absolute;inset:0;z-index:-1;background:url(kantor.jpg) center 30%/cover no-repeat;opacity:.26;mix-blend-mode:luminosity;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.55) 55%,rgba(0,0,0,.15) 100%);mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.55) 55%,rgba(0,0,0,.15) 100%)}
+@media (prefers-color-scheme:dark){.login::before{opacity:.22}}
 .login .av{margin-bottom:18px}
 .login .av img{display:block;width:92px;height:auto;filter:drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff) drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1.5px 0 #fff) drop-shadow(0 4px 8px rgba(0,0,0,.3))}
 .login h1{font-size:22px;line-height:1.2;margin:0 0 4px;letter-spacing:.3px}
