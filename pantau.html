@@ -555,7 +555,7 @@ function setLast(ok){
   var b=$('okb');b.className='okbox'+(ok?'':' bad');$('okt').textContent=ok?'Sistem berjalan dengan baik':'Data belum bisa dimuat';
 }
 function muat(dariLogin){
-  if(loading||!CRED)return;loading=true;$('re').disabled=true;$('re2').disabled=true;
+  if(loading||!CRED)return;loading=true;if(!profilOk){profDariCache();ambilProfil()}$('re').disabled=true;$('re2').disabled=true;
   var cb='p'+Date.now(),s=document.createElement('script'),selesai=false;
   function bersih(){selesai=true;clearTimeout(tm);try{delete window[cb]}catch(x){window[cb]=undefined}if(s.parentNode)s.parentNode.removeChild(s);loading=false;$('re').disabled=false;$('re2').disabled=false}
   function err(){if(dariLogin===true){$('lb').disabled=false;$('lb').textContent='Masuk';$('lerr').textContent='Belum tersambung. Periksa internet lalu coba lagi.';return}gagal('Data belum bisa dimuat. Periksa sinyal internet lalu tekan Muat Ulang.')}
@@ -691,11 +691,16 @@ function pasangProfil(){
   ['inJab','inUnit'].forEach(function(i){var k=i==='inJab'?'jabatan':'unit';if(!$(i).value||$(i).getAttribute('data-auto')!=='0')$(i).value=PROFIL[k]||''});
   if(window.pasangExt)pasangExt();
 }
+var profJalan=false;
+function profKey(){return 'pantau_prof_'+(CRED?CRED.u:'')}
+function profDariCache(){
+  try{var c=JSON.parse(localStorage.getItem(profKey())||'null');if(c&&c.nama){PROFIL={nama:c.nama,nip:c.nip||lsNip(),jabatan:c.jabatan||'',unit:c.unit||'',foto:c.foto||''};pasangProfil()}}catch(x){}}
+function profKeCache(){try{localStorage.setItem(profKey(),JSON.stringify(PROFIL))}catch(x){}}
 function ambilProfil(){
-  if(!CRED)return;
-  jsonp({aksi:'profil',u:CRED.u,p:CRED.p}).then(function(r){
-    if(r&&r.ok){if(r.peran){PERAN=r.peran}if(window.terapKel&&r.peran)terapKel(r.peran==='admin'?(r.kel||'-'):'');if(r.admins)ADM=r.admins;pasangAdmin();PROFIL={nama:r.nama||'Admin Posyandu',nip:(r.nip!==undefined&&r.nip!==''?r.nip:lsNip()),jabatan:r.jabatan||'',unit:r.unit||'',foto:r.foto||''};if(window.terimaProfil)terimaProfil(r);profilOk=true;PEND={foto:null};pasangProfil()}
-  }).catch(function(){profilOk=false});
+  if(!CRED||profJalan)return;profJalan=true;
+  jsonp({aksi:'profil',u:CRED.u,p:CRED.p}).then(function(r){profJalan=false;
+    if(r&&r.ok){if(r.peran){PERAN=r.peran}if(window.terapKel&&r.peran)terapKel(r.peran==='admin'?(r.kel||'-'):'');if(r.admins)ADM=r.admins;pasangAdmin();PROFIL={nama:r.nama||'Admin Posyandu',nip:(r.nip!==undefined&&r.nip!==''?r.nip:lsNip()),jabatan:r.jabatan||'',unit:r.unit||'',foto:r.foto||''};if(window.terimaProfil)terimaProfil(r);profilOk=true;PEND={foto:null};pasangProfil();profKeCache()}
+  }).catch(function(){profJalan=false;profilOk=false});
 }
 function tunda(ms){return new Promise(function(r){setTimeout(r,ms)})}
 async function kirimAtur(f){
