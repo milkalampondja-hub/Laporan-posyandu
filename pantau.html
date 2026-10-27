@@ -251,6 +251,10 @@ footer.dsk{display:none}
   footer.mob{display:none}
   .tile b{font-size:21px}
 }
+.top.kecil .hello,.top.kecil .wil{display:none}
+.top.kecil{padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:8px}
+.top.kecil .trow .lg{width:34px}.top.kecil .trow .tt{font-size:15px}
+@media (min-width:900px){.top.kecil{padding-top:0;padding-bottom:0}}
 </style>
 </head>
 <body>
@@ -859,5 +863,10 @@ function tampil(){
   if(window.tampilBaru)tampilBaru();
 }
 </script>
+<script>(function(){var t=document.querySelector('.top'),k=false;if(!t)return;
+function cek(){if(window.matchMedia('(min-width:900px)').matches){if(k){t.classList.remove('kecil');k=false}return}
+var y=window.pageYOffset||document.documentElement.scrollTop||0;
+if(!k&&y>90){t.classList.add('kecil');k=true}else if(k&&y<12){t.classList.remove('kecil');k=false}}
+window.addEventListener('scroll',cek,{passive:true});window.addEventListener('resize',cek)})();</script>
 </body>
 </html>
