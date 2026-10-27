@@ -33,11 +33,12 @@ function doGet(e) {
   }
   else if (p.aksi === 'daftarpos') {
     // Publik (untuk aplikasi kader): nama, kelurahan, jenis, dan nama kader aktif sesuai SK. Nomor HP tidak ikut.
+    var ps = bacaPengaturan(PANTAU_USER);
     hasil = { ok: true, list: bacaPos().filter(function (x) { return x.aktif !== false; })
       .map(function (x) {
         return { nama: x.nama, kel: x.kel, jenis: x.jenis,
                  kader: (x.kader || []).filter(function (k) { return k.aktif !== false; }).map(function (k) { return { nama: k.nama, jabatan: k.jabatan }; }) };
-      }), info: bacaPengaturan(PANTAU_USER).pengumuman, infoTgl: bacaPengaturan(PANTAU_USER).pengumumanTgl, wa: bacaPengaturan(PANTAU_USER).wa };
+      }), info: ps.pengumuman, infoTgl: ps.pengumumanTgl, wa: ps.wa, batas: ps.batas };
   }
   else if (p.aksi === 'posyandu') {
     if (masuk(p.u, p.p)) {
