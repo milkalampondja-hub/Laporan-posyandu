@@ -53,7 +53,7 @@ function doGet(e) {
     var w1 = masuk(p.u, p.p);
     if (w1) {
       hasil = daftarLaporan(w1.peran === 'admin' ? w1.kel : '');
-      hasil.peran = w1.peran; hasil.kel = w1.kel || '';
+      hasil.peran = w1.peran; hasil.kel = w1.kel || ''; hasil.st = bacaStamp();
     } else {
       Utilities.sleep(1200);
       hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
@@ -70,6 +70,11 @@ function doGet(e) {
       Utilities.sleep(1200);
       hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
     }
+  }
+  else if (p.aksi === 'ubah') {
+    // Pemeriksaan ringan untuk Pantau: hanya menjawab apakah ada perubahan data sejak terakhir.
+    if (masuk(p.u, p.p)) hasil = { ok: true, st: bacaStamp() };
+    else { Utilities.sleep(1200); hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' }; }
   }
   else if (p.aksi === 'log') {
     var w3 = masuk(p.u, p.p);
@@ -336,6 +341,7 @@ function catat(d, cache) {
   var v = validasi(d), sh = lembar(), nb = nomorBaru(sh, v);
   sh.appendRow([nb.nomor, new Date(), v.thn, v.bln, v.kel, v.pos, v.jenis, bersih(d.tanggalKegiatan, 120),
                 bersih(d.kader, 900), nb.versi, '', '', bersih(d.hasilText, 800), 'PDF menunggu']);
+  sentuhStamp();
   var info = { ok: true, nomor: nb.nomor, versi: nb.versi };
   cache.put('info_' + d.id, JSON.stringify(info), 21600);
   return simpanHasil(info, 'c');
@@ -374,6 +380,7 @@ function selesai(d, cache) {
                   bersih(d.kader, 900), nb.versi, nama, file.getUrl(), bersih(d.hasilText, 800), 'PDF tersimpan']);
   }
   cache.removeAll(kunciCache);
+  sentuhStamp();
   return simpanHasil({ ok: true, nomor: nb.nomor, versi: nb.versi }, 's');
 }
 
@@ -383,6 +390,10 @@ function simpanHasil(o, tag) {
   }
   return jawab(o);
 }
+
+/** Penanda perubahan data (waktu terakhir ada laporan atau data Posyandu yang berubah). */
+function bacaStamp() { return PropertiesService.getScriptProperties().getProperty('STAMP_DATA') || '0'; }
+function sentuhStamp() { try { PropertiesService.getScriptProperties().setProperty('STAMP_DATA', String(Date.now())); } catch (x) {} }
 
 function jawab(o) {
   o.t = TOKEN_BALAS;
@@ -460,6 +471,7 @@ function simpanPos(d) {
   if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh mengubah data Posyandu'); }
   var lama = bacaPos(), list = bersihPos(d.list), teks = JSON.stringify({ list: list, tgl: Date.now() }), f = induk(), it = f.getFilesByName(NAMA_POS);
   if (it.hasNext()) it.next().setContent(teks); else f.createFile(NAMA_POS, teks, MimeType.PLAIN_TEXT);
+  sentuhStamp();
   try { catatLog(w.u, ringkasPos(lama, list)); } catch (x) {}
   return simpanHasil({ ok: true, list: list }, 'a');
 }
