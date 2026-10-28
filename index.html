@@ -237,7 +237,7 @@ a.btn.wa{min-height:40px;padding:6px 14px;font-size:14px;font-weight:600;margin:
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 29</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 30</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -434,7 +434,7 @@ function viewHome(){
   var how=[["users","Data posyandu","Pilih jenis laporan dan kelurahan, isi nama posyandu dan kader."],["calendar","Kegiatan","Tanggal, tempat, dan hasil kegiatan bulan ini."],["camera","Foto","Tambahkan foto dokumentasi dari galeri atau kamera."],["edit","Catatan","Masalah, tindak lanjut, dan tanggal tanda tangan lurah."],["filecheck","Download","Periksa pratinjau, lalu simpan PDF dan cetak."]];
   return '<section class="hero"><div class="badge-logo"><img src="'+LOGO+'" alt=""></div><h1>LAPORAN POSYANDU<br>KECAMATAN PALU UTARA</h1><p>Posyandu Balita dan Lansia</p></section>'+
   (has?'<section class="card resume"><div class="rl">Laporan terakhir</div><div class="rt">'+esc(S.posyandu||"Belum diberi nama")+'</div><div class="rs">'+esc((J()?J().label+" · ":"")+(S.kelurahan?"Kelurahan "+S.kelurahan:"Belum memilih kelurahan"))+'</div><div class="btnrow"><button type="button" class="btn primary" data-start="0">Lanjutkan laporan</button><button type="button" class="btn" id="new-report">Laporan bulan baru</button></div></section>':'')+
-  batasHtml()+
+  batasHtml()+'<div id="antre-wrap">'+antreHtml()+'</div>'+
   (INFO&&!infoTertutup()?'<section class="info" role="note"><span class="toa" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10v4a1 1 0 0 0 1 1h2l3.5 5h2.2l-1.6-5H11l7 4V5l-7 4H4a1 1 0 0 0-1 1zm16-1.5v7a3.5 3.5 0 0 0 0-7zM21 4.5v1.6a6 6 0 0 1 0 11.8v1.6a7.5 7.5 0 0 0 0-15z"/></svg></span><span class="isi"><b>Pengumuman</b><span class="teks">'+esc(INFO)+'</span>'+(tglIndo(INFOTGL)?'<small>Diperbarui '+tglIndo(INFOTGL)+'</small>':'')+'</span><button type="button" class="tutup" id="info-tutup" aria-label="Tutup pengumuman">&times;</button></section>':'')+
   (has?'':'<button type="button" class="btn primary block big mulai" data-start="0"><span class="pn kr" aria-hidden="true">'+PANAH+'</span><span>Mulai laporan</span><span class="pn kn" aria-hidden="true">'+PANAH+'</span></button>')+
   '<p class="save">Data posyandu dan kader diingat di HP ini, jadi tidak perlu mengisi ulang.</p>'+
@@ -626,6 +626,7 @@ main.addEventListener("click",function(e){
     wipeArm=0;S=blank();restored=false;save();render();return}
   if(b.id==="make"){makePdf(b)}
   if(b.id==="retry-arsip"){kirimArsip()}
+  if(b.id==="antre-kirim"){ANTRE.pesan="";kirimAntrean();return}
 });
 btnBack.addEventListener("click",function(){go(step-1)});
 btnNext.addEventListener("click",function(){
@@ -819,11 +820,64 @@ async function kirimArsip(){
     var j=await selesaikan(data);
     if(!j.ok)throw new Error(j.pesan||"gagal");
     arsipDone=true;box.className="status ok2";box.textContent="Tersimpan di arsip. Nomor laporan: "+arsipInfo.nomor+(arsipInfo.versi>1?" (versi "+arsipInfo.versi+")":"")+". Data dan file PDF sudah masuk.";
+    antreHapus(arsipId).catch(function(){});setTimeout(kirimAntrean,1500);
   }catch(e){
     var why=String(e&&e.message||e);
     if(arsipInfo){box.className="status err2";box.innerHTML='Data laporan sudah tercatat ('+esc(arsipInfo.nomor)+'), tetapi file PDF belum terkirim ke arsip.<br><small>Penyebab: '+esc(why)+'</small><br><button type="button" class="btn sm" id="retry-arsip">Kirim ulang PDF</button>'}
     else{box.className="status err2";box.innerHTML='Belum tersimpan di arsip. PDF di HP tetap aman.<br><small>Penyebab: '+esc(why)+'</small><br><button type="button" class="btn sm" id="retry-arsip">Coba kirim lagi</button>'}
+    antreSimpanGagal(data);
   }finally{arsipBusy=false}
+}
+/* ---------- antrean kirim ke arsip (disimpan di HP, dikirim ulang otomatis) ---------- */
+var ANTRE={n:0,pesan:"",kls:""},antreJalan=false,antreCek=0;
+function idb(){return new Promise(function(res,rej){try{var q=indexedDB.open("lp-antrean",1);q.onupgradeneeded=function(){q.result.createObjectStore("laporan",{keyPath:"id"})};q.onsuccess=function(){res(q.result)};q.onerror=function(){rej(q.error)}}catch(e){rej(e)}})}
+function idbOp(mode,fn){return idb().then(function(db){return new Promise(function(res,rej){var tx=db.transaction("laporan",mode),r=fn(tx.objectStore("laporan"));tx.oncomplete=function(){db.close();res(r&&r.result)};tx.onerror=tx.onabort=function(){db.close();rej(tx.error)}})})}
+function antreSimpan(it){return idbOp("readwrite",function(st){return st.put(it)})}
+function antreHapus(id){return idbOp("readwrite",function(st){return st.delete(id)})}
+function antreSemua(){return idbOp("readonly",function(st){return st.getAll()}).then(function(a){return a||[]})}
+function antreSimpanGagal(data){
+  try{
+    if(!resBlob||!arsipId||!data)return;
+    var d2={};for(var k in data)if(k!=="aksi"&&k!=="n"&&k!=="t")d2[k]=data[k];
+    antreSimpan({id:arsipId,data:d2,blob:resBlob,nama:resName,info:arsipInfo,waktu:Date.now()}).then(function(){
+      var b=document.getElementById("arsip");
+      if(b&&!arsipDone)b.insertAdjacentHTML("beforeend","<br><small>Laporan ini disimpan di HP dan akan dikirim otomatis ke arsip saat aplikasi dibuka kembali dengan sinyal.</small>");
+    }).catch(function(){});
+  }catch(e){}
+}
+function antreHtml(){
+  if(!ANTRE.n&&!ANTRE.pesan)return "";
+  var t=ANTRE.pesan||(ANTRE.n+" laporan menunggu dikirim ke arsip.");
+  return '<div class="status antre '+(ANTRE.kls||"")+'" role="status">'+esc(t)+(ANTRE.n&&!antreJalan?' <button type="button" class="btn sm" id="antre-kirim">Kirim sekarang</button>':'')+'</div>';
+}
+function tampilAntre(){var e=document.getElementById("antre-wrap");if(e)e.innerHTML=antreHtml()}
+async function kirimAntrean(){
+  if(antreJalan||!ARSIP_URL||navigator.onLine===false)return;
+  var items;try{items=await antreSemua()}catch(e){return}
+  var lama=Date.now()-14*864e5;
+  items=items.filter(function(it){if(it.waktu<lama){antreHapus(it.id).catch(function(){});return false}return true});
+  ANTRE.n=items.length;if(!items.length){tampilAntre();return}
+  antreJalan=true;ANTRE.pesan="";ANTRE.kls="";
+  try{
+    for(var i=0;i<items.length;i++){
+      var it=items[i];
+      if(arsipBusy&&it.id===arsipId)continue;
+      if(arsipDone&&it.id===arsipId){await antreHapus(it.id);continue}
+      var nm=(it.data&&it.data.posyandu)||"";
+      ANTRE.pesan="Mengirim laporan "+nm+" ke arsip…";ANTRE.kls="";tampilAntre();
+      try{
+        var dt=it.data;dt.id=it.id;
+        if(!it.info){dt.aksi="catat";it.info=await catatData(dt);await antreSimpan(it)}
+        var pdf=await blobB64(it.blob),CH=94000,n=Math.ceil(pdf.length/CH),q=[];for(var x=0;x<n;x++)q.push(x);
+        var pk=async function(){while(q.length){var qi=q.shift();await kirimBagian(it.id,qi,pdf.slice(qi*CH,(qi+1)*CH))}};
+        await Promise.all([pk(),pk(),pk()]);
+        dt.aksi="selesai";dt.n=n;
+        var j=await selesaikan(dt);if(!j.ok)throw new Error(j.pesan||"gagal");
+        await antreHapus(it.id);
+        ANTRE.pesan="Laporan "+nm+" berhasil dikirim ke arsip ("+it.info.nomor+").";ANTRE.kls="ok2";
+      }catch(e){ANTRE.pesan="Laporan "+nm+" belum terkirim ke arsip, akan dicoba lagi nanti.";ANTRE.kls="err2";break}
+    }
+  }finally{antreJalan=false;var sisa=[];try{sisa=await antreSemua()}catch(e){}ANTRE.n=sisa.length;tampilAntre()}
 }
 async function buildPdf(){
   if(!window.html2canvas||!window.jspdf)throw new Error("lib");
@@ -878,6 +932,9 @@ async function makePdf(btn){
 
 render();
 muatDaftarPos();
+setTimeout(kirimAntrean,2500);
+window.addEventListener("online",function(){setTimeout(kirimAntrean,800)});
+document.addEventListener("visibilitychange",function(){if(!document.hidden&&Date.now()-antreCek>30000){antreCek=Date.now();kirimAntrean()}});
 })();
 </script>
 </body>
