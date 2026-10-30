@@ -117,13 +117,21 @@ button{cursor:pointer}
 .ch{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .sq{width:52px;height:52px;border-radius:14px;background:linear-gradient(180deg,#ffd21f,#ffbf00);display:grid;place-items:center;color:#2b2100;font-size:26px;flex:none}
 .ch h3{margin:0;font-size:19px;line-height:1.2}.ch p{margin:2px 0 0;font-size:13.5px;color:var(--muted)}
-.filters{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+.fc{padding:12px 14px}
+.fh{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.fh h3{margin:0;font-size:17px;line-height:1.2;flex:1}
+.linkk{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;font-weight:700;text-decoration:underline;padding:6px 4px;cursor:pointer}
+.ibtn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);display:grid;place-items:center;cursor:pointer;flex:none}
+.ibtn .ic{width:19px;height:19px}.ibtn:disabled{opacity:.5}
+.ibtn.putar .ic{animation:putar .8s linear infinite}@keyframes putar{to{transform:rotate(360deg)}}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
 .filters .full{grid-column:1/-1}
-.filters label{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;margin-bottom:6px}
+.filters label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:3px}
 .sel{position:relative}
-.sel select,.sel input{width:100%;min-height:50px;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:10px 40px 10px 14px;appearance:none;-webkit-appearance:none;font-size:16px}
+.sel select,.sel input{width:100%;min-height:44px;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:10px 40px 10px 14px;appearance:none;-webkit-appearance:none;font-size:16px}
 .sel .ic.dn{position:absolute;right:12px;top:50%;margin-top:-.6em;pointer-events:none;color:var(--fg)}
 .sel input{padding-right:14px}
+.sel.cari .si{position:absolute;left:12px;top:50%;margin-top:-.55em;color:var(--muted);pointer-events:none}.sel.cari input{padding-left:38px}
 .act{margin-top:14px}
 .dl{background:linear-gradient(180deg,#fffbe6,#fff6cc);border-color:#f6e08a}
 .dl .top2{display:flex;align-items:center;gap:12px;margin-bottom:12px}
@@ -271,6 +279,7 @@ footer.dsk{display:none}
 <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
 <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></symbol>
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+<symbol id="i-sync" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-14 5.3M4 12A8 8 0 0 1 18 6.7M18 3v4h-4M6 21v-4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 <symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"/></symbol>
 <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="M12 12v9M16 16l-4-4-4 4"/></symbol>
 <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v7h6M8 13h8M8 17h8"/></symbol>
@@ -344,7 +353,6 @@ footer.dsk{display:none}
 
     <main class="sheet"><div class="cols">
       <div class="mainc">
-        <div class="tglm only-m"><svg class="ic"><use href="#i-cal"/></svg><span class="dtgl">-</span></div>
         <div id="msg"></div>
 
         <section class="v v-b">
@@ -355,16 +363,15 @@ footer.dsk{display:none}
         <section class="v v-b" id="sumB"></section>
 
         <div class="panel big" id="panel">
-          <div class="card" id="fcard" style="margin-bottom:14px">
-            <div class="ch"><span class="sq"><svg class="ic "><use href="#i-cal"/></svg></span><div><h3><span class="only-m">Laporan Posyandu</span><span class="only-d">Filter Data Laporan</span></h3><p>Pilih periode dan kriteria untuk melihat laporan posyandu</p></div></div>
+          <div class="card fc" id="fcard" style="margin-bottom:14px">
+            <div class="fh"><h3><span class="only-m">Laporan Posyandu</span><span class="only-d">Filter Data Laporan</span></h3><button class="linkk hidden" id="fres" type="button">Atur ulang</button><button class="ibtn" id="re" type="button" aria-label="Muat ulang data" title="Muat ulang data"><svg class="ic "><use href="#i-sync"/></svg></button></div>
             <div class="filters">
-              <div><label for="fb"><svg class="ic "><use href="#i-cal"/></svg>Bulan</label><div class="sel"><select id="fb"></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
-              <div><label for="ft"><svg class="ic "><use href="#i-cal"/></svg>Tahun</label><div class="sel"><select id="ft"></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
-              <div><label for="fj"><svg class="ic "><use href="#i-list"/></svg>Jenis</label><div class="sel"><select id="fj"><option value="">Semua Jenis</option><option>Posyandu Balita</option><option>Posyandu Lansia</option></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
-              <div><label for="fk"><svg class="ic "><use href="#i-pin"/></svg>Kelurahan</label><div class="sel"><select id="fk"><option value="">Semua</option></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
-              <div class="full"><label for="fq"><svg class="ic "><use href="#i-search"/></svg>Cari nama Posyandu</label><div class="sel"><input id="fq" type="search" placeholder="Ketik nama Posyandu..." autocomplete="off"></div></div>
+              <div><label for="fb">Bulan</label><div class="sel"><select id="fb"></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
+              <div><label for="ft">Tahun</label><div class="sel"><select id="ft"></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
+              <div><label for="fj">Jenis</label><div class="sel"><select id="fj"><option value="">Semua Jenis</option><option>Posyandu Balita</option><option>Posyandu Lansia</option></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
+              <div id="fkw"><label for="fk">Kelurahan</label><div class="sel"><select id="fk"><option value="">Semua</option></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
+              <div class="full"><div class="sel cari"><svg class="ic si"><use href="#i-search"/></svg><input id="fq" type="search" placeholder="Cari nama Posyandu…" aria-label="Cari nama Posyandu" autocomplete="off"></div></div>
             </div>
-            <div class="actrow act"><button class="btn wide" id="re" type="button"><svg class="ic "><use href="#i-filter"/></svg>Muat Ulang</button></div>
           </div>
           <div class="v v-b">
             <div class="card dl">
@@ -484,6 +491,7 @@ function jam(){var n=new Date();return pad(n.getHours())+'.'+pad(n.getMinutes())
   $('fq').addEventListener('input',tampil);
   $('dx').addEventListener('click',function(){unduh('xlsx')});$('dc').addEventListener('click',function(){unduh('csv')});
   $('re').addEventListener('click',muat);$('re2').addEventListener('click',muat);
+  $('fres').addEventListener('click',function(){fb.value=BULAN[now.getMonth()];ft.value=String(now.getFullYear());$('fj').value='';fk.value='';$('fq').value='';tampil()});
   document.addEventListener('visibilitychange',function(){if(CRED&&!document.hidden&&Date.now()-lastCek>30000)cekUbah()});
   $('sh').addEventListener('click',function(){var i=$('lp'),t=i.type==='password';i.type=t?'text':'password';this.textContent=t?'Sembunyi':'Lihat'});
   $('out').addEventListener('click',keluar);
@@ -555,9 +563,9 @@ function setLast(ok){
   var b=$('okb');b.className='okbox'+(ok?'':' bad');$('okt').textContent=ok?'Sistem berjalan dengan baik':'Data belum bisa dimuat';
 }
 function muat(dariLogin){
-  if(loading||!CRED)return;loading=true;if(!profilOk){profDariCache();ambilProfil()}$('re').disabled=true;$('re2').disabled=true;
+  if(loading||!CRED)return;loading=true;if(!profilOk){profDariCache();ambilProfil()}$('re').disabled=true;$('re').classList.add('putar');$('re2').disabled=true;
   var cb='p'+Date.now(),s=document.createElement('script'),selesai=false;
-  function bersih(){selesai=true;clearTimeout(tm);try{delete window[cb]}catch(x){window[cb]=undefined}if(s.parentNode)s.parentNode.removeChild(s);loading=false;$('re').disabled=false;$('re2').disabled=false}
+  function bersih(){selesai=true;clearTimeout(tm);try{delete window[cb]}catch(x){window[cb]=undefined}if(s.parentNode)s.parentNode.removeChild(s);loading=false;$('re').disabled=false;$('re').classList.remove('putar');$('re2').disabled=false}
   function err(){if(dariLogin===true){$('lb').disabled=false;$('lb').textContent='Masuk';$('lerr').textContent='Belum tersambung. Periksa internet lalu coba lagi.';return}gagal('Data belum bisa dimuat. Periksa sinyal internet lalu tekan Muat Ulang.')}
   var tm=setTimeout(function(){if(selesai)return;bersih();err()},25000);
   window[cb]=function(r){
@@ -860,6 +868,7 @@ function tampil(){
   var uniq=terbaru(dasar);
   var lihat=uniq.filter(function(d){return(!jn||d.jenis===jn)&&(!kl||d.kel===kl)&&(!q||d.pos.toLowerCase().indexOf(q)>=0)});
   window.LIHAT=lihat;
+  var ubahF=bl!==BULAN[new Date().getMonth()]||th!==String(new Date().getFullYear())||jn||kl||q;$('fres').classList.toggle('hidden',!ubahF);
   var tb=lihat.filter(function(d){return d.jenis==='Posyandu Balita'}).length,tl=lihat.filter(function(d){return d.jenis==='Posyandu Lansia'}).length;
   var tot=$('tot');tot.textContent='';
   tot.appendChild(tile('g','doc',lihat.length,'Laporan masuk',function(){$('fj').value='';go('l');tampil()}));

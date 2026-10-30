@@ -19,6 +19,7 @@ var EXT_CSS = [
 '.cmp i{display:block;width:100%;max-width:22px;border-radius:5px 5px 0 0;background:#ffc800;min-height:2px}.cmp div.on i{background:#2fa04a}',
 '.cmp small{margin-top:3px;font-size:10px}',
 '.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.toolbar .btn{min-height:42px;padding:6px 14px;font-size:14px}',
+'#dpStat{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:10px 0}#dpStat .stat{padding:8px 6px}#dpStat .stat b{font-size:22px}#dpStat .stat span{font-size:11.5px;line-height:1.2;display:block}',
 '.fl2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.fl2 select,.fl2 input{width:100%;min-height:44px;border:1.5px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--surface);color:var(--fg);font-size:15px}.fl2 .full{grid-column:1/-1}',
 '.pos{border:1px solid var(--line);border-radius:14px;margin-bottom:10px;background:var(--surface);overflow:hidden}',
 '.pos.off{opacity:.65}',
@@ -75,6 +76,7 @@ window.terapKel = function (k) {
   if (bb) { bb.style.display = op ? 'flex' : 'none'; var bk = $('btnBuatKel'); if (bk) bk.textContent = KELSAYA === '-' ? '' : KELSAYA; }
   if (la) la.style.display = op ? 'none' : '';
   KEL.length = 0; (KELSAYA ? [KELSAYA] : KEL_SEMUA).forEach(function (x) { KEL.push(x); });
+  var fw = $('fkw'); if (fw) { var sk = !!KELSAYA && KELSAYA !== '-'; fw.style.display = sk ? 'none' : ''; if (sk && $('fk')) $('fk').value = ''; } var dk = $('dfk'); if (dk) dk.style.display = (!!KELSAYA && KELSAYA !== '-') ? 'none' : '';
 };
 function posAktif() { return dasarPos().filter(function (p) { return p.aktif !== false; }); }
 function persen(a, b) { return b ? Math.round(a * 100 / b) : 0; }
@@ -411,10 +413,11 @@ function csvUnduh(nama, bagian) {
 var dpDibuat = false, dpFilter = { kel: '', jenis: '', st: '', q: '' };
 function dpSiap() {
   var box = $('dpBox'); if (!box || dpDibuat) return; dpDibuat = true;
-  box.innerHTML = '<div class="card"><h4>Data Posyandu</h4><p class="hint">Sumber utama nama Posyandu untuk menu Laporan dan Rekapitulasi, sehingga nama tidak tercatat ganda.</p>' +
+  box.innerHTML = '<div class="card"><h4>Data Posyandu</h4><p class="hint">Sumber nama Posyandu untuk menu Laporan dan Rekap.</p>' +
     '<div class="grid4" id="dpStat"></div><div class="toolbar" id="dpTool"></div>' +
-    '<div class="fl2"><select id="dfk"></select><select id="dfj"></select><select id="dfs"></select><input id="dfq" type="search" placeholder="Cari Posyandu atau kader" autocomplete="off"></div></div>' +
+    '<div class="fl2"><input class="full" id="dfq" type="search" placeholder="Cari Posyandu atau kader…" aria-label="Cari Posyandu atau kader" autocomplete="off"><select class="full" id="dfk" aria-label="Kelurahan"></select><select id="dfj" aria-label="Jenis"></select><select id="dfs" aria-label="Status"></select></div></div>' +
     '<div id="dpList"></div><div class="card"><h4>Surat Keputusan (SK) Kader</h4><p class="hint">Ketuk SK untuk membacanya utuh.</p><div id="skBox"></div></div>';
+  if (KELSAYA && KELSAYA !== '-') $('dfk').style.display = 'none';
   pilihEl('dfk', [['', 'Semua kelurahan']].concat(KEL.map(function (k) { return [k, k]; })));
   pilihEl('dfj', [['', 'Semua jenis'], [J_B(), 'Balita'], [J_L(), 'Lansia']]);
   pilihEl('dfs', [['', 'Semua status'], ['a', 'Aktif'], ['n', 'Nonaktif']]);
