@@ -305,6 +305,7 @@ function doPost(e) {
       if (d.aksi === 'atur') { tag = 'a'; return atur(d); }
       if (d.aksi === 'kelola') { tag = 'a'; return kelola(d); }
       if (d.aksi === 'pos') { tag = 'a'; return simpanPos(d); }
+      if (d.aksi === 'nomor') { tag = 'a'; return simpanNomor(d); }
       if (d.aksi === 'sk') { tag = 'a'; return simpanSk(d, cache); }
       throw new Error('Aksi tidak dikenal');
     } finally {
@@ -462,7 +463,8 @@ function bersihPos(arr) {
     }).filter(function (q) { return q.nama; });
     out.push({ id: id, nama: nama, kel: kel, jenis: jenis, alamat: bersih(x.alamat, 120), puskesmas: bersih(x.puskesmas, 40),
                ketua: bersih(x.ketua, 60), hp: String(x.hp || '').replace(/[^0-9+ \-]/g, '').slice(0, 20),
-               jadwal: bersih(x.jadwal, 80), aktif: x.aktif !== false, kader: kader });
+               jadwal: bersih(x.jadwal, 80), aktif: x.aktif !== false, kader: kader,
+               hpJenis: x.hpJenis === 'perwakilan' ? 'perwakilan' : 'ketua', hpNama: bersih(x.hpNama, 60) });
   });
   return out;
 }
@@ -475,6 +477,26 @@ function simpanPos(d) {
   sentuhStamp();
   try { catatLog(w.u, ringkasPos(lama, list)); } catch (x) {}
   return simpanHasil({ ok: true, list: list }, 'a');
+}
+/** Admin utama atau operator: ubah nomor HP ketua atau perwakilan satu Posyandu. Operator hanya untuk kelurahannya. */
+function simpanNomor(d) {
+  var w = masuk(d.u, d.p);
+  if (!w) { Utilities.sleep(1200); throw new Error('Silakan masuk lagi'); }
+  var lama = bacaPos(), id = String(d.id || ''), ix = -1;
+  lama.forEach(function (x, i) { if (x.id === id) ix = i; });
+  if (ix < 0) throw new Error('Posyandu tidak ditemukan. Minta admin kecamatan menyimpan daftar Posyandu terlebih dahulu');
+  var p = lama[ix];
+  if (w.peran !== 'utama' && p.kel !== w.kel) throw new Error('Posyandu ini bukan di kelurahan Anda');
+  var hp = String(d.hp || '').replace(/[^0-9+ \-]/g, '').slice(0, 20);
+  if (hp && hp.replace(/[^0-9]/g, '').length < 9) throw new Error('Nomor HP terlalu pendek');
+  p.hp = hp;
+  p.hpJenis = d.hpJenis === 'perwakilan' ? 'perwakilan' : 'ketua';
+  p.hpNama = p.hpJenis === 'perwakilan' ? bersih(d.hpNama, 60) : '';
+  var teks = JSON.stringify({ list: lama, tgl: Date.now() }), f = induk(), it = f.getFilesByName(NAMA_POS);
+  if (it.hasNext()) it.next().setContent(teks); else f.createFile(NAMA_POS, teks, MimeType.PLAIN_TEXT);
+  sentuhStamp();
+  catatLog(w.u, (hp ? 'mengisi' : 'menghapus') + ' nomor HP ' + p.jenis + ' ' + p.nama + ' (' + p.kel + ')');
+  return simpanHasil({ ok: true, list: lama.filter(function (x) { return w.peran === 'utama' || x.kel === w.kel; }) }, 'a');
 }
 /** Hanya admin utama: simpan berkas PDF SK (Balita atau Lansia) yang dikirim berpotong-potong. */
 function simpanSk(d, cache) {

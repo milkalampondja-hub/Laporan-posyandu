@@ -382,8 +382,8 @@ footer.dsk{display:none}
           </div>
         </div>
 
-        <section class="v v-b"><div class="card"><h4>Status per kelurahan</h4><div id="mx2"></div></div></section>
-        <section class="v v-l"><div class="card"><h4>Laporan yang sudah terkirim</h4><div id="ls"></div></div></section>
+        <section class="v v-b" id="secMx"><div class="card"><h4>Status per kelurahan</h4><div id="mx2"></div></div></section>
+        <section class="v v-l"><div class="card"><h4>Laporan yang sudah terkirim</h4><div class="opdl"><button class="btn sm line" id="dx2" type="button">Unduh Excel</button><button class="btn sm line" id="dc2" type="button">Unduh CSV</button></div><div id="ls"></div></div></section>
         <section class="v v-d" id="dpBox"></section>
         <section class="v v-r" id="rkBox"></section>
         <section class="v v-p">
@@ -490,6 +490,7 @@ function jam(){var n=new Date();return pad(n.getHours())+'.'+pad(n.getMinutes())
   ['fb','ft','fj','fk'].forEach(function(i){$(i).addEventListener('change',tampil)});
   $('fq').addEventListener('input',tampil);
   $('dx').addEventListener('click',function(){unduh('xlsx')});$('dc').addEventListener('click',function(){unduh('csv')});
+  $('dx2').addEventListener('click',function(){unduh('xlsx')});$('dc2').addEventListener('click',function(){unduh('csv')});
   $('re').addEventListener('click',muat);$('re2').addEventListener('click',muat);
   $('fres').addEventListener('click',function(){fb.value=BULAN[now.getMonth()];ft.value=String(now.getFullYear());$('fj').value='';fk.value='';$('fq').value='';tampil()});
   document.addEventListener('visibilitychange',function(){if(CRED&&!document.hidden&&Date.now()-lastCek>30000)cekUbah()});

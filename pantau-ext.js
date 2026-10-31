@@ -46,13 +46,23 @@ var EXT_CSS = [
 '.slot .t{flex:1;min-width:0;font-size:14px}.slot .btn{min-height:38px;padding:4px 12px;font-size:13px}',
 '.lt{font-size:13px;color:var(--muted)}',
 '.dtbl{width:100%;border-collapse:collapse;font-size:14px}.dtbl th,.dtbl td{padding:8px 4px;border-bottom:1px solid var(--line);text-align:center}.dtbl th:first-child,.dtbl td:first-child{text-align:left}.dtbl tr:last-child td{border-bottom:0}',
-'.dtbl td.pc{font-weight:700}'
+'.dtbl td.pc{font-weight:700}',
+'#app.isop #bm,#app.isop #bd{display:none!important}',
+'#app.isop[data-view="b"] #panel{display:none}',
+'#app.isop #secMx{display:none}',
+'.opdl{display:none;gap:8px;margin:0 0 12px;flex-wrap:wrap}#app.isop .opdl{display:flex}.opdl .btn{min-height:40px;padding:4px 14px;font-size:14px}',
+'.pengum{background:var(--accent-soft);color:var(--accent-text);border-radius:14px;padding:10px 14px;font-size:14px;margin-bottom:12px;font-weight:600}',
+'.hm{border-radius:12px;padding:9px 12px;margin:10px 0 2px;font-weight:700;font-size:14px}.hm.ok{background:var(--ok-soft);color:var(--ok)}.hm.warn{background:var(--warn-soft);color:var(--warn)}',
+'.prow{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px;background:var(--surface)}.prow .rt{display:flex;gap:8px;align-items:center}.prow .nm{flex:1;min-width:0}.prow .nm b{display:block}.prow .nm small{color:var(--muted);font-size:13px}',
+'.prow .ct{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:8px;align-items:center;font-size:13.5px;color:var(--muted)}.prow .ct span{flex:1;min-width:140px}',
+'.btn.wa{background:#1fa855;color:#fff;border-color:#1fa855;text-decoration:none}.btn.sm.kc{min-height:36px;padding:3px 12px;font-size:13px}'
 ].join('\n');
 var stl = document.createElement('style'); stl.textContent = EXT_CSS; document.head.appendChild(stl);
 
 function $(i) { return document.getElementById(i); }
 function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
 function utama() { return PERAN === 'utama'; }
+function isOp() { return !!KELSAYA && KELSAYA !== '-'; }
 function J_B() { return 'Posyandu Balita'; } function J_L() { return 'Posyandu Lansia'; }
 var JENIS = [J_B(), J_L()];
 function kunci(kel, jenis, nama) {
@@ -72,7 +82,7 @@ window.terapKel = function (k) {
       w.appendChild(l1); w.appendChild(l2);
     } else { w.classList.remove('op'); w.textContent = 'Kecamatan Palu Utara'; }
   });
-  var op = !!KELSAYA, bb = $('btnBuat'), la = $('lnkApp');
+  var op = !!KELSAYA, bb = $('btnBuat'), la = $('lnkApp'), ap = $('app'); if (ap) ap.classList.toggle('isop', op && KELSAYA !== '-');
   if (bb) { bb.style.display = op ? 'flex' : 'none'; var bk = $('btnBuatKel'); if (bk) bk.textContent = KELSAYA === '-' ? '' : KELSAYA; }
   if (la) la.style.display = op ? 'none' : '';
   KEL.length = 0; (KELSAYA ? [KELSAYA] : KEL_SEMUA).forEach(function (x) { KEL.push(x); });
@@ -109,6 +119,7 @@ function pillSt(r) {
 }
 function periodeBeranda() {
   var now = new Date(), bl = $('fb').value || BULAN[now.getMonth()], th = $('ft').value || String(now.getFullYear());
+  if (isOp()) return { bl: BULAN[now.getMonth()], th: String(now.getFullYear()) };
   return { bl: bl, th: th };
 }
 
@@ -199,6 +210,7 @@ function tileStat(cls, n, lbl) { var d = el('div', 'stat ' + cls); d.appendChild
 function renderBeranda() {
   var box = $('sumB'); if (!box) return; box.textContent = '';
   var pr = periodeBeranda(), h = hitung(pr.th, pr.bl), pc = persen(h.masuk.length, h.rows.length);
+  if (isOp()) { berandaOp(box, h, pr, pc); return; }
   var c = el('div', 'card'); c.appendChild(el('h4', null, 'Ringkasan ' + pr.bl + ' ' + pr.th));
   c.appendChild(el('div', 'lt', 'Batas pengumpulan: tanggal ' + BATAS + ' ' + pr.bl));
   var g = el('div', 'grid4');
@@ -221,6 +233,9 @@ function renderBeranda() {
     c2.appendChild(ch);
   });
   box.appendChild(c2);
+  kaderPengganti(box);
+}
+function kaderPengganti(box) {
   var pg = penggantiSementara();
   if (pg.length) {
     var c3 = el('div', 'card'); c3.appendChild(el('h4', null, 'Kader pengganti sementara'));
@@ -232,6 +247,75 @@ function renderBeranda() {
     });
     box.appendChild(c3);
   }
+}
+
+/* ---------- Beranda khusus operator kelurahan ---------- */
+function nomorWA(hp) { var n = String(hp || '').replace(/[^0-9]/g, ''); if (n.indexOf('62') === 0) return n; if (n.indexOf('0') === 0) return '62' + n.slice(1); if (n.indexOf('8') === 0) return '62' + n; return n; }
+function namaKontak(p) { return p.hpJenis === 'perwakilan' && p.hpNama ? p.hpNama : (p.ketua || ''); }
+function pesanWA(p, pr, lewat) {
+  var j = new Date().getHours(), sapa = j < 11 ? 'pagi' : j < 15 ? 'siang' : j < 18 ? 'sore' : 'malam', nm = namaKontak(p), url;
+  try { url = new URL('./', location.href).href; } catch (e) { url = ''; }
+  return 'Selamat ' + sapa + ' Bapak/Ibu' + (nm ? ' ' + nm : '') + ', kami dari Kecamatan Palu Utara. Laporan ' + p.jenis + ' ' + p.nama + ' bulan ' + pr.bl + ' ' + pr.th +
+    ' belum kami terima. Batas pengiriman tanggal ' + BATAS + ' ' + pr.bl + (lewat ? ' sudah terlewat' : '') + '. Mohon segera dikirim lewat aplikasi laporan' + (url ? ': ' + url : '') + '\nTerima kasih.';
+}
+function hitungMundur(pr) {
+  var now = new Date(), sel = BATAS - now.getDate(), fmt = 'Batas kirim tanggal ' + BATAS + ' ' + pr.bl + ' · ';
+  if (sel > 0) return { t: fmt + 'tinggal ' + sel + ' hari', c: sel > 3 ? 'ok' : 'warn' };
+  if (sel === 0) return { t: fmt + 'hari ini hari terakhir', c: 'warn' };
+  return { t: fmt + 'sudah lewat ' + (-sel) + ' hari', c: 'warn' };
+}
+function berandaOp(box, h, pr, pc) {
+  if (PENGUMUMAN) box.appendChild(el('div', 'pengum', PENGUMUMAN));
+  var c = el('div', 'card'); c.appendChild(el('h4', null, 'Laporan ' + pr.bl + ' ' + pr.th));
+  var tot = h.rows.length, msk = h.masuk.length;
+  var k = el('div'); k.style.cssText = 'font-size:17px;margin:2px 0 8px'; var bb = el('b', null, msk + ' dari ' + tot); k.appendChild(bb); k.appendChild(document.createTextNode(' Posyandu sudah mengirim laporan')); c.appendChild(k);
+  var br = el('div', 'bar'); br.appendChild(document.createElement('i')).style.width = pc + '%'; c.appendChild(br);
+  if (tot && msk === tot) c.appendChild(el('div', 'hm ok', 'Semua Posyandu sudah mengirim laporan. Terima kasih.'));
+  else { var hm = hitungMundur(pr); c.appendChild(el('div', 'hm ' + hm.c, hm.t)); }
+  if (h.asing.length) c.appendChild(el('div', 'warn2', h.asing.length + ' laporan memakai nama Posyandu yang belum cocok dengan Data Posyandu, sehingga tidak dihitung.'));
+  box.appendChild(c);
+  var c2 = el('div', 'card'); c2.appendChild(el('h4', null, 'Posyandu Kelurahan ' + KELSAYA));
+  var urut = { lewat: 0, belum: 1, telat: 2, tepat: 3 };
+  h.rows.slice().sort(function (a, b) { return urut[a.st] - urut[b.st] || a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); }).forEach(function (r) {
+    var p = r.p, row = el('div', 'prow'), top = el('div', 'rt'), nm = el('div', 'nm');
+    nm.appendChild(el('b', null, p.nama)); nm.appendChild(el('small', null, p.jenis.replace('Posyandu ', '') + (r.d ? ' · dikirim ' + (r.d.tk || '').slice(0, 10) : '')));
+    top.appendChild(nm); top.appendChild(pillSt(r)); row.appendChild(top);
+    var ct = el('div', 'ct'), n = nomorWA(p.hp);
+    if (p.hp) ct.appendChild(el('span', null, (p.hpJenis === 'perwakilan' ? 'Perwakilan' : 'Ketua') + (namaKontak(p) ? ' ' + namaKontak(p) : '') + ' · ' + p.hp));
+    else ct.appendChild(el('span', null, 'Nomor ketua atau perwakilan belum diisi'));
+    if (!r.d && p.hp) {
+      var a = document.createElement('a'); a.className = 'btn sm kc wa'; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Ingatkan lewat WhatsApp';
+      a.href = 'https://wa.me/' + n + '?text=' + encodeURIComponent(pesanWA(p, pr, r.st === 'lewat')); ct.appendChild(a);
+    }
+    ct.appendChild(btn(p.hp ? 'Ubah nomor' : 'Isi nomor', 'sm kc plain', function () { formNomor(p); }));
+    row.appendChild(ct); c2.appendChild(row);
+  });
+  if (!tot) c2.appendChild(el('div', 'empty', 'Belum ada Posyandu terdaftar untuk kelurahan ini.'));
+  box.appendChild(c2);
+  kaderPengganti(box);
+}
+function formNomor(p) {
+  var f = el('div');
+  f.appendChild(el('div', 'lt', p.jenis + ' ' + p.nama + ' · ' + p.kel));
+  var w1 = el('div', 'fld'); w1.appendChild(el('label', null, 'Nomor ini milik'));
+  var sj = document.createElement('select'); sj.style.cssText = 'width:100%;min-height:50px;border:1.5px solid var(--line);border-radius:12px;padding:8px;background:var(--surface);color:var(--fg);font-size:16px';
+  [['ketua', 'Ketua Posyandu'], ['perwakilan', 'Perwakilan Posyandu']].forEach(function (o) { var op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; sj.appendChild(op); });
+  sj.value = p.hpJenis === 'perwakilan' ? 'perwakilan' : 'ketua'; w1.appendChild(sj); f.appendChild(w1);
+  var w2 = el('div', 'fld'); w2.appendChild(el('label', null, 'Nama perwakilan')); var inN = document.createElement('input'); inN.type = 'text'; inN.maxLength = 60; inN.value = p.hpNama || ''; inN.placeholder = 'Nama yang memegang nomor ini'; w2.appendChild(inN); f.appendChild(w2);
+  var w3 = el('div', 'fld'); w3.appendChild(el('label', null, 'Nomor HP / WhatsApp')); var inH = document.createElement('input'); inH.type = 'tel'; inH.inputMode = 'tel'; inH.maxLength = 20; inH.value = p.hp || ''; inH.placeholder = 'Contoh: 0812 3456 7890'; w3.appendChild(inH); f.appendChild(w3);
+  function atur() { w2.style.display = sj.value === 'perwakilan' ? '' : 'none'; } sj.addEventListener('change', atur); atur();
+  f.appendChild(el('div', 'lt', 'Nomor dipakai untuk mengirim pengingat lewat WhatsApp, dan juga terlihat oleh admin kecamatan. Kosongkan lalu simpan untuk menghapus.'));
+  var er = el('div', 'st'); f.appendChild(er);
+  var sv = btn('Simpan nomor', 'wide', function () {
+    var hp = inH.value.trim();
+    if (hp && hp.replace(/[^0-9]/g, '').length < 9) { er.textContent = 'Nomor HP terlalu pendek'; er.className = 'st bad'; return; }
+    if (!POS.length) { er.textContent = 'Daftar Posyandu belum disimpan oleh admin kecamatan. Minta admin menyimpannya di menu Data Posyandu.'; er.className = 'st bad'; return; }
+    sv.disabled = true; er.textContent = 'Menyimpan…'; er.className = 'st';
+    kirimAtur({ aksi: 'nomor', id: p.id, hp: hp, hpJenis: sj.value, hpNama: inN.value.trim() }).then(function (r) {
+      if (r && r.list) POS = r.list; renderBeranda(); renderData(); tutupModal(); toast('Nomor tersimpan.');
+    }).catch(function (e) { sv.disabled = false; er.textContent = e.message; er.className = 'st bad'; });
+  });
+  f.appendChild(sv); bukaModal('Nomor ketua atau perwakilan', f);
 }
 /* Posyandu yang laporan terakhirnya memuat "Nama (Pengganti — Kader Pengganti Sementara)". */
 function penggantiSementara() {
@@ -288,6 +372,7 @@ function renderRekap() {
   }), 4)); isi.appendChild(c1);
   // 2 per kelurahan
   var c2 = el('div', 'card'); c2.appendChild(el('h4', null, 'Rekap laporan per kelurahan - ' + R.bl + ' ' + R.th));
+  var op1 = isOp();
   var gt = { b: [0, 0], l: [0, 0] };
   var rowsK = KEL.map(function (k) {
     var a = sub(h, function (r) { return r.p.kel === k && r.p.jenis === J_B(); }), b = sub(h, function (r) { return r.p.kel === k && r.p.jenis === J_L(); });
@@ -295,12 +380,12 @@ function renderRekap() {
     return [k, a.masuk + '/' + a.total, b.masuk + '/' + b.total, (a.masuk + b.masuk) + '/' + (a.total + b.total), persen(a.masuk + b.masuk, a.total + b.total) + '%'];
   });
   rowsK.push(['JUMLAH', gt.b[0] + '/' + gt.b[1], gt.l[0] + '/' + gt.l[1], (gt.b[0] + gt.l[0]) + '/' + (gt.b[1] + gt.l[1]), persen(gt.b[0] + gt.l[0], gt.b[1] + gt.l[1]) + '%']);
-  c2.appendChild(tabel(['Kelurahan', 'Balita', 'Lansia', 'Total', '%'], rowsK, 4)); isi.appendChild(c2);
+  c2.appendChild(tabel(['Kelurahan', 'Balita', 'Lansia', 'Total', '%'], rowsK, 4)); if (!op1) isi.appendChild(c2);
   // 3 persentase
   var c3 = el('div', 'card'); c3.appendChild(el('h4', null, 'Persentase laporan masuk'));
   c3.appendChild(barRow('Keseluruhan', h.masuk.length, h.rows.length));
   c3.appendChild(barRow('Posyandu Balita', gt.b[0], gt.b[1])); c3.appendChild(barRow('Posyandu Lansia', gt.l[0], gt.l[1]));
-  isi.appendChild(c3);
+  if (!op1) isi.appendChild(c3);
   // 4 rekap posyandu
   var c4 = el('div', 'card'); c4.appendChild(el('h4', null, 'Rekap Posyandu Balita dan Lansia'));
   JENIS.forEach(function (j) {
@@ -472,6 +557,7 @@ function kartuPos(p) {
       var n = POS.map(function (x) { return x.id === p.id ? Object.assign({}, x, { aktif: x.aktif === false }) : x; }); simpanDaftar(n, 'Status Posyandu diperbarui.');
     })); det.appendChild(ac);
   }
+  if (isOp() && POS.length) { var ao = el('div', 'acts'); ao.appendChild(btn(p.hp ? 'Ubah nomor ketua/perwakilan' : 'Isi nomor ketua/perwakilan', 'sm plain', function () { formNomor(p); })); det.appendChild(ao); }
   d.appendChild(det); return d;
 }
 function simpanDaftar(list, ok) {
@@ -491,7 +577,7 @@ function formPos(p) {
   var w1 = el('div', 'fld'); w1.appendChild(el('label', null, 'Kelurahan')); var sk = document.createElement('select'); sk.id = 'fpK'; sk.style.cssText = 'width:100%;min-height:50px;border:1.5px solid var(--line);border-radius:12px;padding:8px;background:var(--surface);color:var(--fg);font-size:16px'; KEL.forEach(function (k) { var o = document.createElement('option'); o.textContent = k; sk.appendChild(o); }); sk.value = p.kel; w1.appendChild(sk); f.appendChild(w1);
   var w2 = el('div', 'fld'); w2.appendChild(el('label', null, 'Jenis Posyandu')); var sj = sk.cloneNode(false); sj.id = 'fpJ'; [[J_B(), 'Balita'], [J_L(), 'Lansia']].forEach(function (j) { var o = document.createElement('option'); o.value = j[0]; o.textContent = j[1]; sj.appendChild(o); }); sj.value = p.jenis; w2.appendChild(sj); f.appendChild(w2);
   fld('fpA', 'Alamat', p.alamat); fld('fpP', 'Puskesmas', p.puskesmas); fld('fpQ', 'Nama ketua atau kader penanggung jawab', p.ketua);
-  fld('fpH', 'Nomor HP kader', p.hp, 'Contoh: 0812 3456 7890'); fld('fpD', 'Jadwal kegiatan', p.jadwal, 'Contoh: Setiap tanggal 10, pukul 09.00');
+  fld('fpH', 'Nomor HP ketua atau perwakilan', p.hp, 'Contoh: 0812 3456 7890'); fld('fpD', 'Jadwal kegiatan', p.jadwal, 'Contoh: Setiap tanggal 10, pukul 09.00');
   var w3 = el('div', 'fld'); var lb = document.createElement('label'); lb.style.cssText = 'display:flex;gap:8px;align-items:center'; var cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'fpAk'; cb.checked = p.aktif !== false; cb.style.cssText = 'width:20px;height:20px;min-height:0'; lb.appendChild(cb); lb.appendChild(document.createTextNode('Posyandu aktif')); w3.appendChild(lb); f.appendChild(w3);
   f.appendChild(el('div', 'kh', 'Daftar kader')); var kl = el('div'); f.appendChild(kl);
   function tambahKader(k) {
@@ -506,7 +592,7 @@ function formPos(p) {
   var sv = btn(baru ? 'Tambah Posyandu' : 'Simpan perubahan', 'wide', function () {
     var nama = $('fpN').value.trim(); if (!nama) { er.textContent = 'Nama Posyandu wajib diisi'; er.className = 'st bad'; return; }
     var kader = Array.prototype.map.call(kl.children, function (r) { var i = r.querySelectorAll('input'); return { nama: i[0].value.trim(), jabatan: i[1].value.trim(), aktif: i[2].checked }; }).filter(function (k) { return k.nama; });
-    var np = { id: p.id, nama: nama, kel: $('fpK').value, jenis: $('fpJ').value, alamat: $('fpA').value.trim(), puskesmas: $('fpP').value.trim(), ketua: $('fpQ').value.trim(), hp: $('fpH').value.trim(), jadwal: $('fpD').value.trim(), aktif: $('fpAk').checked, kader: kader };
+    var np = { id: p.id, nama: nama, kel: $('fpK').value, jenis: $('fpJ').value, alamat: $('fpA').value.trim(), puskesmas: $('fpP').value.trim(), ketua: $('fpQ').value.trim(), hp: $('fpH').value.trim(), hpJenis: p.hpJenis, hpNama: p.hpNama, jadwal: $('fpD').value.trim(), aktif: $('fpAk').checked, kader: kader };
     var dup = POS.some(function (x) { return x.id !== p.id && kunci(x.kel, x.jenis, x.nama) === kunci(np.kel, np.jenis, np.nama); });
     if (dup) { er.textContent = 'Posyandu dengan nama, kelurahan, dan jenis yang sama sudah ada'; er.className = 'st bad'; return; }
     var n = baru ? POS.concat([np]) : POS.map(function (x) { return x.id === p.id ? np : x; });
@@ -543,7 +629,7 @@ function impor(file) {
         var kader = kolom(r, 9).split(/[;\n]+/).map(function (s) { s = s.trim(); if (!s) return null; var off = /\(nonaktif\)\s*$/i.test(s); s = s.replace(/\(nonaktif\)\s*$/i, '').trim(); var m = s.split(/\s+[-–]\s+/); return { nama: m[0].trim(), jabatan: (m[1] || '').trim(), aktif: !off }; }).filter(Boolean);
         var st = kolom(r, 8).toLowerCase(), np = { nama: nama, kel: kel, jenis: jenis, alamat: kolom(r, 3), puskesmas: kolom(r, 4), ketua: kolom(r, 5), hp: kolom(r, 6), jadwal: kolom(r, 7), aktif: st.indexOf('non') !== 0, kader: kader };
         var ix = -1; n.forEach(function (x, j) { if (kunci(x.kel, x.jenis, x.nama) === kunci(kel, jenis, nama)) ix = j; });
-        if (ix >= 0) { np.id = n[ix].id; n[ix] = np; ubah++; } else { np.id = 'n' + Date.now().toString(36) + i; n.push(np); baru++; }
+        if (ix >= 0) { np.id = n[ix].id; if (!np.hp) np.hp = n[ix].hp || ''; np.hpJenis = n[ix].hpJenis; np.hpNama = n[ix].hpNama; n[ix] = np; ubah++; } else { np.id = 'n' + Date.now().toString(36) + i; n.push(np); baru++; }
       });
       if (!baru && !ubah) { alert('Tidak ada baris yang bisa dibaca. Pastikan kolom Nama Posyandu, Kelurahan, dan Jenis terisi (gunakan hasil Ekspor Excel sebagai contoh).'); return; }
       if (!confirm('Impor: ' + baru + ' Posyandu baru, ' + ubah + ' diperbarui' + (lewat.length ? ', ' + lewat.length + ' baris dilewati (baris ' + lewat.slice(0, 8).join(', ') + ')' : '') + '. Lanjutkan?')) return;
