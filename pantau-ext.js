@@ -258,10 +258,10 @@ function pesanWA(p, pr, lewat) {
   var j = new Date().getHours(), sapa = j < 11 ? 'pagi' : j < 15 ? 'siang' : j < 18 ? 'sore' : 'malam', nm = namaKontak(p), url;
   try { url = new URL('./', location.href).href; } catch (e) { url = ''; }
   return 'Selamat ' + sapa + ' Bapak/Ibu' + (nm ? ' ' + nm : '') + ', kami dari Kecamatan Palu Utara. Laporan ' + p.jenis + ' ' + p.nama + ' bulan ' + pr.bl + ' ' + pr.th +
-    ' belum kami terima. Batas pengiriman tanggal ' + BATAS + ' ' + pr.bl + (lewat ? ' sudah terlewat' : '') + '. Mohon segera dikirim lewat aplikasi laporan' + (url ? ': ' + url : '') + '\nTerima kasih.';
+    ' belum kami terima. Batas pembuatan laporan tanggal ' + BATAS + ' ' + pr.bl + (lewat ? ' sudah terlewat' : '') + '. Mohon segera dibuat lewat aplikasi laporan' + (url ? ': ' + url : '') + '\nTerima kasih.';
 }
 function hitungMundur(pr) {
-  var now = new Date(), sel = BATAS - now.getDate(), fmt = 'Batas kirim tanggal ' + BATAS + ' ' + pr.bl + ' · ';
+  var now = new Date(), sel = BATAS - now.getDate(), fmt = 'Batas pembuatan laporan tanggal ' + BATAS + ' ' + pr.bl + ' · ';
   if (sel > 0) return { t: fmt + 'tinggal ' + sel + ' hari', c: sel > 3 ? 'ok' : 'warn' };
   if (sel === 0) return { t: fmt + 'hari ini hari terakhir', c: 'warn' };
   return { t: fmt + 'sudah lewat ' + (-sel) + ' hari', c: 'warn' };
@@ -270,9 +270,9 @@ function berandaOp(box, h, pr, pc) {
   if (PENGUMUMAN) box.appendChild(el('div', 'pengum', PENGUMUMAN));
   var c = el('div', 'card'); c.appendChild(el('h4', null, 'Laporan ' + pr.bl + ' ' + pr.th));
   var tot = h.rows.length, msk = h.masuk.length;
-  var k = el('div'); k.style.cssText = 'font-size:17px;margin:2px 0 8px'; var bb = el('b', null, msk + ' dari ' + tot); k.appendChild(bb); k.appendChild(document.createTextNode(' Posyandu sudah mengirim laporan')); c.appendChild(k);
+  var k = el('div'); k.style.cssText = 'font-size:17px;margin:2px 0 8px'; var bb = el('b', null, msk + ' dari ' + tot); k.appendChild(bb); k.appendChild(document.createTextNode(' Posyandu sudah membuat laporan')); c.appendChild(k);
   var br = el('div', 'bar'); br.appendChild(document.createElement('i')).style.width = pc + '%'; c.appendChild(br);
-  if (tot && msk === tot) c.appendChild(el('div', 'hm ok', 'Semua Posyandu sudah mengirim laporan. Terima kasih.'));
+  if (tot && msk === tot) c.appendChild(el('div', 'hm ok', 'Semua Posyandu sudah membuat laporan. Terima kasih.'));
   else { var hm = hitungMundur(pr); c.appendChild(el('div', 'hm ' + hm.c, hm.t)); }
   if (h.asing.length) c.appendChild(el('div', 'warn2', h.asing.length + ' laporan memakai nama Posyandu yang belum cocok dengan Data Posyandu, sehingga tidak dihitung.'));
   box.appendChild(c);
@@ -280,7 +280,7 @@ function berandaOp(box, h, pr, pc) {
   var urut = { lewat: 0, belum: 1, telat: 2, tepat: 3 };
   h.rows.slice().sort(function (a, b) { return urut[a.st] - urut[b.st] || a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); }).forEach(function (r) {
     var p = r.p, row = el('div', 'prow'), top = el('div', 'rt'), nm = el('div', 'nm');
-    nm.appendChild(el('b', null, p.nama)); nm.appendChild(el('small', null, p.jenis.replace('Posyandu ', '') + (r.d ? ' · dikirim ' + (r.d.tk || '').slice(0, 10) : '')));
+    nm.appendChild(el('b', null, p.nama)); nm.appendChild(el('small', null, p.jenis.replace('Posyandu ', '') + (r.d ? ' · dibuat ' + (r.d.tk || '').slice(0, 10) : '')));
     var pl = pillSt(r); if (!r.d) pl.classList.add('kedip'); top.appendChild(nm); top.appendChild(pl); row.appendChild(top);
     var ct = el('div', 'ct'), n = nomorWA(p.hp);
     if (p.hp) ct.appendChild(el('span', null, (p.hpJenis === 'perwakilan' ? 'Perwakilan' : 'Ketua') + (namaKontak(p) ? ' ' + namaKontak(p) : '') + ' · ' + p.hp));
