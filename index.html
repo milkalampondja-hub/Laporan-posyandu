@@ -237,7 +237,7 @@ a.btn.wa{min-height:40px;padding:6px 14px;font-size:14px;font-weight:600;margin:
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span style="opacity:.6">Versi 31</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 32</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -800,6 +800,7 @@ async function catatData(data){
 }
 async function kirimArsip(){
   var box=document.getElementById("arsip");if(!box||!ARSIP_URL||!resBlob||arsipDone||arsipBusy)return;
+  if(UJI){arsipDone=true;box.className="status";box.textContent="Mode uji coba: laporan ini TIDAK dikirim ke arsip dan tidak tercatat di database.";return}
   arsipBusy=true;box.className="status";
   try{
     var ms=S.rows.filter(function(r){return r.bulan});
@@ -852,6 +853,7 @@ function antreHtml(){
 }
 function tampilAntre(){var e=document.getElementById("antre-wrap");if(e)e.innerHTML=antreHtml()}
 async function kirimAntrean(){
+  if(UJI)return;
   if(antreJalan||!ARSIP_URL||navigator.onLine===false)return;
   var items;try{items=await antreSemua()}catch(e){return}
   var lama=Date.now()-14*864e5;
@@ -909,7 +911,7 @@ async function makePdf(btn){
   try{
     var blob=await buildPdf();
     var bln=S.rows.filter(function(r){return r.bulan}).map(function(r){return r.bulan}).join("-");
-    resName=("Laporan "+J().label+" "+S.posyandu.trim()+(bln?" "+bln:"")+".pdf").replace(/[\\\/:*?"<>|]/g," ").replace(/\s+/g," ");
+    resName=((UJI?"UJI COBA ":"")+"Laporan "+J().label+" "+S.posyandu.trim()+(bln?" "+bln:"")+".pdf").replace(/[\\\/:*?"<>|]/g," ").replace(/\s+/g," ");
     if(resUrl)URL.revokeObjectURL(resUrl);
     resBlob=blob;arsipDone=false;arsipBusy=false;arsipId=null;arsipInfo=null;resUrl=URL.createObjectURL(blob);
     var canShare=false;
@@ -930,6 +932,35 @@ async function makePdf(btn){
   }finally{btn.disabled=false}
 }
 
+/* ---------- mode uji coba (kode rahasia): laporan tidak dikirim ke arsip ---------- */
+var UJI=false,UJI_HASH="11a350718fe00135122220ea04e9a14b9a414841f16057118c7bf18b8eedb0e2";
+try{UJI=localStorage.getItem("lp-uji")==="1"}catch(e){}
+function ujiBar(){
+  var b=document.getElementById("uji-bar");
+  if(!UJI){if(b)b.remove();document.body.style.paddingTop="";return}
+  if(!b){b=document.createElement("div");b.id="uji-bar";b.setAttribute("role","status");
+    b.style.cssText="position:fixed;top:0;left:0;right:0;z-index:9999;background:#b3261e;color:#fff;font:700 13px/1.3 system-ui,sans-serif;padding:8px 12px;display:flex;gap:10px;align-items:center;justify-content:center;text-align:center";
+    b.innerHTML='<span>MODE UJI COBA: laporan tidak dikirim ke arsip</span><button type="button" id="uji-off" style="background:#fff;color:#b3261e;border:0;border-radius:8px;padding:4px 10px;font:700 12px system-ui,sans-serif">Matikan</button>';
+    document.body.appendChild(b);
+    document.getElementById("uji-off").addEventListener("click",function(){UJI=false;try{localStorage.removeItem("lp-uji")}catch(e){}ujiBar()});
+  }
+  document.body.style.paddingTop="40px";
+}
+async function ujiSha(t){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("lp-uji:"+t));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("")}
+(function(){
+  var n=0,tm=null,v=document.getElementById("ver");if(!v)return;
+  v.addEventListener("click",async function(){
+    n++;clearTimeout(tm);tm=setTimeout(function(){n=0},3000);
+    if(n<5)return;n=0;
+    if(UJI){alert("Mode uji coba sedang aktif. Tekan tombol Matikan di bagian atas untuk menutupnya.");return}
+    var k=prompt("Masukkan kode uji coba:");if(!k)return;
+    var ok=false;try{ok=(await ujiSha(k.trim()))===UJI_HASH}catch(e){}
+    if(!ok){alert("Kode salah.");return}
+    UJI=true;try{localStorage.setItem("lp-uji","1")}catch(e){}ujiBar();
+    alert("Mode uji coba aktif. Laporan yang dibuat TIDAK akan dikirim ke arsip.");
+  });
+})();
+ujiBar();
 render();
 muatDaftarPos();
 setTimeout(kirimAntrean,2500);
