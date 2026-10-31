@@ -237,7 +237,7 @@ a.btn.wa{min-height:40px;padding:6px 14px;font-size:14px;font-weight:600;margin:
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 32</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 33</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -449,9 +449,9 @@ function batasHtml(){
   var nm=BULAN[m]+" "+y,tgl=tg+" "+BULAN[m];
   if(sisa>7){teks="Batas pengumpulan laporan "+tgl+" · tinggal "+sisa+" hari"}
   else if(sisa>3){kls="mep";teks="Batas pengumpulan laporan "+tgl+" · tinggal "+sisa+" hari"}
-  else if(sisa>0){kls="dekat";teks="Segera kirim · tinggal "+sisa+" hari (batas "+tgl+")"}
+  else if(sisa>0){kls="dekat";teks="Segera buat laporan · tinggal "+sisa+" hari (batas "+tgl+")"}
   else if(sisa===0){kls="dekat";teks="Hari ini batas terakhir pengumpulan laporan ("+tgl+")"}
-  else{kls="lewat";teks="Batas bulan ini ("+tgl+") sudah lewat, kirim laporan secepatnya"}
+  else{kls="lewat";teks="Batas bulan ini ("+tgl+") sudah lewat, buat laporan secepatnya"}
   return '<div class="batas '+kls+'" role="status"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>'+esc(teks)+'</span></div>';
 }
 function bantuanHtml(){

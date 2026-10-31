@@ -55,6 +55,7 @@ var EXT_CSS = [
 '.hm{border-radius:12px;padding:9px 12px;margin:10px 0 2px;font-weight:700;font-size:14px}.hm.ok{background:var(--ok-soft);color:var(--ok)}.hm.warn{background:var(--warn-soft);color:var(--warn)}',
 '.prow{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px;background:var(--surface)}.prow .rt{display:flex;gap:8px;align-items:center}.prow .nm{flex:1;min-width:0}.prow .nm b{display:block}.prow .nm small{color:var(--muted);font-size:13px}',
 '.prow .ct{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:8px;align-items:center;font-size:13.5px;color:var(--muted)}.prow .ct span{flex:1;min-width:140px}',
+'@keyframes kedip{0%,100%{opacity:1}50%{opacity:.3}}.pill.kedip{animation:kedip 1.1s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.pill.kedip{animation:none}}',
 '.btn.wa{background:#1fa855;color:#fff;border-color:#1fa855;text-decoration:none}.btn.sm.kc{min-height:36px;padding:3px 12px;font-size:13px}'
 ].join('\n');
 var stl = document.createElement('style'); stl.textContent = EXT_CSS; document.head.appendChild(stl);
@@ -114,7 +115,8 @@ function sub(h, f) { var r = h.rows.filter(f); return { total: r.length, masuk: 
 function pillSt(r) {
   var map = { tepat: ['ok', 'Laporan sudah masuk'], telat: ['w', 'Laporan masuk terlambat'], lewat: ['no', 'Laporan belum masuk (terlambat)'], belum: ['no', 'Laporan belum masuk'] };
   var x = map[r.st], sp = el('span', 'pill ' + (x[0] === 'ok' ? 'ok' : 'no'), x[1]); sp.style.whiteSpace = 'normal'; sp.style.textAlign = 'center'; sp.style.maxWidth = '12.5em'; sp.style.lineHeight = '1.25';
-  if (r.st === 'telat' || r.st === 'lewat') { sp.style.background = 'var(--warn-soft)'; sp.style.color = 'var(--warn)'; }
+  if (r.st === 'tepat' || r.st === 'telat') { sp.style.background = 'var(--ok-soft)'; sp.style.color = 'var(--ok)'; }
+  else if (r.st === 'lewat') { sp.style.background = 'var(--warn-soft)'; sp.style.color = 'var(--warn)'; }
   return sp;
 }
 function periodeBeranda() {
@@ -279,7 +281,7 @@ function berandaOp(box, h, pr, pc) {
   h.rows.slice().sort(function (a, b) { return urut[a.st] - urut[b.st] || a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); }).forEach(function (r) {
     var p = r.p, row = el('div', 'prow'), top = el('div', 'rt'), nm = el('div', 'nm');
     nm.appendChild(el('b', null, p.nama)); nm.appendChild(el('small', null, p.jenis.replace('Posyandu ', '') + (r.d ? ' · dikirim ' + (r.d.tk || '').slice(0, 10) : '')));
-    top.appendChild(nm); top.appendChild(pillSt(r)); row.appendChild(top);
+    var pl = pillSt(r); if (!r.d) pl.classList.add('kedip'); top.appendChild(nm); top.appendChild(pl); row.appendChild(top);
     var ct = el('div', 'ct'), n = nomorWA(p.hp);
     if (p.hp) ct.appendChild(el('span', null, (p.hpJenis === 'perwakilan' ? 'Perwakilan' : 'Ketua') + (namaKontak(p) ? ' ' + namaKontak(p) : '') + ' · ' + p.hp));
     else ct.appendChild(el('span', null, 'Nomor HP belum diisi'));
