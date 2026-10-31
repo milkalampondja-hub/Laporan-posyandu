@@ -112,8 +112,8 @@ function hitung(th, bl) {
 }
 function sub(h, f) { var r = h.rows.filter(f); return { total: r.length, masuk: r.filter(function (x) { return x.d; }).length }; }
 function pillSt(r) {
-  var map = { tepat: ['ok', 'Sudah masuk'], telat: ['w', 'Masuk terlambat'], lewat: ['no', 'Belum, lewat batas'], belum: ['no', 'Belum masuk'] };
-  var x = map[r.st], sp = el('span', 'pill ' + (x[0] === 'ok' ? 'ok' : 'no'), x[1]);
+  var map = { tepat: ['ok', 'Laporan sudah masuk'], telat: ['w', 'Laporan masuk terlambat'], lewat: ['no', 'Laporan belum masuk (terlambat)'], belum: ['no', 'Laporan belum masuk'] };
+  var x = map[r.st], sp = el('span', 'pill ' + (x[0] === 'ok' ? 'ok' : 'no'), x[1]); sp.style.whiteSpace = 'normal'; sp.style.textAlign = 'center'; sp.style.maxWidth = '12.5em'; sp.style.lineHeight = '1.25';
   if (r.st === 'telat' || r.st === 'lewat') { sp.style.background = 'var(--warn-soft)'; sp.style.color = 'var(--warn)'; }
   return sp;
 }
@@ -282,7 +282,7 @@ function berandaOp(box, h, pr, pc) {
     top.appendChild(nm); top.appendChild(pillSt(r)); row.appendChild(top);
     var ct = el('div', 'ct'), n = nomorWA(p.hp);
     if (p.hp) ct.appendChild(el('span', null, (p.hpJenis === 'perwakilan' ? 'Perwakilan' : 'Ketua') + (namaKontak(p) ? ' ' + namaKontak(p) : '') + ' · ' + p.hp));
-    else ct.appendChild(el('span', null, 'Nomor ketua atau perwakilan belum diisi'));
+    else ct.appendChild(el('span', null, 'Nomor HP belum diisi'));
     if (!r.d && p.hp) {
       var a = document.createElement('a'); a.className = 'btn sm kc wa'; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Ingatkan lewat WhatsApp';
       a.href = 'https://wa.me/' + n + '?text=' + encodeURIComponent(pesanWA(p, pr, r.st === 'lewat')); ct.appendChild(a);
