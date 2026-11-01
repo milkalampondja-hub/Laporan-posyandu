@@ -142,9 +142,8 @@ function pillSt(r) {
   return sp;
 }
 function periodeBeranda() {
-  var now = new Date(), bl = $('fb').value || BULAN[now.getMonth()], th = $('ft').value || String(now.getFullYear());
-  if (isOp()) return periodeAktif(now);
-  return { bl: bl, th: th };
+  /* Ringkasan Beranda selalu untuk bulan laporan yang sedang dikumpulkan, tidak ikut filter di menu Laporan. */
+  return periodeAktif(new Date());
 }
 
 /* ---------- banner geser ---------- */
