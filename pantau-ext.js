@@ -104,10 +104,23 @@ function pilihEl(id, opts, val) { var s = $(id); s.textContent = ''; opts.forEac
 
 /* ---------- perhitungan ---------- */
 function tglKirim(d) { var m = /^(\d\d)\/(\d\d)\/(\d{4})/.exec(d.tk || ''); return m ? new Date(+m[3], +m[2] - 1, +m[1], 12) : null; }
+/* Batas laporan bulan X jatuh pada tanggal BATAS di bulan berikutnya (laporan Oktober, batas 8 November). */
+function batasTgl(th, bl) {
+  var m = BULAN.indexOf(bl), ny = +th + (m === 11 ? 1 : 0), nm = (m + 1) % 12, last = new Date(ny, nm + 1, 0).getDate();
+  return new Date(ny, nm, Math.min(BATAS, last), 23, 59, 59);
+}
+function teksBatas(th, bl) { var d = batasTgl(th, bl); return d.getDate() + ' ' + BULAN[d.getMonth()] + (d.getFullYear() !== +th ? ' ' + d.getFullYear() : ''); }
+/* Bulan laporan yang sedang dikumpulkan: sampai tanggal batas masih bulan lalu, setelah itu bulan berjalan. */
+function periodeAktif(now) {
+  now = now || new Date(); var y = now.getFullYear(), m = now.getMonth();
+  if (now.getDate() <= BATAS) { m--; if (m < 0) { m = 11; y--; } }
+  return { bl: BULAN[m], th: String(y) };
+}
+window.periodeAktif = periodeAktif;
 function hitung(th, bl) {
   var master = posAktif(), uniq = terbaru(DATA.filter(function (d) { return d.thn === String(th) && d.bln === bl; })), idx = {}, dikenal = {};
   uniq.forEach(function (d) { idx[kunci(d.kel, d.jenis, d.pos)] = d; });
-  var m = BULAN.indexOf(bl), batas = new Date(+th, m, BATAS, 23, 59, 59), now = new Date();
+  var batas = batasTgl(th, bl), now = new Date();
   var rows = master.map(function (p) {
     var k = kunci(p.kel, p.jenis, p.nama), d = idx[k], st;
     dikenal[k] = 1;
@@ -130,7 +143,7 @@ function pillSt(r) {
 }
 function periodeBeranda() {
   var now = new Date(), bl = $('fb').value || BULAN[now.getMonth()], th = $('ft').value || String(now.getFullYear());
-  if (isOp()) return { bl: BULAN[now.getMonth()], th: String(now.getFullYear()) };
+  if (isOp()) return periodeAktif(now);
   return { bl: bl, th: th };
 }
 
@@ -223,7 +236,7 @@ function renderBeranda() {
   var pr = periodeBeranda(), h = hitung(pr.th, pr.bl), pc = persen(h.masuk.length, h.rows.length);
   if (isOp()) { berandaOp(box, h, pr, pc); return; }
   var c = el('div', 'card'); c.appendChild(el('h4', null, 'Ringkasan ' + pr.bl + ' ' + pr.th));
-  c.appendChild(el('div', 'lt', 'Batas pengumpulan: tanggal ' + BATAS + ' ' + pr.bl));
+  c.appendChild(el('div', 'lt', 'Batas pengumpulan laporan ' + pr.bl + ': tanggal ' + teksBatas(pr.th, pr.bl)));
   var g = el('div', 'grid4');
   g.appendChild(tileStat('', h.rows.length, 'Total Posyandu terdaftar'));
   g.appendChild(tileStat('ok', h.masuk.length, 'Laporan sudah masuk'));
@@ -348,10 +361,10 @@ function pesanWA(p, pr, lewat) {
   var j = new Date().getHours(), sapa = j < 11 ? 'pagi' : j < 15 ? 'siang' : j < 18 ? 'sore' : 'malam', nm = namaKontak(p), url;
   try { url = new URL('./', location.href).href; } catch (e) { url = ''; }
   return 'Selamat ' + sapa + ' Bapak/Ibu' + (nm ? ' ' + nm : '') + ', kami dari Kecamatan Palu Utara. Laporan ' + p.jenis + ' ' + p.nama + ' bulan ' + pr.bl + ' ' + pr.th +
-    ' belum kami terima. Batas pembuatan laporan tanggal ' + BATAS + ' ' + pr.bl + (lewat ? ' sudah terlewat' : '') + '. Mohon segera dibuat lewat aplikasi laporan' + (url ? ': ' + url : '') + '\nTerima kasih.';
+    ' belum kami terima. Batas pembuatan laporan tanggal ' + teksBatas(pr.th, pr.bl) + (lewat ? ' sudah terlewat' : '') + '. Mohon segera dibuat lewat aplikasi laporan' + (url ? ': ' + url : '') + '\nTerima kasih.';
 }
 function hitungMundur(pr) {
-  var now = new Date(), sel = BATAS - now.getDate(), fmt = 'Batas pembuatan laporan tanggal ' + BATAS + ' ' + pr.bl + ' · ';
+  var now = new Date(), b = batasTgl(pr.th, pr.bl), sel = Math.round((new Date(b.getFullYear(), b.getMonth(), b.getDate()) - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000), fmt = 'Batas pembuatan laporan ' + pr.bl + ': tanggal ' + teksBatas(pr.th, pr.bl) + ' · ';
   if (sel > 0) return { t: fmt + 'tinggal ' + sel + ' hari', c: sel > 3 ? 'ok' : 'warn' };
   if (sel === 0) return { t: fmt + 'hari ini hari terakhir', c: 'warn' };
   return { t: fmt + 'sudah lewat ' + (-sel) + ' hari', c: 'warn' };
@@ -432,9 +445,10 @@ function rkSiap() {
   box.innerHTML = '<div class="card"><h4>Periode rekap</h4><div class="fl2"><select id="rb"></select><select id="rt"></select></div>' +
     '<div class="toolbar"><button class="btn sm" id="rkp" type="button">Cetak rekap (PDF)</button> <button class="btn sm plain" id="rkx" type="button">Unduh rekap (Excel)</button></div></div><div id="rkIsi"></div>';
   var now = new Date();
-  pilihEl('rb', BULAN.map(function (b) { return [b, b]; }), BULAN[now.getMonth()]);
-  var th = {}; th[now.getFullYear()] = 1; DATA.forEach(function (d) { if (d.thn) th[d.thn] = 1; });
-  pilihEl('rt', Object.keys(th).sort().reverse().map(function (t) { return [t, t]; }), String(now.getFullYear()));
+  var pa = periodeAktif(now);
+  pilihEl('rb', BULAN.map(function (b) { return [b, b]; }), pa.bl);
+  var th = {}; th[now.getFullYear()] = 1; th[pa.th] = 1; DATA.forEach(function (d) { if (d.thn) th[d.thn] = 1; });
+  pilihEl('rt', Object.keys(th).sort().reverse().map(function (t) { return [t, t]; }), pa.th);
   $('rb').addEventListener('change', renderRekap); $('rt').addEventListener('change', renderRekap);
   $('rkx').addEventListener('click', unduhRekap); $('rkp').addEventListener('click', cetakRekap);
 }
@@ -497,7 +511,7 @@ function renderRekap() {
   isi.appendChild(c4);
   // 5 terlambat
   var c5 = el('div', 'card'); c5.appendChild(el('h4', null, 'Daftar Posyandu yang terlambat'));
-  c5.appendChild(el('div', 'lt', 'Batas pengumpulan tanggal ' + BATAS + ' ' + R.bl + ' ' + R.th + '. Belum masuk setelah batas, atau dikirim setelah batas.'));
+  c5.appendChild(el('div', 'lt', 'Batas pengumpulan laporan ' + R.bl + ' ' + R.th + ': tanggal ' + teksBatas(R.th, R.bl) + '. Belum masuk setelah batas, atau dikirim setelah batas.'));
   if (!h.terlambat.length) c5.appendChild(el('div', 'ok2', 'Tidak ada Posyandu yang terlambat.'));
   h.terlambat.forEach(function (r) {
     var it = el('div', 'item'); it.appendChild(el('div', 'a', r.p.nama));
@@ -555,7 +569,7 @@ function cetakRekap() {
     '@media print{.bar{display:none}body{padding:0}}</style></head><body>' +
     '<div class="bar">Pilih <b>Cetak</b>, lalu tujuan <b>Simpan sebagai PDF</b> untuk membuat berkas PDF. <button onclick="print()">Cetak / PDF</button></div>' +
     '<div class="kop"><img src="' + logo + '" alt=""><div><b>PEMERINTAH KOTA PALU</b><b>KECAMATAN PALU UTARA</b>' + (op ? '<b>KELURAHAN ' + esc(KELSAYA.toUpperCase()) + '</b>' : '') + '<small>Rekapitulasi Laporan Posyandu</small></div></div>' +
-    '<h1>Rekapitulasi Laporan Posyandu</h1><p class="sb">Bulan ' + esc(R.bl) + ' ' + esc(R.th) + ' &middot; Batas pengumpulan tanggal ' + BATAS + '</p>' +
+    '<h1>Rekapitulasi Laporan Posyandu</h1><p class="sb">Bulan ' + esc(R.bl) + ' ' + esc(R.th) + ' &middot; Batas pengumpulan tanggal ' + esc(teksBatas(R.th, R.bl)) + '</p>' +
     '<h2>1. Ringkasan</h2><p class="ring">Total Posyandu terdaftar: <b>' + tot + '</b>. Laporan sudah masuk: <b>' + msk + '</b>. Belum masuk: <b>' + (tot - msk) + '</b>. Terlambat: <b>' + h.terlambat.length + '</b>. Capaian: <b>' + persen(msk, tot) + '%</b>.</p>' +
     '<h2>2. Rekap per kelurahan</h2><table><tr><th>Kelurahan</th><th>Balita</th><th>Lansia</th><th>Total</th><th>%</th></tr>' + rk + '</table>' +
     '<h2>3. Rincian per Posyandu</h2><table><tr><th>No</th><th>Nama Posyandu</th><th>Kelurahan</th><th>Jenis</th><th>Status</th><th>Tanggal kirim</th></tr>' + rin + '</table>' +
@@ -864,6 +878,17 @@ window.terimaProfil = function (r) {
   BANNERS = (r.banners || ['', '', '']).slice(0, 3); while (BANNERS.length < 3) BANNERS.push('');
   if (r.batas) BATAS = r.batas; if (r.sk) SK = r.sk; if (r.pengumuman !== undefined) PENGUMUMAN = r.pengumuman || ''; if (r.wa !== undefined) WABANTU = r.wa || '';
   if (r.ruang !== undefined) RUANG = r.ruang;
+  /* Sekali saja: filter bawaan ikut bulan laporan yang sedang dikumpulkan, bila belum diubah pengguna. */
+  if (!window.__filterAwal) {
+    window.__filterAwal = 1;
+    var now0 = new Date(), fb0 = $('fb'), ft0 = $('ft'), pa = periodeAktif(now0);
+    if (fb0 && ft0 && fb0.value === BULAN[now0.getMonth()] && ft0.value === String(now0.getFullYear()) && (pa.bl !== fb0.value || pa.th !== ft0.value)) {
+      var ada = false; Array.prototype.forEach.call(ft0.options, function (o) { if (o.value === pa.th) ada = true; });
+      if (!ada) { var op0 = document.createElement('option'); op0.value = pa.th; op0.textContent = pa.th; ft0.insertBefore(op0, ft0.firstChild); }
+      fb0.value = pa.bl; ft0.value = pa.th;
+      if (typeof tampil === 'function') { try { tampil(); } catch (e) {} }
+    }
+  }
   bangunBanner(); renderBeranda();
 };
 window.pasangExt = function () { pasangSetelan(); };

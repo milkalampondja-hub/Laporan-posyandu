@@ -493,7 +493,7 @@ function jam(){var n=new Date();return pad(n.getHours())+'.'+pad(n.getMinutes())
   $('dx').addEventListener('click',function(){unduh('xlsx')});$('dc').addEventListener('click',function(){unduh('csv')});
   $('dx2').addEventListener('click',function(){unduh('xlsx')});$('dc2').addEventListener('click',function(){unduh('csv')});
   $('re').addEventListener('click',muat);$('re2').addEventListener('click',muat);
-  $('fres').addEventListener('click',function(){fb.value=BULAN[now.getMonth()];ft.value=String(now.getFullYear());$('fj').value='';fk.value='';$('fq').value='';tampil()});
+  $('fres').addEventListener('click',function(){var pa=window.periodeAktif?periodeAktif():{bl:BULAN[now.getMonth()],th:String(now.getFullYear())};fb.value=pa.bl;ft.value=pa.th;$('fj').value='';fk.value='';$('fq').value='';tampil()});
   document.addEventListener('visibilitychange',function(){if(CRED&&!document.hidden&&Date.now()-lastCek>30000)cekUbah()});
   $('sh').addEventListener('click',function(){var i=$('lp'),t=i.type==='password';i.type=t?'text':'password';this.textContent=t?'Sembunyi':'Lihat'});
   $('out').addEventListener('click',keluar);
@@ -872,7 +872,8 @@ function tampil(){
   var uniq=terbaru(dasar);
   var lihat=uniq.filter(function(d){return(!jn||d.jenis===jn)&&(!kl||d.kel===kl)&&(!q||d.pos.toLowerCase().indexOf(q)>=0)});
   window.LIHAT=lihat;
-  var ubahF=bl!==BULAN[new Date().getMonth()]||th!==String(new Date().getFullYear())||jn||kl||q;$('fres').classList.toggle('hidden',!ubahF);
+  var pa0=window.periodeAktif?periodeAktif():{bl:BULAN[new Date().getMonth()],th:String(new Date().getFullYear())};
+  var ubahF=bl!==pa0.bl||th!==pa0.th||jn||kl||q;$('fres').classList.toggle('hidden',!ubahF);
   var tb=lihat.filter(function(d){return d.jenis==='Posyandu Balita'}).length,tl=lihat.filter(function(d){return d.jenis==='Posyandu Lansia'}).length;
   var tot=$('tot');tot.textContent='';
   tot.appendChild(tile('g','doc',lihat.length,'Laporan masuk',function(){$('fj').value='';go('l');tampil()}));
