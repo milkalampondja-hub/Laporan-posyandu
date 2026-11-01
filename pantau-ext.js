@@ -522,7 +522,7 @@ function renderRekap() {
   c3.appendChild(barRow('Posyandu Balita', gt.b[0], gt.b[1])); c3.appendChild(barRow('Posyandu Lansia', gt.l[0], gt.l[1]));
   if (!op1) isi.appendChild(c3);
   // 4 rekap posyandu
-  var c4 = el('div', 'card'); c4.appendChild(el('h4', null, 'Rekap Posyandu Balita dan Lansia'));
+  var c4 = el('div', 'card'); c4.appendChild(el('h4', null, 'Rekap Posyandu Balita dan Lansia bulan ' + R.bl + ' ' + R.th));
   JENIS.forEach(function (j) {
     c4.appendChild(el('div', 'kh', j));
     KEL.forEach(function (k) {
