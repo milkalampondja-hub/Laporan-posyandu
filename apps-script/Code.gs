@@ -80,6 +80,12 @@ function doGet(e) {
     else if (w4) hasil = { ok: false, pesan: 'Hanya admin utama yang boleh melihat cadangan' };
     else hasil = gagalLogin();
   }
+  else if (p.aksi === 'pdf') {
+    // Unduh PDF laporan (hanya setelah login). Operator hanya boleh laporan kelurahannya.
+    var w5 = masuk(p.u, p.p);
+    if (w5) hasil = ambilPdf(String(p.n || ''), w5);
+    else hasil = gagalLogin();
+  }
   else if (p.aksi === 'log') {
     var w3 = masuk(p.u, p.p);
     if (w3 && w3.peran === 'utama') {
@@ -334,6 +340,25 @@ function daftarLaporan(kel) {
     return { ok: true, data: data, waktu: Date.now() };
   } catch (err) {
     return { ok: false, pesan: String(err.message || err) };
+  }
+}
+
+/** Ambil berkas PDF satu laporan dari Drive (tanpa membuat berkas dibagikan ke umum), dikirim sebagai base64. */
+function ambilPdf(nomor, w) {
+  try {
+    var sh = lembar(), n = sh.getLastRow();
+    if (n < 2 || !nomor) return { ok: false, pesan: 'Laporan tidak ditemukan' };
+    var rows = sh.getRange(2, 1, n - 1, HEADER.length).getValues(), r = null;
+    for (var i = rows.length - 1; i >= 0; i--) { if (String(rows[i][0]) === nomor) { r = rows[i]; break; } }
+    if (!r) return { ok: false, pesan: 'Laporan tidak ditemukan' };
+    if (w.peran === 'admin' && String(r[4]) !== w.kel) return { ok: false, pesan: 'Laporan ini bukan di kelurahan Anda' };
+    var m = /\/d\/([A-Za-z0-9_-]+)/.exec(String(r[11] || ''));
+    if (!m) return { ok: false, pesan: 'PDF laporan ini belum tersimpan di Drive' };
+    var f = DriveApp.getFileById(m[1]);
+    if (f.getSize() > 20 * 1024 * 1024) return { ok: false, pesan: 'Berkas PDF terlalu besar untuk diunduh dari sini' };
+    return { ok: true, nama: f.getName(), b64: Utilities.base64Encode(f.getBlob().getBytes()) };
+  } catch (err) {
+    return { ok: false, pesan: 'PDF tidak bisa diambil: ' + String(err.message || err) };
   }
 }
 

@@ -922,7 +922,9 @@ function tampil(){
     tg.appendChild(el('span','tag',d.bln+' '+d.thn));
     tg.appendChild(el('span','tag '+(d.pdf?'':'w'),d.pdf?'PDF tersimpan':'PDF menunggu'));
     if(d.ver>1)tg.appendChild(el('span','tag g','Revisi ke-'+d.ver));
-    it.appendChild(tg);ls.appendChild(it);
+    it.appendChild(tg);
+    if(d.pdf&&window.unduhPdf){var bp=el('button','btn sm plain','Unduh PDF');bp.type='button';bp.style.marginTop='8px';bp.addEventListener('click',function(){unduhPdf(d,bp)});it.appendChild(bp)}
+    ls.appendChild(it);
   });
   if(window.tampilBaru)tampilBaru();
 }

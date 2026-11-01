@@ -369,6 +369,23 @@ function hitungMundur(pr) {
   if (sel === 0) return { t: fmt + 'hari ini hari terakhir', c: 'warn' };
   return { t: fmt + 'sudah lewat ' + (-sel) + ' hari', c: 'warn' };
 }
+/* Unduh PDF laporan yang sudah dibuat kader. PDF diambil lewat server setelah login, jadi berkas di Drive tidak perlu dibagikan ke umum. */
+function unduhPdf(d, b) {
+  if (!CRED || !d || !d.n) return;
+  var teks = b.textContent; b.disabled = true; b.textContent = 'Menyiapkan…';
+  jsonp({ aksi: 'pdf', u: CRED.u, p: CRED.p, n: d.n }, 90000).then(function (r) {
+    if (!r || !r.ok) throw new Error((r && r.pesan) || 'PDF tidak bisa diunduh');
+    var bin = atob(r.b64), arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    var url = URL.createObjectURL(new Blob([arr], { type: 'application/pdf' })), a = document.createElement('a');
+    a.href = url; a.download = r.nama || (d.n + '.pdf'); document.body.appendChild(a); a.click();
+    setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 5000);
+    toast('PDF laporan diunduh.');
+  }).catch(function (er) { toast(er.message || 'PDF tidak bisa diunduh'); })
+    .then(function () { b.disabled = false; b.textContent = teks; });
+}
+window.unduhPdf = unduhPdf;
+function tombolPdf(d) { return btn('Unduh PDF', 'sm kc plain', function (ev) { unduhPdf(d, ev.currentTarget || ev.target); }); }
 function barisPos(r, pr) {
   var p = r.p, row = el('div', 'prow'), top = el('div', 'rt'), nm = el('div', 'nm');
   nm.appendChild(el('b', null, p.nama)); nm.appendChild(el('small', null, p.jenis.replace('Posyandu ', '') + (r.d ? ' \u00b7 dibuat ' + (r.d.tk || '').slice(0, 10) : '')));
@@ -380,6 +397,7 @@ function barisPos(r, pr) {
     var a = document.createElement('a'); a.className = 'btn sm kc wa'; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Ingatkan lewat WhatsApp';
     a.href = 'https://wa.me/' + n + '?text=' + encodeURIComponent(pesanWA(p, pr, r.st === 'lewat')); ct.appendChild(a);
   }
+  if (r.d && r.d.pdf) ct.appendChild(tombolPdf(r.d));
   ct.appendChild(btn(p.hp ? 'Ubah nomor' : 'Isi nomor', 'sm kc plain', function () { formNomor(p); }));
   row.appendChild(ct); return row;
 }
