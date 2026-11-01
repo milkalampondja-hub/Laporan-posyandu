@@ -88,7 +88,7 @@ button{cursor:pointer}
 .chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.35);border:1.5px solid rgba(255,255,255,.7);border-radius:14px;padding:7px 9px;font-size:11px;line-height:1.25;white-space:nowrap;flex:none}
 .chip .ic{font-size:21px}
 .hello .chip{display:none}.nipadmin{display:block;font-size:10.5px}
-.admrow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}.admt{flex:1;min-width:0}.admt b,.admt span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.admt span{font-size:12px;color:var(--muted)}
+.admrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}.admt{flex:1;min-width:0}.admt b,.admt span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.admt span{font-size:12px;color:var(--muted)}
 .sheet{position:relative;margin-top:-14px;background:var(--bg);border-radius:22px 22px 0 0;padding:16px max(14px,env(safe-area-inset-left,0px)) 12px}
 .cols{max-width:1100px;margin:0 auto}
 
@@ -419,6 +419,7 @@ footer.dsk{display:none}
             <div class="st" id="stPw" role="status"></div>
           </div>
           <div class="card" id="cardApp" style="display:none"></div>
+          <div class="card" id="cardCad" style="display:none"></div>
           <div class="card" id="cardAdm" style="display:none"><h4>Pengelolaan akun pengguna</h4>
             <p class="hint" id="admInfo"></p>
             <p class="hint">Anda adalah Admin kecamatan: dapat mengelola data, memeriksa laporan, dan mengatur aplikasi. Akun tambahan berperan sebagai Petugas/operator: dapat melihat, memeriksa, dan merekap laporan, tetapi tidak dapat mengubah data Posyandu, SK, banner, atau akun.</p>
@@ -674,12 +675,14 @@ function pasangAdmin(){
   $('admInfo').textContent='Admin utama: '+CRED.u+'. Admin tambahan: '+ADM.length+' dari 5.';
   var box=$('admList');box.textContent='';
   ADM.forEach(function(a){
-    var r=el('div','admrow'),t=el('div','admt');t.appendChild(el('b',null,a.u));t.appendChild(el('span',null,'Kelurahan '+(a.kel||'belum dipilih')+(a.nama?' · '+a.nama:'')+(a.nip?' · NIP '+a.nip:'')));
+    var r=el('div','admrow'),t=el('div','admt');t.appendChild(el('b',null,a.u));t.appendChild(el('span',null,'Kelurahan '+(a.kel||'belum dipilih')+(a.nama?' · '+a.nama:'')+(a.nip?' · NIP '+a.nip:'')+(a.kunci?(a.kunci.permanen?' · TERKUNCI':' · terkunci sementara'):'')));
     var b0=el('button','btn sm plain','Kelurahan'),b1=el('button','btn sm plain','Sandi'),b2=el('button','btn sm plain','Hapus');b0.type=b1.type=b2.type='button';
     b0.addEventListener('click',function(){var n=prompt('Kelurahan untuk '+a.u+':\n'+KEL_SEMUA.map(function(k,i){return (i+1)+'. '+k}).join('\n')+'\n\nKetik nomor 1-'+KEL_SEMUA.length+':');if(n===null)return;var k=KEL_SEMUA[parseInt(n,10)-1];if(!k){status('stAdm','Nomor tidak valid','bad');return}kelolaAdm({op:'kel',nu:a.u,kel:k},a.u+' sekarang hanya melihat '+k+'.')});
     b1.addEventListener('click',function(){var n=prompt('Kata sandi baru untuk '+a.u+' (minimal 6 karakter):');if(n===null)return;kelolaAdm({op:'sandi',nu:a.u,ns:n},'Kata sandi '+a.u+' diubah.')});
     b2.addEventListener('click',function(){if(confirm('Hapus admin '+a.u+'?'))kelolaAdm({op:'hapus',nu:a.u},'Admin '+a.u+' dihapus.')});
-    r.appendChild(t);r.appendChild(b0);r.appendChild(b1);r.appendChild(b2);box.appendChild(r)});
+    r.appendChild(t);r.appendChild(b0);r.appendChild(b1);r.appendChild(b2);
+    if(a.kunci){var b3=el('button','btn sm','Buka kunci');b3.type='button';b3.style.flexBasis='100%';b3.addEventListener('click',function(){kelolaAdm({op:'buka',nu:a.u},'Kunci akun '+a.u+' dibuka.')});r.appendChild(b3)}
+    box.appendChild(r)});
   $('svAdm').disabled=ADM.length>=5;
 }
 function kelolaAdm(f,ok){

@@ -46,8 +46,7 @@ function doGet(e) {
       hasil = { ok: true, list: bacaPos().filter(function (x) { return w0.peran !== 'admin' || x.kel === w0.kel; }),
                 sk: bacaPengaturan(PANTAU_USER).sk, kel: w0.kel || '' };
     } else {
-      Utilities.sleep(1200);
-      hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
+      hasil = gagalLogin();
     }
   }
   else if (p.aksi === 'daftar') {
@@ -56,8 +55,7 @@ function doGet(e) {
       hasil = daftarLaporan(w1.peran === 'admin' ? w1.kel : '');
       hasil.peran = w1.peran; hasil.kel = w1.kel || ''; hasil.st = bacaStamp();
     } else {
-      Utilities.sleep(1200);
-      hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
+      hasil = gagalLogin();
     }
   }
   else if (p.aksi === 'profil') {
@@ -66,16 +64,21 @@ function doGet(e) {
       var c = bacaPengaturan(w2.u), bs = bacaPengaturan(PANTAU_USER);
       hasil = { ok: true, nama: c.nama, nip: c.nip, jabatan: c.jabatan, unit: c.unit, foto: c.foto,
                 banners: bs.banners, batas: bs.batas, sk: bs.sk, pengumuman: bs.pengumuman, wa: bs.wa, peran: w2.peran, kel: w2.kel || '' };
-      if (w2.peran === 'utama') hasil.admins = daftarAdmin();
+      if (w2.peran === 'utama') { hasil.admins = daftarAdmin(); hasil.ruang = bacaRuang(); }
     } else {
-      Utilities.sleep(1200);
-      hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' };
+      hasil = gagalLogin();
     }
   }
   else if (p.aksi === 'ubah') {
     // Pemeriksaan ringan untuk Pantau: hanya menjawab apakah ada perubahan data sejak terakhir.
     if (masuk(p.u, p.p)) hasil = { ok: true, st: bacaStamp() };
-    else { Utilities.sleep(1200); hasil = { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' }; }
+    else hasil = gagalLogin();
+  }
+  else if (p.aksi === 'cadangan') {
+    var w4 = masuk(p.u, p.p);
+    if (w4 && w4.peran === 'utama') hasil = { ok: true, cadangan: daftarCadangan() };
+    else if (w4) hasil = { ok: false, pesan: 'Hanya admin utama yang boleh melihat cadangan' };
+    else hasil = gagalLogin();
   }
   else if (p.aksi === 'log') {
     var w3 = masuk(p.u, p.p);
@@ -114,17 +117,65 @@ function simpanKelAdmin(a) { PropertiesService.getScriptProperties().setProperty
 function simpanAdmin(a) { PropertiesService.getScriptProperties().setProperty('PANTAU_ADMINS', JSON.stringify(a)); }
 function hashAdmin(k, p) { return hashSandi(k + '|' + String(p || '')); }
 function berkasProfil(u) { return (!u || u === PANTAU_USER) ? NAMA_PENGATURAN : 'pengaturan-pantau-' + u + '.json'; }
-/** Masuk sebagai admin utama atau admin tambahan. Hasil: {u, peran} atau null. */
+/** Masuk sebagai admin utama atau admin tambahan. Hasil: {u, peran} atau null. Salah berulang akan mengunci akun bertahap. */
 function masuk(u, p) {
-  u = String(u || '');
-  if (u === PANTAU_USER) return sandiBenar(u, p) ? { u: u, peran: 'utama' } : null;
-  var k = u.toLowerCase(), a = bacaAdmin();
-  if (a[k] && a[k] === hashAdmin(k, p)) return { u: k, peran: 'admin', kel: bacaKelAdmin()[k] || '-' };
+  u = String(u || ''); KUNCI_INFO = null; GAGAL_PESAN = '';
+  var k = kunciAkun(u), dikenal = akunDikenal(k);
+  if (dikenal) { var kd = statusKunci(k); if (kd) { KUNCI_INFO = kd; return null; } }
+  var w = null;
+  if (u === PANTAU_USER) { if (sandiBenar(u, p)) w = { u: u, peran: 'utama' }; }
+  else { var a = bacaAdmin(); if (a[k] && a[k] === hashAdmin(k, p)) w = { u: k, peran: 'admin', kel: bacaKelAdmin()[k] || '-' }; }
+  if (w) { if (dikenal) hapusGagal(k); return w; }
+  if (dikenal) { catatGagal(k); }
   return null;
 }
+// ===================== Kunci login bertahap =====================
+// Salah kata sandi 5 kali: terkunci 5 menit; 10 kali: 10 menit; 15 kali: 15 menit; 20 kali: terkunci sampai dibuka admin kecamatan.
+// Akun admin utama tidak pernah terkunci permanen (maksimal 60 menit), agar tidak bisa dikunci oleh orang lain.
+var KUNCI_INFO = null, GAGAL_PESAN = '';
+function bacaGagal() { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('PANTAU_GAGAL') || '{}'); } catch (x) { return {}; } }
+function simpanGagal(g) { PropertiesService.getScriptProperties().setProperty('PANTAU_GAGAL', JSON.stringify(g)); }
+function kunciAkun(u) { return u === PANTAU_USER ? PANTAU_USER : String(u || '').toLowerCase(); }
+function akunDikenal(k) { return k === PANTAU_USER || !!bacaAdmin()[k]; }
+function statusKunci(k) {
+  var e = bacaGagal()[k];
+  if (!e) return null;
+  if (e.perm && k !== PANTAU_USER) return { permanen: true, menit: 0 };
+  if (e.sampai && e.sampai > Date.now()) return { permanen: false, menit: Math.ceil((e.sampai - Date.now()) / 60000) };
+  return null;
+}
+function hapusGagal(k) { var g = bacaGagal(); if (g[k]) { delete g[k]; simpanGagal(g); } }
+function catatGagal(k) {
+  var g = bacaGagal(), now = Date.now(), e = g[k] || { n: 0, t: 0 };
+  if (!e.perm && e.t && now - e.t > 24 * 3600000) e.n = 0;
+  e.n++; e.t = now;
+  if (e.n >= 20) {
+    if (k === PANTAU_USER) { if (e.n % 5 === 0) e.sampai = now + 60 * 60000; }
+    else e.perm = true;
+  } else if (e.n % 5 === 0) e.sampai = now + (e.n / 5) * 5 * 60000;
+  g[k] = e; simpanGagal(g);
+  var kd = statusKunci(k);
+  if (kd) { KUNCI_INFO = kd; return; }
+  var sisa = 5 - (e.n % 5);
+  if (k !== PANTAU_USER && e.n >= 15) GAGAL_PESAN = '. Peringatan: akun terkunci permanen setelah ' + (20 - e.n) + ' kali salah lagi';
+  else if (sisa <= 2) GAGAL_PESAN = '. Sisa ' + sisa + ' percobaan sebelum dikunci sementara';
+}
+/** Jawaban untuk login yang gagal (salah sandi atau sedang terkunci). */
+function gagalLogin() {
+  if (KUNCI_INFO) {
+    return { ok: false, login: false, kunci: true, permanen: !!KUNCI_INFO.permanen,
+             pesan: KUNCI_INFO.permanen ? 'Akun terkunci karena terlalu banyak salah memasukkan kata sandi. Hubungi admin kecamatan untuk membuka aplikasi.'
+                                        : 'Terlalu banyak salah memasukkan kata sandi. Coba lagi dalam ' + KUNCI_INFO.menit + ' menit.' };
+  }
+  Utilities.sleep(1200);
+  return { ok: false, login: false, pesan: 'Nama pengguna atau kata sandi salah' + GAGAL_PESAN };
+}
+/** Darurat: jalankan dari editor Apps Script untuk membuka semua akun yang terkunci (termasuk admin utama). */
+function bukaSemuaKunci() { simpanGagal({}); }
+
 function daftarAdmin() {
   var a = bacaAdmin();
-  return Object.keys(a).sort().map(function (k) { var c = bacaPengaturan(k); return { u: k, nama: c.nama, nip: c.nip, kel: bacaKelAdmin()[k] || '' }; });
+  return Object.keys(a).sort().map(function (k) { var c = bacaPengaturan(k); return { u: k, nama: c.nama, nip: c.nip, kel: bacaKelAdmin()[k] || '', kunci: statusKunci(k) }; });
 }
 /** Hanya admin utama: tambah, hapus, atau ganti kata sandi admin tambahan. */
 function kelola(d) {
@@ -149,16 +200,20 @@ function kelola(d) {
   } else if (d.op === 'sandi') {
     if (!a[nu]) throw new Error('Admin tidak ditemukan');
     if (ns.length < 6 || ns.length > 60) throw new Error('Kata sandi minimal 6 karakter');
-    a[nu] = hashAdmin(nu, ns); simpanAdmin(a);
+    a[nu] = hashAdmin(nu, ns); simpanAdmin(a); hapusGagal(nu);
     catatLog(w.u, 'mengganti kata sandi operator ' + nu);
   } else if (d.op === 'kel') {
     if (!a[nu]) throw new Error('Admin tidak ditemukan');
     if (KELURAHAN.indexOf(String(d.kel || '')) < 0) throw new Error('Kelurahan tidak dikenal');
     var k2 = bacaKelAdmin(); k2[nu] = String(d.kel); simpanKelAdmin(k2);
     catatLog(w.u, 'memindahkan operator ' + nu + ' ke Kelurahan ' + d.kel);
+  } else if (d.op === 'buka') {
+    if (!a[nu]) throw new Error('Admin tidak ditemukan');
+    hapusGagal(nu);
+    catatLog(w.u, 'membuka kunci akun operator ' + nu);
   } else if (d.op === 'hapus') {
     if (!a[nu]) throw new Error('Admin tidak ditemukan');
-    delete a[nu]; simpanAdmin(a);
+    delete a[nu]; simpanAdmin(a); hapusGagal(nu);
     var k3 = bacaKelAdmin(); delete k3[nu]; simpanKelAdmin(k3);
     var it = induk().getFilesByName(berkasProfil(nu));
     while (it.hasNext()) it.next().setTrashed(true);
@@ -307,6 +362,9 @@ function doPost(e) {
       if (d.aksi === 'pos') { tag = 'a'; return simpanPos(d); }
       if (d.aksi === 'nomor') { tag = 'a'; return simpanNomor(d); }
       if (d.aksi === 'sk') { tag = 'a'; return simpanSk(d, cache); }
+      if (d.aksi === 'cadang') { tag = 'a'; return cadangSekarang(d); }
+      if (d.aksi === 'pulih') { tag = 'a'; return pulihkanPos(d); }
+      if (d.aksi === 'ruang') { tag = 'a'; return perbaruiRuang(d); }
       throw new Error('Aksi tidak dikenal');
     } finally {
       try { kunci.releaseLock(); } catch (x) {}
@@ -524,6 +582,108 @@ function simpanSk(d, cache) {
   cache.removeAll(kunciCache);
   catatLog(w.u, 'mengunggah SK Posyandu ' + jenis + ' (' + (Math.round(bytes.length / 104857.6) / 10) + ' MB)');
   return simpanHasil({ ok: true, sk: c.sk }, 'a');
+}
+
+
+// ===================== Cadangan data =====================
+var NAMA_CADANGAN = 'Cadangan';
+var SIMPAN_CADANGAN = 8;
+function folderCadangan() { return anak(induk(), NAMA_CADANGAN); }
+function kodeTgl() { return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd'); }
+function hapusNama(f, nama) { var it = f.getFilesByName(nama); while (it.hasNext()) it.next().setTrashed(true); }
+/** Simpan satu cadangan: berkas data (Posyandu, pengaturan, operator, catatan) dan salinan Google Sheets. Hanya 8 terakhir yang disimpan. */
+function buatCadangan(oleh) {
+  var f = folderCadangan(), kode = kodeTgl(), nama = 'cadangan-data-' + kode + '.json';
+  var ops = Object.keys(bacaAdmin()).sort().map(function (u) { return { u: u, kel: bacaKelAdmin()[u] || '', profil: bacaBerkas(berkasProfil(u)) }; });
+  var isi = JSON.stringify({ versi: 1, tgl: new Date().toISOString(), oleh: String(oleh || ''), posyandu: bacaPos(), pengaturan: bacaBerkas(NAMA_PENGATURAN), operator: ops, log: bacaLog() });
+  hapusNama(f, nama);
+  f.createFile(nama, isi, MimeType.PLAIN_TEXT);
+  var sid = PropertiesService.getScriptProperties().getProperty('SHEET_ID'), ns = 'cadangan-rekap-' + kode;
+  if (sid) { try { var sf = DriveApp.getFileById(sid); hapusNama(f, ns); sf.makeCopy(ns, f); } catch (x) {} }
+  ['cadangan-data-', 'cadangan-rekap-'].forEach(function (awal) {
+    var arr = [], it = f.getFiles();
+    while (it.hasNext()) { var x = it.next(); if (x.getName().indexOf(awal) === 0) arr.push(x); }
+    arr.sort(function (a, b) { return a.getName() < b.getName() ? 1 : -1; });
+    arr.slice(SIMPAN_CADANGAN).forEach(function (x) { x.setTrashed(true); });
+  });
+  return nama;
+}
+function daftarCadangan() {
+  var f = folderCadangan(), it = f.getFiles(), out = [];
+  while (it.hasNext()) {
+    var x = it.next(), n = x.getName();
+    if (n.indexOf('cadangan-data-') === 0) out.push({ id: x.getId(), tgl: n.replace('cadangan-data-', '').replace('.json', ''), ukuran: x.getSize() });
+  }
+  out.sort(function (a, b) { return a.tgl < b.tgl ? 1 : -1; });
+  return out;
+}
+/** Dijalankan otomatis setiap Minggu dini hari (lihat aktifkanCadangan). */
+function cadangMingguan() {
+  buatCadangan('otomatis');
+  try { hitungRuang(); } catch (x) {}
+  catatLog('sistem', 'cadangan mingguan tersimpan');
+}
+/** Jalankan SEKALI dari editor Apps Script untuk memasang cadangan otomatis tiap Minggu pukul 02.00. */
+function aktifkanCadangan() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'cadangMingguan') ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('cadangMingguan').timeBased().onWeekDay(ScriptApp.WeekDay.SUNDAY).atHour(2).create();
+  buatCadangan('pemasangan');
+}
+function cadangSekarang(d) {
+  var w = masuk(d.u, d.p);
+  if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh membuat cadangan'); }
+  buatCadangan(w.u);
+  catatLog(w.u, 'membuat cadangan data');
+  return simpanHasil({ ok: true, cadangan: daftarCadangan() }, 'a');
+}
+/** Pulihkan daftar Posyandu dari satu cadangan. Keadaan sebelumnya disimpan dulu sebagai cadangan baru. */
+function pulihkanPos(d) {
+  var w = masuk(d.u, d.p);
+  if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh memulihkan data'); }
+  var id = String(d.berkas || ''), ada = daftarCadangan().filter(function (x) { return x.id === id; })[0];
+  if (!ada) throw new Error('Cadangan tidak ditemukan');
+  var o = JSON.parse(DriveApp.getFileById(id).getBlob().getDataAsString());
+  var list = bersihPos(o.posyandu);
+  buatCadangan('sebelum pemulihan');
+  var teks = JSON.stringify({ list: list, tgl: Date.now() }), f = induk(), it = f.getFilesByName(NAMA_POS);
+  if (it.hasNext()) it.next().setContent(teks); else f.createFile(NAMA_POS, teks, MimeType.PLAIN_TEXT);
+  sentuhStamp();
+  catatLog(w.u, 'memulihkan data Posyandu dari cadangan ' + ada.tgl);
+  return simpanHasil({ ok: true, list: list, cadangan: daftarCadangan() }, 'a');
+}
+
+
+// ===================== Ruang Google Drive =====================
+function bacaRuang() { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('RUANG_CACHE') || 'null'); } catch (x) { return null; } }
+/** Hitung ruang yang dipakai folder aplikasi (PDF laporan, SK, cadangan, data lain) dan kuota Drive. Hasil disimpan sementara. */
+function hitungRuang() {
+  var mulai = Date.now(), r = { pdf: 0, sk: 0, cadangan: 0, lain: 0, nPdf: 0, sebagian: false };
+  function jalan(folder, kat) {
+    var fi = folder.getFiles();
+    while (fi.hasNext()) {
+      if (Date.now() - mulai > 25000) { r.sebagian = true; return; }
+      var x = fi.next(); r[kat] += x.getSize(); if (kat === 'pdf') r.nPdf++;
+    }
+    var fo = folder.getFolders();
+    while (fo.hasNext()) { jalan(fo.next(), kat); if (r.sebagian) return; }
+  }
+  var akar = induk(), fa = akar.getFiles();
+  while (fa.hasNext()) r.lain += fa.next().getSize();
+  var fs = akar.getFolders();
+  while (fs.hasNext()) {
+    var sub = fs.next(), nm = sub.getName();
+    jalan(sub, nm === 'SK' ? 'sk' : nm === NAMA_CADANGAN ? 'cadangan' : /^\d{4}$/.test(nm) ? 'pdf' : 'lain');
+    if (r.sebagian) break;
+  }
+  try { r.pakai = DriveApp.getStorageUsed(); r.batas = DriveApp.getStorageLimit(); } catch (x) { r.pakai = 0; r.batas = 0; }
+  r.tgl = Date.now();
+  PropertiesService.getScriptProperties().setProperty('RUANG_CACHE', JSON.stringify(r));
+  return r;
+}
+function perbaruiRuang(d) {
+  var w = masuk(d.u, d.p);
+  if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh melihat ruang Drive'); }
+  return simpanHasil({ ok: true, ruang: hitungRuang() }, 'a');
 }
 
 
