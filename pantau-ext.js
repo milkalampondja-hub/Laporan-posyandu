@@ -428,7 +428,7 @@ function formNomor(p) {
     if (hp && hp.replace(/[^0-9]/g, '').length < 9) { er.textContent = 'Nomor HP terlalu pendek'; er.className = 'st bad'; return; }
     if (!POS.length) { er.textContent = 'Daftar Posyandu belum disimpan oleh admin kecamatan. Minta admin menyimpannya di menu Data Posyandu.'; er.className = 'st bad'; return; }
     sv.disabled = true; er.textContent = 'Menyimpan…'; er.className = 'st';
-    kirimAtur({ aksi: 'nomor', id: p.id, hp: hp, hpJenis: sj.value, hpNama: inN.value.trim() }).then(function (r) {
+    kirimAtur({ aksi: 'nomor', pid: p.id, hp: hp, hpJenis: sj.value, hpNama: inN.value.trim() }).then(function (r) {
       if (r && r.list) POS = r.list; renderBeranda(); renderData(); tutupModal(); toast('Nomor tersimpan.');
     }).catch(function (e) { sv.disabled = false; er.textContent = e.message; er.className = 'st bad'; });
   });

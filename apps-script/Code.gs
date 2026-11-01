@@ -540,7 +540,7 @@ function simpanPos(d) {
 function simpanNomor(d) {
   var w = masuk(d.u, d.p);
   if (!w) { Utilities.sleep(1200); throw new Error('Silakan masuk lagi'); }
-  var lama = bacaPos(), id = String(d.id || ''), ix = -1;
+  var lama = bacaPos(), id = String(d.pid || ''), ix = -1;
   lama.forEach(function (x, i) { if (x.id === id) ix = i; });
   if (ix < 0) throw new Error('Posyandu tidak ditemukan. Minta admin kecamatan menyimpan daftar Posyandu terlebih dahulu');
   var p = lama[ix];
