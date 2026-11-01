@@ -445,8 +445,12 @@ var PANAH='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="c
 function batasHtml(){
   if(!(BATAS>=1&&BATAS<=31))return "";
   /* Laporan bulan X dikumpulkan paling lambat tanggal BATAS di bulan berikutnya. Sampai tanggal batas, yang dikumpulkan masih bulan lalu. */
-  var n=new Date(),y=n.getFullYear(),m=n.getMonth();
-  if(n.getDate()<=BATAS){m--;if(m<0){m=11;y--}}
+  /* Dari tanggal 1 sampai tanggal batas, dua bulan laporan terbuka sekaligus (bulan lalu dan bulan berjalan). */
+  var n=new Date(),y=n.getFullYear(),m=n.getMonth(),out="";
+  if(n.getDate()<=BATAS){var py=m===0?y-1:y,pm=m===0?11:m-1;out+=batasSatu(n,pm,py)}
+  return out+batasSatu(n,m,y);
+}
+function batasSatu(n,m,y){
   var dm=(m+1)%12,dy=m===11?y+1:y,akhir=new Date(dy,dm+1,0).getDate(),tg=Math.min(BATAS,akhir);
   var a=new Date(n.getFullYear(),n.getMonth(),n.getDate()),b=new Date(dy,dm,tg),sisa=Math.round((b-a)/86400000),kls="ok",teks;
   var lap="laporan "+BULAN[m],tgl=tg+" "+BULAN[dm];

@@ -234,7 +234,7 @@ function tileStat(cls, n, lbl) { var d = el('div', 'stat ' + cls); d.appendChild
 function renderBeranda() {
   var box = $('sumB'); if (!box) return; box.textContent = '';
   var pr = periodeBeranda(), h = hitung(pr.th, pr.bl), pc = persen(h.masuk.length, h.rows.length);
-  if (isOp()) { berandaOp(box, h, pr, pc); return; }
+  if (isOp()) { berandaOp(box); return; }
   var c = el('div', 'card'); c.appendChild(el('h4', null, 'Ringkasan ' + pr.bl + ' ' + pr.th));
   c.appendChild(el('div', 'lt', 'Batas pengumpulan laporan ' + pr.bl + ': tanggal ' + teksBatas(pr.th, pr.bl)));
   var g = el('div', 'grid4');
@@ -383,8 +383,20 @@ function barisPos(r, pr) {
   ct.appendChild(btn(p.hp ? 'Ubah nomor' : 'Isi nomor', 'sm kc plain', function () { formNomor(p); }));
   row.appendChild(ct); return row;
 }
-function berandaOp(box, h, pr, pc) {
+/* Dari tanggal 1 sampai tanggal batas, dua bulan laporan terbuka sekaligus (bulan lalu dan bulan berjalan). */
+function periodeOpList() {
+  var now = new Date(), y = now.getFullYear(), m = now.getMonth(), cur = { bl: BULAN[m], th: String(y) };
+  if (now.getDate() > BATAS) return [cur];
+  var py = m === 0 ? y - 1 : y, pm = m === 0 ? 11 : m - 1;
+  return [{ bl: BULAN[pm], th: String(py) }, cur];
+}
+function berandaOp(box) {
   if (PENGUMUMAN) box.appendChild(el('div', 'pengum', PENGUMUMAN));
+  var ps = periodeOpList();
+  ps.forEach(function (pr) { var h = hitung(pr.th, pr.bl); kartuOp(box, h, pr, persen(h.masuk.length, h.rows.length), ps.length > 1); });
+  kaderPengganti(box);
+}
+function kartuOp(box, h, pr, pc, dua) {
   var c = el('div', 'card'); c.appendChild(el('h4', null, 'Laporan ' + pr.bl + ' ' + pr.th));
   var tot = h.rows.length, msk = h.masuk.length;
   var k = el('div'); k.style.cssText = 'font-size:17px;margin:2px 0 8px'; var bb = el('b', null, msk + ' dari ' + tot); k.appendChild(bb); k.appendChild(document.createTextNode(' Posyandu sudah membuat laporan')); c.appendChild(k);
@@ -393,12 +405,11 @@ function berandaOp(box, h, pr, pc) {
   else { var hm = hitungMundur(pr); c.appendChild(el('div', 'hm ' + hm.c, hm.t)); }
   if (h.asing.length) c.appendChild(el('div', 'warn2', h.asing.length + ' laporan memakai nama Posyandu yang belum cocok dengan Data Posyandu, sehingga tidak dihitung.'));
   box.appendChild(c);
-  var c2 = el('div', 'card'); c2.appendChild(el('h4', null, 'Posyandu Kelurahan ' + KELSAYA));
+  var c2 = el('div', 'card'); c2.appendChild(el('h4', null, 'Posyandu Kelurahan ' + KELSAYA + (dua ? ' · laporan ' + pr.bl : '')));
   var urut = { lewat: 0, belum: 1, telat: 2, tepat: 3 };
   h.rows.slice().sort(function (a, b) { return urut[a.st] - urut[b.st] || a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); }).forEach(function (r) { c2.appendChild(barisPos(r, pr)); });
   if (!tot) c2.appendChild(el('div', 'empty', 'Belum ada Posyandu terdaftar untuk kelurahan ini.'));
   box.appendChild(c2);
-  kaderPengganti(box);
 }
 function formNomor(p) {
   var f = el('div');
