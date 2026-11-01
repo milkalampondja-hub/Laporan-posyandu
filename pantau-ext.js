@@ -82,7 +82,7 @@ function aktifKader(p) { return (p.kader || []).filter(function (k) { return k.a
 var KELSAYA = '';
 function dasarPos() { var l = POS.length ? POS : (window.SEED_POS || []); return KELSAYA ? l.filter(function (p) { return p.kel === KELSAYA; }) : l; }
 window.terapKel = function (k) {
-  KELSAYA = k || '';
+  KELSAYA = k || ''; try { pasangAs(); } catch (x) { }
   Array.prototype.forEach.call(document.getElementsByClassName('wil'), function (w) {
     w.textContent = '';
     if (KELSAYA && KELSAYA !== '-') {
@@ -201,6 +201,15 @@ function bukaMenu(btn) {
   h.appendChild(b); h.appendChild(document.createTextNode((PROFIL.nip ? 'NIP ' + PROFIL.nip : 'NIP belum diisi') + ' · ' + (utama() ? 'Admin kecamatan' : 'Petugas')));
   pop.appendChild(h);
   var b1 = el('button', null, 'Ubah profil'), b2 = el('button', null, 'Keluar dari akun');
+  if (CRED && CRED.as) {
+    var bk = el('button', null, 'Kembali ke admin kecamatan');
+    bk.addEventListener('click', function (e) { e.stopPropagation(); tutupMenu(); gantiAs(''); });
+    pop.appendChild(bk);
+  } else if (utama() && ADM && ADM.length) {
+    var bo = el('button', null, 'Masuk sebagai operator kelurahan');
+    bo.addEventListener('click', function (e) { e.stopPropagation(); tutupMenu(); pilihOperator(); });
+    pop.appendChild(bo);
+  }
   b1.addEventListener('click', function (e) { e.stopPropagation(); tutupMenu(); go('p'); setTimeout(function () { var c = $('pvfoto'); if (c && c.closest('.card')) c.closest('.card').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80); });
   b2.addEventListener('click', function (e) { e.stopPropagation(); tutupMenu(); keluar(); });
   pop.appendChild(b1); pop.appendChild(b2); document.body.appendChild(pop);
@@ -214,6 +223,38 @@ document.addEventListener('click', function (e) {
   if (!e.target.closest || !e.target.closest('.accpop')) tutupMenu();
 });
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { tutupMenu(); tutupModal(); } });
+
+/* ---------- masuk sebagai operator kelurahan (khusus admin kecamatan) ---------- */
+function gantiAs(nama) {
+  if (!CRED) return;
+  if (nama) CRED.as = nama; else delete CRED.as;
+  try { sessionStorage.setItem('pantau-cred', JSON.stringify(CRED)); } catch (x) { }
+  location.reload();
+}
+function pilihOperator() {
+  var box = el('div'), info = el('div', 'b', 'Pilih operator untuk dilihat. Anda masuk otomatis tanpa kata sandi, dan bisa kembali kapan saja lewat menu akun.');
+  info.style.marginBottom = '10px'; box.appendChild(info);
+  ADM.forEach(function (a) {
+    var b = el('button', 'btn line', a.u + ' · Kelurahan ' + (a.kel || 'belum dipilih') + (a.nama ? ' · ' + a.nama : ''));
+    b.type = 'button'; b.style.cssText = 'display:block;width:100%;text-align:left;margin-bottom:8px';
+    b.addEventListener('click', function () { gantiAs(a.u); });
+    box.appendChild(b);
+  });
+  bukaModal('Masuk sebagai operator', box);
+}
+function pasangAs() {
+  var b = document.getElementById('barAs'), on = !!(CRED && CRED.as);
+  if (!on) { if (b) b.remove(); return; }
+  if (!b) {
+    b = el('div'); b.id = 'barAs';
+    b.style.cssText = 'position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));white-space:nowrap;transform:translateX(-50%);z-index:80;background:#1f2a44;color:#fff;border-radius:999px;padding:8px 8px 8px 16px;font-size:13px;font-weight:700;display:flex;gap:10px;align-items:center;box-shadow:0 4px 18px rgba(0,0,0,.35);max-width:94vw';
+    var t = el('span'); t.id = 'barAsT'; var k = el('button', null, 'Kembali'); k.type = 'button';
+    k.style.cssText = 'border:0;border-radius:999px;background:#ffc800;color:#3a2a00;font-weight:800;padding:6px 14px;cursor:pointer';
+    k.addEventListener('click', function () { gantiAs(''); });
+    b.appendChild(t); b.appendChild(k); document.body.appendChild(b);
+  }
+  document.getElementById('barAsT').textContent = 'Melihat sebagai ' + CRED.as;
+}
 
 /* ---------- modal ---------- */
 function bukaModal(judul, isi, full) {

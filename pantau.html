@@ -94,6 +94,8 @@ button{cursor:pointer}
 .trow .tt{font-weight:800;font-size:17px;line-height:1.15;letter-spacing:.1px;white-space:nowrap}
 .wil.op{font-weight:700;letter-spacing:.04em;text-transform:uppercase;line-height:1.35}
 .wil.op span{display:block}
+.brand>div{min-width:0}.brand .wil.op{font-size:10.5px;letter-spacing:.01em;white-space:nowrap}
+.tt .wil.op{white-space:nowrap;font-size:min(12.5px,3.2vw);letter-spacing:.02em}
 .wil.op span+span{margin-top:1px;padding-top:2px;border-top:1.5px solid currentColor;border-top-color:rgba(60,40,0,.28);width:max-content;max-width:100%}
 .trow .tt small{display:block;font-weight:500;font-size:14px;margin-top:3px;letter-spacing:0}
 .trow .sp{flex:1}
@@ -566,7 +568,7 @@ function bel(){
 function titik(){var s=0;try{s=parseInt(localStorage.getItem('pantau-seen')||'0',10)||0}catch(x){}
   $('belldot').classList.toggle('hidden',!(DATA.length>s))}
 function buka(){$('login').classList.add('hidden');$('app').classList.remove('hidden');window.scrollTo(0,0);
-  $('pu').textContent=CRED?CRED.u:'-';
+  $('pu').textContent=CRED?(CRED.as||CRED.u):'-';
   if(!timer)timer=setInterval(function(){if(CRED&&!document.hidden)cekUbah()},120000)}
 function keluar(msg){
   ST=null;sebelum=-1;CRED=null;PERAN='';ADM=[];ADA=false;DATA=[];try{sessionStorage.removeItem('pantau-cred')}catch(x){}
@@ -608,7 +610,7 @@ function muat(dariLogin){
     isiTahun();tampil();if(!POSOK&&window.ambilPos)ambilPos();
   };
   s.onerror=function(){if(selesai)return;bersih();err()};
-  s.src=ARSIP_URL+'?aksi=daftar&u='+encodeURIComponent(CRED.u)+'&p='+encodeURIComponent(CRED.p)+'&cb='+cb+'&_='+Date.now();
+  s.src=ARSIP_URL+'?aksi=daftar&u='+encodeURIComponent(CRED.u)+'&p='+encodeURIComponent(CRED.p)+(CRED.as?'&as='+encodeURIComponent(CRED.as):'')+'&cb='+cb+'&_='+Date.now();
   document.head.appendChild(s);
 }
 function gagal(t){
@@ -693,7 +695,7 @@ function jsonp(params,ms){
     function end(fn,v){if(done)return;done=true;clearTimeout(t);try{delete window[cb]}catch(e){window[cb]=undefined}if(s.parentNode)s.parentNode.removeChild(s);fn(v)}
     window[cb]=function(d){end(res,d)};
     s.onerror=function(){end(rej,new Error('Tidak bisa menghubungi server'))};
-    var q=new URLSearchParams(params);q.set('cb',cb);q.set('_',Date.now());
+    var q=new URLSearchParams(params);if(CRED&&CRED.as&&q.has('u')&&!q.has('as'))q.set('as',CRED.as);q.set('cb',cb);q.set('_',Date.now());
     s.src=ARSIP_URL+'?'+q.toString();document.head.appendChild(s);
     var t=setTimeout(function(){end(rej,new Error('Server tidak menjawab'))},ms||20000);
   });
@@ -732,7 +734,7 @@ function pasangProfil(){
   if(window.pasangExt)pasangExt();
 }
 var profJalan=false;
-function profKey(){return 'pantau_prof_'+(CRED?CRED.u:'')}
+function profKey(){return 'pantau_prof_'+(CRED?CRED.u+(CRED.as?'@'+CRED.as:''):'')}
 function profDariCache(){
   try{var c=JSON.parse(localStorage.getItem(profKey())||'null');if(c&&c.nama){PROFIL={nama:c.nama,nip:c.nip||lsNip(),jabatan:c.jabatan||'',unit:c.unit||'',foto:c.foto||''};pasangProfil()}}catch(x){}}
 function profKeCache(){try{localStorage.setItem(profKey(),JSON.stringify(PROFIL))}catch(x){}}
@@ -746,7 +748,7 @@ function tunda(ms){return new Promise(function(r){setTimeout(r,ms)})}
 async function kirimAtur(f){
   if(!CRED)throw new Error('Silakan masuk lagi');
   var id=f.id||('a'+Math.random().toString(36).slice(2,12)+Date.now().toString(36));
-  var o={aksi:'atur',id:id,t:id,u:CRED.u,p:CRED.p};for(var k in f)o[k]=f[k];
+  var o={aksi:'atur',id:id,t:id,u:CRED.u,p:CRED.p};if(CRED.as)o.as=CRED.as;for(var k in f)o[k]=f[k];
   var fr=document.createElement('iframe');fr.name='af'+id;fr.style.display='none';document.body.appendChild(fr);
   var fm=document.createElement('form');fm.method='POST';fm.action=ARSIP_URL;fm.target=fr.name;fm.style.display='none';
   var i=document.createElement('input');i.type='hidden';i.name='data';i.value=JSON.stringify(o);fm.appendChild(i);document.body.appendChild(fm);fm.submit();

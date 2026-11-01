@@ -19,9 +19,11 @@ var ID_RE       = /^[A-Za-z0-9]{6,40}$/;
 
 var TOKEN_BALAS = '';
 var ID_AKTIF = '';
+var AS_USER = '';   // admin kecamatan melihat sebagai operator kelurahan
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
+  AS_USER = String(p.as || '').toLowerCase();
   var cb = /^[A-Za-z0-9_]{1,40}$/.test(String(p.cb || '')) ? String(p.cb) : '';
   var hasil = { ok: true, pesan: 'Arsip Laporan Posyandu aktif' };
   var cache = CacheService.getScriptCache();
@@ -138,7 +140,12 @@ function masuk(u, p) {
   var w = null;
   if (u === PANTAU_USER) { if (sandiBenar(u, p)) w = { u: u, peran: 'utama' }; }
   else { var a = bacaAdmin(); if (a[k] && a[k] === hashAdmin(k, p)) w = { u: k, peran: 'admin', kel: bacaKelAdmin()[k] || '-' }; }
-  if (w) { if (dikenal) hapusGagal(k); return w; }
+  if (w) {
+    if (dikenal) hapusGagal(k);
+    // Hanya admin kecamatan yang boleh masuk sebagai operator kelurahan (tanpa kata sandi operator).
+    if (w.peran === 'utama' && AS_USER && AS_USER !== PANTAU_USER && bacaAdmin()[AS_USER]) w = { u: AS_USER, peran: 'admin', kel: bacaKelAdmin()[AS_USER] || '-' };
+    return w;
+  }
   if (dikenal) { catatGagal(k); }
   return null;
 }
@@ -373,6 +380,7 @@ function doPost(e) {
   var tag = 's';
   try {
     var d = JSON.parse((e.parameter && e.parameter.data) ? e.parameter.data : e.postData.contents);
+    AS_USER = String(d.as || '').toLowerCase();
     TOKEN_BALAS = String(d.t || '');
     ID_AKTIF = String(d.id || '');
     if (!ID_RE.test(ID_AKTIF)) throw new Error('ID tidak valid');
