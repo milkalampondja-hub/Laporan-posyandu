@@ -289,7 +289,7 @@ function kartuSetor(box, h, pr) {
   c.appendChild(el('h4', null, 'Penyerahan laporan ke kecamatan - ' + pr.bl + ' ' + pr.th));
   c.appendChild(el('div', 'lt', 'Centang Posyandu yang laporannya sudah disahkan kelurahan dan diserahkan ke kecamatan.'));
   c.appendChild(el('div', 'hm ' + (tot && n === tot ? 'ok' : 'warn'), n + ' dari ' + tot + ' Posyandu sudah menyerahkan laporan'));
-  var tb = el('div', 'toolbar'); tb.appendChild(btn('Unduh PDF: belum menyerahkan', 'sm', function () { cetakBelumSetor(h, pr); })); c.appendChild(tb);
+  var tb = el('div', 'toolbar'); tb.appendChild(btn('Unduh PDF: belum menyerahkan', 'sm', function (ev) { unduhPoster(h, pr, 'pdf', ev.currentTarget); })); tb.appendChild(document.createTextNode(' ')); tb.appendChild(btn('Unduh gambar (untuk WhatsApp)', 'sm plain', function (ev) { unduhPoster(h, pr, 'png', ev.currentTarget); })); c.appendChild(tb);
   KEL.forEach(function (kel) {
     var l = h.rows.filter(function (r) { return r.p.kel === kel; }).sort(function (a, b) { return a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); });
     if (!l.length) return;
@@ -319,38 +319,132 @@ function kartuSetor(box, h, pr) {
   });
   box.appendChild(c);
 }
-/* PDF daftar Posyandu yang belum menyerahkan laporan ke kecamatan (cetak lalu Simpan sebagai PDF). */
-function cetakBelumSetor(h, pr) {
-  var M = SETOR[perKey(pr)] || {}, now = new Date(), pf = (typeof PROFIL !== 'undefined' && PROFIL) ? PROFIL : {};
-  var belum = h.rows.filter(function (r) { return !M[r.p.id]; }).sort(function (x, y) { return x.p.kel.localeCompare(y.p.kel) || x.p.jenis.localeCompare(y.p.jenis) || x.p.nama.localeCompare(y.p.nama); });
-  var no = 0, rin = belum.map(function (r) {
-    return '<tr><td class="c">' + (++no) + '</td><td>' + esc(r.p.nama) + '</td><td>' + esc(r.p.kel) + '</td><td>' + esc(r.p.jenis.replace('Posyandu ', '')) + '</td><td>' + (r.d ? 'Sudah dibuat di aplikasi (' + esc((r.d.tk || '').slice(0, 10)) + ')' : 'Belum dibuat di aplikasi') + '</td><td></td></tr>';
-  }).join('');
-  var per = KEL.map(function (kel) {
-    var a = h.rows.filter(function (r) { return r.p.kel === kel; }), b = a.filter(function (r) { return !M[r.p.id]; });
-    return a.length ? '<tr><td>' + esc(kel) + '</td><td class="c">' + a.length + '</td><td class="c">' + (a.length - b.length) + '</td><td class="c">' + b.length + '</td></tr>' : '';
-  }).join('');
-  var tgl = now.getDate() + ' ' + BULAN[now.getMonth()] + ' ' + now.getFullYear(), logo = new URL('logo.png', location.href).href;
-  var html = '<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Belum menyerahkan laporan ' + esc(pr.bl) + ' ' + esc(pr.th) + '</title><style>' +
-    '@page{size:A4;margin:16mm 15mm}*{box-sizing:border-box}body{font:11pt/1.4 "Times New Roman",Tinos,serif;color:#000;margin:0;padding:14px}' +
-    '.kop{display:flex;align-items:center;gap:14px;border-bottom:3px double #000;padding-bottom:8px;margin-bottom:12px}.kop img{width:64px;height:auto}.kop div{flex:1;text-align:center;line-height:1.25}' +
-    '.kop b{display:block;font-size:13pt;letter-spacing:.02em}.kop small{font-size:10pt}h1{font-size:13pt;text-align:center;margin:6px 0 2px;text-transform:uppercase}.sb{text-align:center;margin:0 0 12px}' +
-    'h2{font-size:11.5pt;margin:14px 0 5px}table{border-collapse:collapse;width:100%;font-size:10pt}th,td{border:1px solid #000;padding:4px 6px;vertical-align:top}th{background:#eee}.c{text-align:center}' +
-    'tr{page-break-inside:avoid}.ttd{margin-top:26px;margin-left:55%;text-align:center;page-break-inside:avoid}.ttd .sp{height:64px}.ttd u{font-weight:700}' +
-    '.bar{position:sticky;top:0;background:#0a7a35;color:#fff;padding:10px 12px;margin:-14px -14px 14px;font:14px/1.4 sans-serif}.bar button{margin-left:10px;padding:6px 14px;border:0;border-radius:6px;font-weight:700}' +
-    '@media print{.bar{display:none}body{padding:0}}</style></head><body>' +
-    '<div class="bar">Pilih <b>Cetak</b>, lalu tujuan <b>Simpan sebagai PDF</b> untuk membuat berkas PDF. <button onclick="print()">Cetak / PDF</button></div>' +
-    '<div class="kop"><img src="' + logo + '" alt=""><div><b>PEMERINTAH KOTA PALU</b><b>KECAMATAN PALU UTARA</b><small>Daftar Posyandu yang Belum Menyerahkan Laporan</small></div></div>' +
-    '<h1>Posyandu yang belum menyerahkan laporan ke kecamatan</h1><p class="sb">Laporan bulan ' + esc(pr.bl) + ' ' + esc(pr.th) + ' &middot; Batas pengumpulan tanggal ' + esc(teksBatas(pr.th, pr.bl)) + ' &middot; Per ' + tgl + '</p>' +
-    '<h2>1. Ringkasan</h2><p>Total Posyandu: <b>' + h.rows.length + '</b>. Sudah menyerahkan: <b>' + (h.rows.length - belum.length) + '</b>. Belum menyerahkan: <b>' + belum.length + '</b>.</p>' +
-    '<table><tr><th>Kelurahan</th><th>Total</th><th>Sudah menyerahkan</th><th>Belum menyerahkan</th></tr>' + per + '</table>' +
-    '<h2>2. Daftar yang belum menyerahkan</h2>' + (belum.length ? '<table><tr><th>No</th><th>Nama Posyandu</th><th>Kelurahan</th><th>Jenis</th><th>Status di aplikasi</th><th>Keterangan</th></tr>' + rin + '</table>' : '<p>Semua Posyandu sudah menyerahkan laporan.</p>') +
-    '<div class="ttd">Palu, ' + tgl + '<br>' + esc(pf.jabatan || 'Petugas Pengelola Laporan Posyandu') + '<div class="sp"></div><u>' + esc(pf.nama || 'Admin Posyandu') + '</u>' + (pf.nip ? '<br>NIP. ' + esc(pf.nip) : '') + '</div>' +
-    '</body></html>';
-  var w = null; try { w = window.open('', '_blank'); } catch (x) { }
-  if (!w) { alert('Jendela cetak diblokir. Izinkan pop-up untuk situs ini lalu coba lagi.'); return; }
-  w.document.open(); w.document.write(html); w.document.close();
-  setTimeout(function () { try { w.focus(); } catch (x) { } }, 300);
+/* Poster pengingat: Posyandu yang belum menyerahkan laporan ke kecamatan. Digambar di kanvas, bisa diunduh sebagai gambar (untuk grup WhatsApp) atau PDF. */
+function belumSetorData(h, pr) {
+  var M = SETOR[perKey(pr)] || {}, hasil = { 'Posyandu Balita': [], 'Posyandu Lansia': [] };
+  h.rows.filter(function (r) { return !M[r.p.id]; }).sort(function (x, y) {
+    return KEL.indexOf(x.p.kel) - KEL.indexOf(y.p.kel) || x.p.nama.localeCompare(y.p.nama);
+  }).forEach(function (r) { if (hasil[r.p.jenis]) hasil[r.p.jenis].push(r.p); });
+  return hasil;
+}
+function gambarPoster(h, pr) {
+  return new Promise(function (res, rej) {
+    var logo = new Image(); logo.onerror = function () { logo = null; lanjut(); }; logo.onload = lanjut; logo.src = 'logo.png';
+    var done = false;
+    function lanjut() {
+      if (done) return; done = true;
+      try { res(lukis(logo)); } catch (er) { rej(er); }
+    }
+    function lukis(logo) {
+      var D = belumSetorData(h, pr), W = 1536, M = 40, GAP = 40, PW = (W - 2 * M - GAP) / 2, RH = 48, TOP = 372, HB = 92, TH = 64;
+      var n = Math.max(D['Posyandu Balita'].length, D['Posyandu Lansia'].length, 1), PH = HB + TH + n * RH + 6, H = Math.max(1024, TOP + PH + 210);
+      var cv = document.createElement('canvas'); cv.width = W; cv.height = H; var c = cv.getContext('2d');
+      var NAVY = '#12264a', KUNING = '#ffcd1f', KUNING2 = '#fff1a8', F = 'system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif';
+      function rr(x, y, w, hh, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + hh, r); c.arcTo(x + w, y + hh, x, y + hh, r); c.arcTo(x, y + hh, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+      function fit(t, maxW, px, wt) { var s = px; do { c.font = wt + ' ' + s + 'px ' + F; if (c.measureText(t).width <= maxW || s <= 13) break; s -= 1; } while (true); while (c.measureText(t).width > maxW && t.length > 3) { t = t.slice(0, -2); } return t; }
+      function spaced(t, x, y, gap) { var w = 0, i; for (i = 0; i < t.length; i++) w += c.measureText(t[i]).width + gap; var cx = x; for (i = 0; i < t.length; i++) { c.fillText(t[i], cx, y); cx += c.measureText(t[i]).width + gap; } return w; }
+      // latar
+      c.fillStyle = '#f9fafc'; c.fillRect(0, 0, W, H);
+      var g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#eef1f7'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+      c.fillStyle = KUNING; c.beginPath(); c.moveTo(0, 0); c.lineTo(330, 0); c.quadraticCurveTo(170, 40, 120, 190); c.quadraticCurveTo(80, 300, 0, 330); c.closePath(); c.fill();
+      c.fillStyle = '#ffe36b'; c.beginPath(); c.moveTo(0, 0); c.lineTo(200, 0); c.quadraticCurveTo(90, 50, 60, 150); c.quadraticCurveTo(40, 210, 0, 220); c.closePath(); c.fill();
+      c.fillStyle = NAVY; c.beginPath(); c.moveTo(W - 520, 0); c.lineTo(W, 0); c.lineTo(W, 130); c.quadraticCurveTo(W - 220, 120, W - 520, 0); c.closePath(); c.fill();
+      c.fillStyle = KUNING; c.beginPath(); c.moveTo(W - 330, 0); c.lineTo(W - 120, 0); c.quadraticCurveTo(W - 160, 70, W - 330, 0); c.closePath(); c.fill();
+      c.fillStyle = KUNING; c.beginPath(); c.moveTo(0, H); c.lineTo(0, H - 150); c.quadraticCurveTo(420, H - 60, 900, H - 100); c.quadraticCurveTo(1250, H - 130, W, H - 40); c.lineTo(W, H); c.closePath(); c.fill();
+      c.fillStyle = NAVY; c.beginPath(); c.moveTo(0, H); c.lineTo(0, H - 70); c.quadraticCurveTo(300, H - 20, 620, H - 55); c.quadraticCurveTo(900, H - 80, 1100, H); c.closePath(); c.fill();
+      // kepala surat
+      if (logo && logo.width) { var lh = 118, lw = lh * logo.width / logo.height; c.drawImage(logo, 100, 46, lw, lh); }
+      c.fillStyle = NAVY; c.fillRect(278, 60, 3, 108);
+      c.textBaseline = 'alphabetic'; c.textAlign = 'left'; c.font = '800 48px ' + F; c.fillText('KECAMATAN PALU UTARA', 312, 110);
+      c.font = '700 34px ' + F; spaced('KOTA PALU', 314, 160, 9);
+      // judul
+      rr(190, 200, W - 380, 138, 69); c.fillStyle = NAVY; c.fill();
+      c.textAlign = 'center'; c.fillStyle = '#ffffff'; c.font = '800 54px ' + F; c.fillText('POSYANDU YANG BELUM MEMASUKAN', W / 2, 262);
+      c.fillStyle = KUNING; c.font = '800 66px ' + F; c.fillText('LAPORAN BULAN ' + pr.bl.toUpperCase(), W / 2, 322);
+      c.strokeStyle = KUNING; c.lineWidth = 9; c.lineCap = 'round';
+      [-0.6, 0, 0.6].forEach(function (a) {
+        c.beginPath(); c.moveTo(150 - 26 * Math.cos(a), 270 + 26 * Math.sin(a)); c.lineTo(150 - 64 * Math.cos(a), 270 + 64 * Math.sin(a)); c.stroke();
+        c.beginPath(); c.moveTo(W - 150 + 26 * Math.cos(a), 270 + 26 * Math.sin(a)); c.lineTo(W - 150 + 64 * Math.cos(a), 270 + 64 * Math.sin(a)); c.stroke();
+      });
+      // panel
+      function orang(cx, cy, s, tinggi, tongkat) {
+        c.fillStyle = NAVY; c.beginPath(); c.arc(cx, cy - 22 * s * tinggi, 8 * s, 0, 7); c.fill();
+        c.beginPath(); c.moveTo(cx - 11 * s, cy + 24 * s * tinggi); c.lineTo(cx - 8 * s, cy - 10 * s * tinggi); c.quadraticCurveTo(cx, cy - 16 * s * tinggi, cx + 8 * s, cy - 10 * s * tinggi); c.lineTo(cx + 11 * s, cy + 24 * s * tinggi); c.closePath(); c.fill();
+        if (tongkat) { c.strokeStyle = NAVY; c.lineWidth = 3 * s; c.beginPath(); c.moveTo(cx + 15 * s, cy - 2 * s); c.lineTo(cx + 15 * s, cy + 26 * s * tinggi); c.stroke(); }
+      }
+      ['Posyandu Balita', 'Posyandu Lansia'].forEach(function (jn, ix) {
+        var x0 = M + ix * (PW + GAP), data = D[jn], y0 = TOP;
+        c.save(); c.shadowColor = 'rgba(18,38,74,.18)'; c.shadowBlur = 18; c.shadowOffsetY = 6; rr(x0, y0, PW, PH, 26); c.fillStyle = '#fff'; c.fill(); c.restore();
+        c.save(); rr(x0, y0, PW, PH, 26); c.clip();
+        var gg = c.createLinearGradient(0, y0, 0, y0 + HB); gg.addColorStop(0, '#ffe45c'); gg.addColorStop(1, KUNING); c.fillStyle = gg; c.fillRect(x0, y0, PW, HB);
+        c.fillStyle = NAVY; c.font = '800 46px ' + F; c.textAlign = 'center'; c.fillText(jn.toUpperCase(), x0 + PW / 2 + 40, y0 + 60);
+        var cw = [90, 300, PW - 390], ty = y0 + HB;
+        c.fillStyle = NAVY; c.fillRect(x0, ty, PW, TH);
+        c.fillStyle = '#fff'; c.font = '800 26px ' + F;
+        c.fillText('NO', x0 + cw[0] / 2, ty + 41); c.fillText('NAMA POSYANDU', x0 + cw[0] + cw[1] / 2, ty + 41); c.fillText('ALAMAT', x0 + cw[0] + cw[1] + cw[2] / 2, ty + 41);
+        var rows = data.length ? data : [null];
+        rows.forEach(function (p, k) {
+          var yy = ty + TH + k * RH;
+          c.fillStyle = k % 2 ? '#fbfcff' : '#ffffff'; c.fillRect(x0 + cw[0], yy, PW - cw[0], RH);
+          c.fillStyle = KUNING2; c.fillRect(x0, yy, cw[0], RH);
+          c.strokeStyle = 'rgba(18,38,74,.35)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x0, yy + RH); c.lineTo(x0 + PW, yy + RH); c.moveTo(x0 + cw[0], yy); c.lineTo(x0 + cw[0], yy + RH); c.moveTo(x0 + cw[0] + cw[1], yy); c.lineTo(x0 + cw[0] + cw[1], yy + RH); c.stroke();
+          c.fillStyle = NAVY; c.textAlign = 'center';
+          if (!p) { c.font = '700 24px ' + F; c.fillText('Semua sudah menyerahkan laporan', x0 + cw[0] + (PW - cw[0]) / 2, yy + 31); return; }
+          c.font = '800 28px ' + F; c.fillText(String(k + 1), x0 + cw[0] / 2, yy + 33);
+          var nm = fit(p.nama.toUpperCase(), cw[1] - 20, 25, 600); c.fillText(nm, x0 + cw[0] + cw[1] / 2, yy + 32);
+          var al = (p.alamat && p.alamat.trim()) ? p.alamat.trim().toUpperCase() : 'KEL. ' + p.kel.toUpperCase();
+          var ax = x0 + cw[0] + cw[1] + cw[2] / 2;
+          c.font = '600 23px ' + F;
+          if (c.measureText(al).width <= cw[2] - 20) c.fillText(al, ax, yy + 32);
+          else {
+            var kt = al.split(' '), sp = Math.ceil(kt.length / 2), l1 = kt.slice(0, sp).join(' '), l2 = kt.slice(sp).join(' ');
+            if (kt.length > 3) { var best = 1, sel = 1e9; for (var q = 1; q < kt.length; q++) { c.font = '600 19px ' + F; var d1 = Math.abs(c.measureText(kt.slice(0, q).join(' ')).width - c.measureText(kt.slice(q).join(' ')).width); if (d1 < sel) { sel = d1; best = q; } } l1 = kt.slice(0, best).join(' '); l2 = kt.slice(best).join(' '); }
+            c.fillText(fit(l1, cw[2] - 16, 19, 600), ax, yy + 21); c.fillText(fit(l2, cw[2] - 16, 19, 600), ax, yy + 41);
+          }
+        });
+        c.restore();
+        c.strokeStyle = KUNING; c.lineWidth = 4; rr(x0, y0, PW, PH, 26); c.stroke();
+        // ikon bulat
+        c.fillStyle = '#fff'; c.beginPath(); c.arc(x0 + 78, y0 + 46, 56, 0, 7); c.fill(); c.strokeStyle = KUNING; c.lineWidth = 6; c.stroke();
+        if (ix === 0) { orang(x0 + 62, y0 + 48, 1.5, 1, false); orang(x0 + 98, y0 + 60, 1.1, .8, false); c.fillStyle = KUNING; c.beginPath(); c.arc(x0 + 108, y0 + 22, 7, 0, 7); c.fill(); }
+        else { orang(x0 + 62, y0 + 48, 1.5, 1, false); orang(x0 + 96, y0 + 48, 1.5, 1, true); }
+      });
+      c.textAlign = 'center'; c.fillStyle = NAVY; c.font = '600 22px ' + F;
+      var now = new Date();
+      c.fillText('Per ' + now.getDate() + ' ' + BULAN[now.getMonth()] + ' ' + now.getFullYear() + ' • Batas pengumpulan laporan ' + pr.bl + ': ' + teksBatas(pr.th, pr.bl), W / 2, TOP + PH + 44);
+      return cv;
+    }
+  });
+}
+function unduhBerkas(blob, nama) { var u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = nama; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); URL.revokeObjectURL(u); }, 5000); }
+/* PDF satu halaman berisi gambar JPEG (dibuat sendiri, tidak memerlukan pustaka atau internet). */
+function pdfDariKanvas(cv) {
+  var b64 = cv.toDataURL('image/jpeg', 0.92).split(',')[1], bin = atob(b64), n = bin.length, jpg = new Uint8Array(n), i;
+  for (i = 0; i < n; i++) jpg[i] = bin.charCodeAt(i);
+  var w = Math.round(cv.width * 75) / 100, hh = Math.round(cv.height * 75) / 100, parts = [], off = [], len = 0;
+  function add(x) { var bt = x; if (typeof x === 'string') { bt = new Uint8Array(x.length); for (var k = 0; k < x.length; k++) bt[k] = x.charCodeAt(k) & 255; } parts.push(bt); len += bt.length; }
+  add('%PDF-1.4\n');
+  off[1] = len; add('1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n');
+  off[2] = len; add('2 0 obj\n<</Type/Pages/Kids[3 0 R]/Count 1>>\nendobj\n');
+  off[3] = len; add('3 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 ' + w + ' ' + hh + ']/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>\nendobj\n');
+  off[4] = len; add('4 0 obj\n<</Type/XObject/Subtype/Image/Width ' + cv.width + '/Height ' + cv.height + '/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ' + n + '>>\nstream\n'); add(jpg); add('\nendstream\nendobj\n');
+  var cs = 'q ' + w + ' 0 0 ' + hh + ' 0 0 cm /Im0 Do Q';
+  off[5] = len; add('5 0 obj\n<</Length ' + cs.length + '>>\nstream\n' + cs + '\nendstream\nendobj\n');
+  var xr = len, x = 'xref\n0 6\n0000000000 65535 f \n';
+  for (i = 1; i <= 5; i++) x += ('0000000000' + off[i]).slice(-10) + ' 00000 n \n';
+  add(x + 'trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n' + xr + '\n%%EOF');
+  return new Blob(parts, { type: 'application/pdf' });
+}
+function unduhPoster(h, pr, jenis, b) {
+  var teks = b ? b.textContent : '', nama = 'Belum-menyerahkan-laporan-' + pr.bl + '-' + pr.th;
+  if (b) { b.disabled = true; b.textContent = 'Menyiapkan…'; }
+  gambarPoster(h, pr).then(function (cv) {
+    if (jenis === 'png') {
+      return new Promise(function (ok) { cv.toBlob(function (bl) { unduhBerkas(bl, nama + '.png'); toast('Gambar diunduh.'); ok(); }, 'image/png'); });
+    }
+    unduhBerkas(pdfDariKanvas(cv), nama + '.pdf'); toast('PDF diunduh.');
+  }).catch(function (er) { toast('Gagal membuat gambar: ' + (er.message || er)); })
+    .then(function () { if (b) { b.disabled = false; b.textContent = teks; } });
 }
 function kaderPengganti(box) {
   var pg = penggantiSementara();
