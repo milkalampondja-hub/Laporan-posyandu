@@ -381,7 +381,7 @@ function gambarPoster(h, pr) {
         var cw = [90, 300, PW - 390], ty = y0 + HB;
         c.fillStyle = NAVY; c.fillRect(x0, ty, PW, TH);
         c.fillStyle = '#fff'; c.font = '800 26px ' + F;
-        c.fillText('NO', x0 + cw[0] / 2, ty + 41); c.fillText('NAMA POSYANDU', x0 + cw[0] + cw[1] / 2, ty + 41); c.fillText('ALAMAT', x0 + cw[0] + cw[1] + cw[2] / 2, ty + 41);
+        c.fillText('NO', x0 + cw[0] / 2, ty + 41); c.fillText('NAMA POSYANDU', x0 + cw[0] + cw[1] / 2, ty + 41); c.fillText('KELURAHAN', x0 + cw[0] + cw[1] + cw[2] / 2, ty + 41);
         var rows = data.length ? data : [null];
         rows.forEach(function (p, k) {
           var yy = ty + TH + k * RH;
@@ -392,7 +392,7 @@ function gambarPoster(h, pr) {
           if (!p) { c.font = '700 24px ' + F; c.fillText('Semua sudah menyerahkan laporan', x0 + cw[0] + (PW - cw[0]) / 2, yy + 31); return; }
           c.font = '800 28px ' + F; c.fillText(String(k + 1), x0 + cw[0] / 2, yy + 33);
           var nm = fit(p.nama.toUpperCase(), cw[1] - 20, 25, 600); c.fillText(nm, x0 + cw[0] + cw[1] / 2, yy + 32);
-          var al = (p.alamat && p.alamat.trim()) ? p.alamat.trim().toUpperCase() : 'KEL. ' + p.kel.toUpperCase();
+          var al = 'KEL. ' + p.kel.toUpperCase();
           var ax = x0 + cw[0] + cw[1] + cw[2] / 2;
           c.font = '600 23px ' + F;
           if (c.measureText(al).width <= cw[2] - 20) c.fillText(al, ax, yy + 32);
