@@ -80,6 +80,13 @@ function doGet(e) {
     else if (w4) hasil = { ok: false, pesan: 'Hanya admin utama yang boleh melihat cadangan' };
     else hasil = gagalLogin();
   }
+  else if (p.aksi === 'setoran') {
+    // Status penyerahan laporan ke kecamatan untuk satu bulan (hanya setelah login).
+    var w6 = masuk(p.u, p.p);
+    if (!w6) hasil = gagalLogin();
+    else if (!/^20\d\d-(0[1-9]|1[0-2])$/.test(String(p.per || ''))) hasil = { ok: false, pesan: 'Bulan tidak valid' };
+    else hasil = { ok: true, per: String(p.per), data: bacaSetor()[String(p.per)] || {} };
+  }
   else if (p.aksi === 'pdf') {
     // Unduh PDF laporan (hanya setelah login). Operator hanya boleh laporan kelurahannya.
     var w5 = masuk(p.u, p.p);
@@ -386,6 +393,7 @@ function doPost(e) {
       if (d.aksi === 'kelola') { tag = 'a'; return kelola(d); }
       if (d.aksi === 'pos') { tag = 'a'; return simpanPos(d); }
       if (d.aksi === 'nomor') { tag = 'a'; return simpanNomor(d); }
+      if (d.aksi === 'setor') { tag = 'a'; return catatSetor(d); }
       if (d.aksi === 'sk') { tag = 'a'; return simpanSk(d, cache); }
       if (d.aksi === 'cadang') { tag = 'a'; return cadangSekarang(d); }
       if (d.aksi === 'pulih') { tag = 'a'; return pulihkanPos(d); }
@@ -610,6 +618,41 @@ function simpanSk(d, cache) {
 }
 
 
+// ===================== Penyerahan laporan ke kecamatan =====================
+var NAMA_SETOR = 'setoran-laporan.json';
+/** Bentuk data: { "2026-10": { "idPosyandu": "2026-11-03", ... }, ... } */
+function bacaSetor() {
+  var o = bacaBerkas(NAMA_SETOR);
+  return (o && o.d && typeof o.d === 'object') ? o.d : {};
+}
+/** Hanya admin utama: catat (atau batalkan) penyerahan laporan satu atau beberapa Posyandu untuk satu bulan. */
+function catatSetor(d) {
+  var w = masuk(d.u, d.p);
+  if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin kecamatan yang boleh mencatat penyerahan laporan'); }
+  var per = String(d.per || '');
+  if (!/^20\d\d-(0[1-9]|1[0-2])$/.test(per)) throw new Error('Bulan tidak valid');
+  var ids = Array.isArray(d.ids) ? d.ids : [];
+  if (!ids.length || ids.length > 100) throw new Error('Pilih Posyandu terlebih dahulu');
+  var tgl = String(d.tgl || '');
+  if (tgl && !/^20\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(tgl)) throw new Error('Tanggal tidak valid');
+  var semua = bacaSetor(), m = semua[per] || {}, n = 0;
+  ids.forEach(function (id) {
+    id = String(id || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 12);
+    if (!id) return;
+    if (tgl) m[id] = tgl; else delete m[id];
+    n++;
+  });
+  semua[per] = m;
+  var ks = Object.keys(semua).sort();
+  while (ks.length > 24) delete semua[ks.shift()];
+  var teks = JSON.stringify({ d: semua }), f = induk(), it = f.getFilesByName(NAMA_SETOR);
+  if (it.hasNext()) it.next().setContent(teks); else f.createFile(NAMA_SETOR, teks, MimeType.PLAIN_TEXT);
+  sentuhStamp();
+  catatLog(w.u, (tgl ? 'mencatat ' + n + ' Posyandu sudah menyerahkan laporan ' : 'membatalkan penyerahan laporan ' + n + ' Posyandu ') + per);
+  return simpanHasil({ ok: true, per: per, data: m }, 'a');
+}
+
+
 // ===================== Cadangan data =====================
 var NAMA_CADANGAN = 'Cadangan';
 var SIMPAN_CADANGAN = 8;
@@ -620,7 +663,7 @@ function hapusNama(f, nama) { var it = f.getFilesByName(nama); while (it.hasNext
 function buatCadangan(oleh) {
   var f = folderCadangan(), kode = kodeTgl(), nama = 'cadangan-data-' + kode + '.json';
   var ops = Object.keys(bacaAdmin()).sort().map(function (u) { return { u: u, kel: bacaKelAdmin()[u] || '', profil: bacaBerkas(berkasProfil(u)) }; });
-  var isi = JSON.stringify({ versi: 1, tgl: new Date().toISOString(), oleh: String(oleh || ''), posyandu: bacaPos(), pengaturan: bacaBerkas(NAMA_PENGATURAN), operator: ops, log: bacaLog() });
+  var isi = JSON.stringify({ versi: 1, tgl: new Date().toISOString(), oleh: String(oleh || ''), posyandu: bacaPos(), pengaturan: bacaBerkas(NAMA_PENGATURAN), operator: ops, setoran: bacaSetor(), log: bacaLog() });
   hapusNama(f, nama);
   f.createFile(nama, isi, MimeType.PLAIN_TEXT);
   var sid = PropertiesService.getScriptProperties().getProperty('SHEET_ID'), ns = 'cadangan-rekap-' + kode;

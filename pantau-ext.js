@@ -255,8 +255,102 @@ function renderBeranda() {
     dt.appendChild(sm); l.forEach(function (r) { dt.appendChild(barisPos(r, pr)); }); c2.appendChild(dt);
   });
   box.appendChild(c2);
+  muatSetor(pr);
+  if (utama()) kartuSetor(box, h, pr);
   if (utama()) kartuRuang(box);
   kaderPengganti(box);
+}
+/* ---------- Penyerahan laporan ke kecamatan ---------- */
+var SETOR = {}, SETOR_T = {}, SETOR_BUSY = 0, SETOR_OPEN = {};
+function perKey(pr) { var m = BULAN.indexOf(pr.bl) + 1; return pr.th + '-' + (m < 10 ? '0' : '') + m; }
+function hariIni() { var d = new Date(), z = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
+function tglId(iso) { var m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(iso || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; }
+function muatSetor(pr, paksa) {
+  var k = perKey(pr); if (!CRED) return;
+  if (!paksa && SETOR_T[k] && Date.now() - SETOR_T[k] < 60000) return;
+  SETOR_T[k] = Date.now();
+  jsonp({ aksi: 'setoran', u: CRED.u, p: CRED.p, per: k }, 20000).then(function (r) {
+    if (r && r.ok && !SETOR_BUSY) { SETOR[k] = r.data || {}; renderBeranda(); }
+  }).catch(function () { SETOR_T[k] = 0; });
+}
+/* Catat atau batalkan penyerahan. Tampilan diperbarui lebih dulu, lalu dikirim ke server; bila gagal, kembali ke data server. */
+function simpanSetor(pr, ids, tgl) {
+  var k = perKey(pr), m = SETOR[k] = SETOR[k] || {};
+  ids.forEach(function (id) { if (tgl) m[id] = tgl; else delete m[id]; });
+  renderBeranda(); SETOR_BUSY++;
+  kirimAtur({ aksi: 'setor', per: k, ids: ids, tgl: tgl }).then(function () {
+    SETOR_BUSY--; if (!SETOR_BUSY) toast(tgl ? 'Penyerahan laporan dicatat.' : 'Catatan penyerahan dibatalkan.');
+  }).catch(function (er) {
+    SETOR_BUSY--; toast(er.message || 'Gagal menyimpan'); SETOR_T[k] = 0; if (!SETOR_BUSY) muatSetor(pr, true);
+  });
+}
+function kartuSetor(box, h, pr) {
+  var k = perKey(pr), M = SETOR[k] || {}, c = el('div', 'card'), tot = h.rows.length, n = h.rows.filter(function (r) { return M[r.p.id]; }).length;
+  c.appendChild(el('h4', null, 'Penyerahan laporan ke kecamatan - ' + pr.bl + ' ' + pr.th));
+  c.appendChild(el('div', 'lt', 'Centang Posyandu yang laporannya sudah disahkan kelurahan dan diserahkan ke kecamatan.'));
+  c.appendChild(el('div', 'hm ' + (tot && n === tot ? 'ok' : 'warn'), n + ' dari ' + tot + ' Posyandu sudah menyerahkan laporan'));
+  var tb = el('div', 'toolbar'); tb.appendChild(btn('Unduh PDF: belum menyerahkan', 'sm', function () { cetakBelumSetor(h, pr); })); c.appendChild(tb);
+  KEL.forEach(function (kel) {
+    var l = h.rows.filter(function (r) { return r.p.kel === kel; }).sort(function (a, b) { return a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); });
+    if (!l.length) return;
+    var sudah = l.filter(function (r) { return M[r.p.id]; }).length, belum = l.filter(function (r) { return !M[r.p.id]; });
+    var dt = document.createElement('details'), sm = document.createElement('summary'); dt.open = (kel in SETOR_OPEN) ? SETOR_OPEN[kel] : (belum.length > 0 && belum.length < l.length);
+    dt.addEventListener('toggle', function () { SETOR_OPEN[kel] = dt.open; });
+    sm.className = 'kh'; sm.style.cssText = 'cursor:pointer;list-style:none'; sm.textContent = kel + ' (' + sudah + ' dari ' + l.length + ' sudah menyerahkan)';
+    dt.appendChild(sm);
+    if (belum.length) dt.appendChild(btn('Centang semua ' + kel, 'sm plain', function () { simpanSetor(pr, belum.map(function (r) { return r.p.id; }), hariIni()); }));
+    l.forEach(function (r) {
+      var tg = M[r.p.id], it = el('div', 'item'); it.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 12px;flex-wrap:wrap';
+      var lb = document.createElement('label'); lb.style.cssText = 'display:flex;align-items:center;gap:10px;flex:1;min-width:200px;min-height:44px;cursor:pointer';
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!tg; cb.style.cssText = 'width:22px;height:22px;flex:none;accent-color:var(--ok)';
+      cb.addEventListener('change', function () { simpanSetor(pr, [r.p.id], cb.checked ? hariIni() : ''); });
+      var t = el('div'); t.appendChild(el('div', 'a', r.p.nama + ' (' + r.p.jenis.replace('Posyandu ', '') + ')'));
+      t.appendChild(el('div', 'b', r.d ? 'Sudah dibuat di aplikasi' : 'Belum dibuat di aplikasi'));
+      lb.appendChild(cb); lb.appendChild(t); it.appendChild(lb);
+      if (tg) {
+        var di = document.createElement('input'); di.type = 'date'; di.value = tg; di.max = hariIni(); di.setAttribute('aria-label', 'Tanggal diserahkan ' + r.p.nama);
+        di.style.cssText = 'min-height:40px;border:1.5px solid var(--line);border-radius:10px;padding:4px 8px;background:var(--surface);color:var(--fg);font-size:14px';
+        di.addEventListener('change', function () { if (di.value) simpanSetor(pr, [r.p.id], di.value); });
+        it.appendChild(di);
+      }
+      dt.appendChild(it);
+    });
+    c.appendChild(dt);
+  });
+  box.appendChild(c);
+}
+/* PDF daftar Posyandu yang belum menyerahkan laporan ke kecamatan (cetak lalu Simpan sebagai PDF). */
+function cetakBelumSetor(h, pr) {
+  var M = SETOR[perKey(pr)] || {}, now = new Date(), pf = (typeof PROFIL !== 'undefined' && PROFIL) ? PROFIL : {};
+  var belum = h.rows.filter(function (r) { return !M[r.p.id]; }).sort(function (x, y) { return x.p.kel.localeCompare(y.p.kel) || x.p.jenis.localeCompare(y.p.jenis) || x.p.nama.localeCompare(y.p.nama); });
+  var no = 0, rin = belum.map(function (r) {
+    return '<tr><td class="c">' + (++no) + '</td><td>' + esc(r.p.nama) + '</td><td>' + esc(r.p.kel) + '</td><td>' + esc(r.p.jenis.replace('Posyandu ', '')) + '</td><td>' + (r.d ? 'Sudah dibuat di aplikasi (' + esc((r.d.tk || '').slice(0, 10)) + ')' : 'Belum dibuat di aplikasi') + '</td><td></td></tr>';
+  }).join('');
+  var per = KEL.map(function (kel) {
+    var a = h.rows.filter(function (r) { return r.p.kel === kel; }), b = a.filter(function (r) { return !M[r.p.id]; });
+    return a.length ? '<tr><td>' + esc(kel) + '</td><td class="c">' + a.length + '</td><td class="c">' + (a.length - b.length) + '</td><td class="c">' + b.length + '</td></tr>' : '';
+  }).join('');
+  var tgl = now.getDate() + ' ' + BULAN[now.getMonth()] + ' ' + now.getFullYear(), logo = new URL('logo.png', location.href).href;
+  var html = '<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Belum menyerahkan laporan ' + esc(pr.bl) + ' ' + esc(pr.th) + '</title><style>' +
+    '@page{size:A4;margin:16mm 15mm}*{box-sizing:border-box}body{font:11pt/1.4 "Times New Roman",Tinos,serif;color:#000;margin:0;padding:14px}' +
+    '.kop{display:flex;align-items:center;gap:14px;border-bottom:3px double #000;padding-bottom:8px;margin-bottom:12px}.kop img{width:64px;height:auto}.kop div{flex:1;text-align:center;line-height:1.25}' +
+    '.kop b{display:block;font-size:13pt;letter-spacing:.02em}.kop small{font-size:10pt}h1{font-size:13pt;text-align:center;margin:6px 0 2px;text-transform:uppercase}.sb{text-align:center;margin:0 0 12px}' +
+    'h2{font-size:11.5pt;margin:14px 0 5px}table{border-collapse:collapse;width:100%;font-size:10pt}th,td{border:1px solid #000;padding:4px 6px;vertical-align:top}th{background:#eee}.c{text-align:center}' +
+    'tr{page-break-inside:avoid}.ttd{margin-top:26px;margin-left:55%;text-align:center;page-break-inside:avoid}.ttd .sp{height:64px}.ttd u{font-weight:700}' +
+    '.bar{position:sticky;top:0;background:#0a7a35;color:#fff;padding:10px 12px;margin:-14px -14px 14px;font:14px/1.4 sans-serif}.bar button{margin-left:10px;padding:6px 14px;border:0;border-radius:6px;font-weight:700}' +
+    '@media print{.bar{display:none}body{padding:0}}</style></head><body>' +
+    '<div class="bar">Pilih <b>Cetak</b>, lalu tujuan <b>Simpan sebagai PDF</b> untuk membuat berkas PDF. <button onclick="print()">Cetak / PDF</button></div>' +
+    '<div class="kop"><img src="' + logo + '" alt=""><div><b>PEMERINTAH KOTA PALU</b><b>KECAMATAN PALU UTARA</b><small>Daftar Posyandu yang Belum Menyerahkan Laporan</small></div></div>' +
+    '<h1>Posyandu yang belum menyerahkan laporan ke kecamatan</h1><p class="sb">Laporan bulan ' + esc(pr.bl) + ' ' + esc(pr.th) + ' &middot; Batas pengumpulan tanggal ' + esc(teksBatas(pr.th, pr.bl)) + ' &middot; Per ' + tgl + '</p>' +
+    '<h2>1. Ringkasan</h2><p>Total Posyandu: <b>' + h.rows.length + '</b>. Sudah menyerahkan: <b>' + (h.rows.length - belum.length) + '</b>. Belum menyerahkan: <b>' + belum.length + '</b>.</p>' +
+    '<table><tr><th>Kelurahan</th><th>Total</th><th>Sudah menyerahkan</th><th>Belum menyerahkan</th></tr>' + per + '</table>' +
+    '<h2>2. Daftar yang belum menyerahkan</h2>' + (belum.length ? '<table><tr><th>No</th><th>Nama Posyandu</th><th>Kelurahan</th><th>Jenis</th><th>Status di aplikasi</th><th>Keterangan</th></tr>' + rin + '</table>' : '<p>Semua Posyandu sudah menyerahkan laporan.</p>') +
+    '<div class="ttd">Palu, ' + tgl + '<br>' + esc(pf.jabatan || 'Petugas Pengelola Laporan Posyandu') + '<div class="sp"></div><u>' + esc(pf.nama || 'Admin Posyandu') + '</u>' + (pf.nip ? '<br>NIP. ' + esc(pf.nip) : '') + '</div>' +
+    '</body></html>';
+  var w = null; try { w = window.open('', '_blank'); } catch (x) { }
+  if (!w) { alert('Jendela cetak diblokir. Izinkan pop-up untuk situs ini lalu coba lagi.'); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+  setTimeout(function () { try { w.focus(); } catch (x) { } }, 300);
 }
 function kaderPengganti(box) {
   var pg = penggantiSementara();
@@ -387,7 +481,7 @@ window.unduhPdf = unduhPdf;
 function tombolPdf(d) { return btn('Unduh PDF', 'sm kc plain', function (ev) { unduhPdf(d, ev.currentTarget || ev.target); }); }
 function barisPos(r, pr) {
   var p = r.p, row = el('div', 'prow'), top = el('div', 'rt'), nm = el('div', 'nm');
-  nm.appendChild(el('b', null, p.nama)); nm.appendChild(el('small', null, p.jenis.replace('Posyandu ', '') + (r.d ? ' \u00b7 dibuat ' + (r.d.tk || '').slice(0, 10) : '')));
+  nm.appendChild(el('b', null, p.nama)); nm.appendChild(el('small', null, p.jenis.replace('Posyandu ', '') + (r.d ? ' \u00b7 dibuat ' + (r.d.tk || '').slice(0, 10) : '') + ((SETOR[perKey(pr)] || {})[p.id] ? ' \u00b7 sudah diserahkan ke kecamatan ' + tglId(SETOR[perKey(pr)][p.id]) : '')));
   var pl = pillSt(r); if (!r.d) pl.classList.add('kedip'); top.appendChild(nm); top.appendChild(pl); row.appendChild(top);
   var ct = el('div', 'ct'), n = nomorWA(p.hp);
   if (p.hp) ct.appendChild(el('span', null, (p.hpJenis === 'perwakilan' ? 'Perwakilan' : 'Ketua') + (namaKontak(p) ? ' ' + namaKontak(p) : '') + ' \u00b7 ' + p.hp));
@@ -410,7 +504,7 @@ function periodeOpList() {
 function berandaOp(box) {
   if (PENGUMUMAN) box.appendChild(el('div', 'pengum', PENGUMUMAN));
   var ps = periodeOpList();
-  ps.forEach(function (pr) { var h = hitung(pr.th, pr.bl); kartuOp(box, h, pr, persen(h.masuk.length, h.rows.length), ps.length > 1); });
+  ps.forEach(function (pr) { muatSetor(pr); var h = hitung(pr.th, pr.bl); kartuOp(box, h, pr, persen(h.masuk.length, h.rows.length), ps.length > 1); });
   kaderPengganti(box);
 }
 function kartuOp(box, h, pr, pc, dua) {
@@ -927,7 +1021,7 @@ window.ambilPos = function () {
   }).catch(function () { });
 };
 window.tampilBaru = function () { renderBeranda(); renderRekap(); renderData(); };
-window.setelahKeluar = function () { terapKel(''); RUANG = null; CAD = null; POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
+window.setelahKeluar = function () { SETOR = {}; SETOR_T = {}; SETOR_BUSY = 0; SETOR_OPEN = {}; terapKel(''); RUANG = null; CAD = null; POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
 document.addEventListener('DOMContentLoaded', function () { bangunBanner(); });
 if (document.readyState !== 'loading') bangunBanner();
 })();
