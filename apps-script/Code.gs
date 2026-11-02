@@ -92,6 +92,7 @@ function doGet(e) {
   }
   else if (p.aksi === 'tcari') { hasil = terimaCari(p); }
   else if (p.aksi === 'trekap') { hasil = terimaRekap(p); }
+  else if (p.aksi === 'tterima' || p.aksi === 'tbatal') { hasil = terimaGet(p); }
   else if (p.aksi === 'pdf') {
     // Unduh PDF laporan (hanya setelah login). Operator hanya boleh laporan kelurahannya.
     var w5 = masuk(p.u, p.p);
@@ -295,6 +296,7 @@ function bacaPengaturan(u) {
 function simpanPengaturan(c, u) {
   var nb = berkasProfil(u), teks = JSON.stringify(c), f = induk(), it = f.getFilesByName(nb);
   if (it.hasNext()) it.next().setContent(teks); else f.createFile(nb, teks, MimeType.PLAIN_TEXT);
+  if (!u || u === PANTAU_USER) { try { CacheService.getScriptCache().removeAll(['cfg_batas', 'nm_' + PANTAU_USER]); } catch (x) {} }
 }
 function cekGambar(s, maks) {
   s = String(s || '');
@@ -522,7 +524,7 @@ function simpanHasil(o, tag) {
 
 /** Penanda perubahan data (waktu terakhir ada laporan atau data Posyandu yang berubah). */
 function bacaStamp() { return PropertiesService.getScriptProperties().getProperty('STAMP_DATA') || '0'; }
-function sentuhStamp() { try { PropertiesService.getScriptProperties().setProperty('STAMP_DATA', String(Date.now())); } catch (x) {} }
+function sentuhStamp() { try { var lama = parseInt(bacaStamp(), 10) || 0; PropertiesService.getScriptProperties().setProperty('STAMP_DATA', String(Math.max(Date.now(), lama + 1))); } catch (x) {} }
 
 function jawab(o) {
   o.t = TOKEN_BALAS;
@@ -531,9 +533,32 @@ function jawab(o) {
 }
 function bersih(s, maks) { return String(s == null ? '' : s).replace(/[\\\/:*?"<>|\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maks || 120); }
 
+var INDUK_MEM = null;
 function induk() {
+  if (INDUK_MEM) return INDUK_MEM;
+  var props = PropertiesService.getScriptProperties(), id = props.getProperty('FOLDER_ID');
+  if (id) { try { INDUK_MEM = DriveApp.getFolderById(id); return INDUK_MEM; } catch (x) { INDUK_MEM = null; } }
   var it = DriveApp.getFoldersByName(NAMA_FOLDER);
-  return it.hasNext() ? it.next() : DriveApp.createFolder(NAMA_FOLDER);
+  var f = it.hasNext() ? it.next() : DriveApp.createFolder(NAMA_FOLDER);
+  try { props.setProperty('FOLDER_ID', f.getId()); } catch (x) {}
+  INDUK_MEM = f;
+  return f;
+}
+/** Baca berkas JSON kecil dengan cache sementara. Kunci cache memuat penanda perubahan data, jadi otomatis baru setiap ada perubahan. */
+function bacaBerkasCepat(nb) {
+  var cache = CacheService.getScriptCache(), k = 'bk_' + nb + '_' + bacaStamp();
+  try { var v = cache.get(k); if (v) return JSON.parse(v); } catch (x) {}
+  var o = bacaBerkas(nb);
+  try { var s = JSON.stringify(o); if (s.length < 90000) cache.put(k, s, 900); } catch (x) {}
+  return o;
+}
+/** Batas tanggal pengumpulan laporan (disimpan sementara; dihapus saat pengaturan admin utama berubah). */
+function bacaBatas() {
+  var cache = CacheService.getScriptCache();
+  try { var v = cache.get('cfg_batas'); if (v) return parseInt(v, 10) || 25; } catch (x) {}
+  var b = bacaPengaturan(PANTAU_USER).batas;
+  try { cache.put('cfg_batas', String(b), 21600); } catch (x) {}
+  return b;
 }
 function anak(p, nama) {
   var it = p.getFoldersByName(nama);
@@ -563,7 +588,7 @@ function aktifkan() { lembar(); induk(); }
 // ===================== Data Posyandu (sumber utama nama Posyandu) =====================
 var NAMA_POS = 'data-posyandu.json';
 function bacaPos() {
-  var o = bacaBerkas(NAMA_POS);
+  var o = bacaBerkasCepat(NAMA_POS);
   return Array.isArray(o.list) ? o.list : [];
 }
 function kunciPos(kel, jenis, nama) {
@@ -658,7 +683,7 @@ function simpanSk(d, cache) {
 var NAMA_SETOR = 'setoran-laporan.json';
 /** Bentuk data: d = { "2026-10": { "idPosyandu": "2026-11-03" } }, t = { "2026-10": { "idPosyandu": { nomor, kode, oleh, jam, ts } } } (t hanya untuk yang dikonfirmasi lewat aplikasi Terima). */
 function bacaSetorLengkap() {
-  var o = bacaBerkas(NAMA_SETOR);
+  var o = bacaBerkasCepat(NAMA_SETOR);
   return { d: (o && o.d && typeof o.d === 'object') ? o.d : {}, t: (o && o.t && typeof o.t === 'object') ? o.t : {} };
 }
 function bacaSetor() { return bacaSetorLengkap().d; }
@@ -702,12 +727,21 @@ function masukTerima(u, p) {
   if (w && w.peran !== 'utama' && w.peran !== 'terima') return null;
   return w;
 }
-function namaOperator(w) { return w.peran === 'terima' ? (w.nama || w.u) : (bacaPengaturan(w.u).nama || w.u); }
+function namaOperator(w) {
+  if (w.peran === 'terima') return w.nama || w.u;
+  var cache = CacheService.getScriptCache(), k = 'nm_' + w.u, utama = (w.u === PANTAU_USER);
+  if (utama) { try { var v = cache.get(k); if (v) return v; } catch (x) {} }
+  var n = bacaPengaturan(w.u).nama || w.u;
+  if (utama) { try { cache.put(k, n, 21600); } catch (x) {} }
+  return n;
+}
 function kodePeriode(thn, bln) { var m = BULAN.indexOf(String(bln)) + 1; return m ? thn + '-' + (m < 10 ? '0' : '') + m : ''; }
 /** Cari laporan berdasarkan kode QR. Hasil: null atau keterangan lengkap beserta status penerimaannya. */
 function infoLaporanKode(kode) {
   kode = String(kode || '');
   if (!ID_RE.test(kode)) return null;
+  var cache = CacheService.getScriptCache(), ck = 'ik_' + kode + '_' + bacaStamp();
+  try { var cv = cache.get(ck); if (cv) return JSON.parse(cv); } catch (x) {}
   var sh = lembar(), n = sh.getLastRow();
   if (n < 2) return null;
   var rows = sh.getRange(2, 1, n - 1, HEADER.length).getValues(), r = null, maks = 0;
@@ -719,6 +753,7 @@ function infoLaporanKode(kode) {
   var o = { nomor: String(r[0]), versi: parseInt(r[9], 10) || 1, versiTerbaru: maks, pos: String(r[5]), kel: String(r[4]), jenis: String(r[6]),
             kader: String(r[8] || ''), bln: String(r[3]), thn: String(r[2]), per: per, pid: pid, kode: kode, terima: null };
   if (pid && per) o.terima = statusTerima(per, pid);
+  try { cache.put(ck, JSON.stringify(o), 120); } catch (x) {}
   return o;
 }
 function statusTerima(per, pid, sl) {
@@ -740,12 +775,22 @@ function terimaRekap(p) {
   var w = masukTerima(p.u, p.p);
   if (!w) return gagalLogin();
   var per = /^20\d\d-(0[1-9]|1[0-2])$/.test(String(p.per || '')) ? String(p.per) : '';
-  var batas = bacaPengaturan(PANTAU_USER).batas;
+  var batas = bacaBatas();
   if (!per) {   // bulan yang sedang ditunggu: sampai tanggal batas, laporan bulan sebelumnya
     var nw = new Date(), y0 = nw.getFullYear(), m0 = nw.getMonth();
     if (nw.getDate() <= batas) { m0--; if (m0 < 0) { m0 = 11; y0--; } }
     per = y0 + '-' + (m0 + 1 < 10 ? '0' : '') + (m0 + 1);
   }
+  var cache = CacheService.getScriptCache(), ck = 'rk_' + per + '_' + batas + '_' + bacaStamp(), hasil = null;
+  if (!p.fresh) { try { var cv = cache.get(ck); if (cv) hasil = JSON.parse(cv); } catch (x) {} }
+  if (!hasil) {
+    hasil = hitungRekap(per, batas);
+    try { var s = JSON.stringify(hasil); if (s.length < 90000) cache.put(ck, s, 120); } catch (x) {}
+  }
+  hasil.oleh = namaOperator(w); hasil.peran = w.peran;
+  return hasil;
+}
+function hitungRekap(per, batas) {
   var pos = bacaPos(), sl = bacaSetorLengkap(), ada = {}, ver = {};
   var sh = lembar(), n = sh.getLastRow();
   if (n > 1 && per) {
@@ -767,16 +812,19 @@ function terimaRekap(p) {
     });
   });
   riw.sort(function (a, b) { return b.ts - a.ts; });
-  return { ok: true, per: per, list: list, riwayat: riw.slice(0, 15), batas: batas, oleh: namaOperator(w), peran: w.peran };
+  return { ok: true, per: per, list: list, riwayat: riw.slice(0, 15), batas: batas };
 }
 /** POST: konfirmasi penerimaan satu laporan fisik. Satu laporan hanya bisa dikonfirmasi satu kali. */
 function terimaKonfirmasi(d) {
   var w = masukTerima(d.u, d.p);
   if (!w) { Utilities.sleep(1200); throw new Error('Silakan masuk lagi'); }
+  return simpanHasil(terimaKonfirmasiInti(d, w), 'a');
+}
+function terimaKonfirmasiInti(d, w) {
   var o = infoLaporanKode(d.k);
   if (!o) throw new Error('Laporan tidak ditemukan');
   if (!o.pid || !o.per) throw new Error('Posyandu ' + o.pos + ' tidak ada di Data Posyandu, jadi penerimaan belum bisa dicatat. Minta admin kecamatan memeriksa Data Posyandu.');
-  if (o.terima) return simpanHasil({ ok: true, sudah: true, lap: o }, 'a');
+  if (o.terima) return { ok: true, sudah: true, lap: o };
   var zona = Session.getScriptTimeZone(), now = new Date(), sl = bacaSetorLengkap();
   var oleh = namaOperator(w);
   sl.d[o.per] = sl.d[o.per] || {}; sl.t[o.per] = sl.t[o.per] || {};
@@ -785,12 +833,15 @@ function terimaKonfirmasi(d) {
   tulisSetor(sl.d, sl.t);
   catatLog(w.u, 'menerima laporan fisik ' + o.jenis + ' ' + o.pos + ' (' + o.kel + ') ' + o.bln + ' ' + o.thn + ' [' + o.nomor + ']');
   o.terima = statusTerima(o.per, o.pid);
-  return simpanHasil({ ok: true, sudah: false, lap: o }, 'a');
+  return { ok: true, sudah: false, lap: o };
 }
 /** POST: koreksi, batalkan penerimaan yang salah konfirmasi (alasan wajib, tercatat di catatan perubahan). */
 function terimaBatal(d) {
   var w = masukTerima(d.u, d.p);
   if (!w) { Utilities.sleep(1200); throw new Error('Silakan masuk lagi'); }
+  return simpanHasil(terimaBatalInti(d, w), 'a');
+}
+function terimaBatalInti(d, w) {
   var per = String(d.per || ''), pid = String(d.pid || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 12), alasan = bersih(d.alasan, 120);
   if (!/^20\d\d-(0[1-9]|1[0-2])$/.test(per) || !pid) throw new Error('Data tidak valid');
   if (alasan.length < 3) throw new Error('Tulis alasan koreksi');
@@ -800,7 +851,22 @@ function terimaBatal(d) {
   delete sl.d[per][pid]; if (sl.t[per]) delete sl.t[per][pid];
   tulisSetor(sl.d, sl.t);
   catatLog(w.u, 'KOREKSI: membatalkan penerimaan laporan ' + (x ? x.jenis + ' ' + x.nama + ' (' + x.kel + ')' : pid) + ' ' + per + (t ? ' [' + t.nomor + ' oleh ' + t.oleh + ']' : '') + '. Alasan: ' + alasan);
-  return simpanHasil({ ok: true, per: per, pid: pid }, 'a');
+  return { ok: true, per: per, pid: pid };
+}
+/** GET: konfirmasi atau koreksi penerimaan dalam satu langkah (lebih cepat dari POST). Tetap memakai kunci agar tidak bentrok. */
+function terimaGet(p) {
+  var w = masukTerima(p.u, p.p);
+  if (!w) return gagalLogin();
+  var kunci = LockService.getScriptLock();
+  try { kunci.waitLock(20000); } catch (x) { return { ok: false, pesan: 'Server sedang sibuk, coba lagi' }; }
+  try {
+    var d = { u: p.u, p: p.p, k: p.k, per: p.per, pid: p.pid, alasan: p.alasan };
+    return p.aksi === 'tbatal' ? terimaBatalInti(d, w) : terimaKonfirmasiInti(d, w);
+  } catch (err) {
+    return { ok: false, pesan: String(err.message || err) };
+  } finally {
+    try { kunci.releaseLock(); } catch (x) {}
+  }
 }
 
 

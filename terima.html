@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a7a35">
 <meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <title>Terima Posyandu</title>
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -184,8 +186,8 @@ async function kirim(f){
   var fm=document.createElement('form');fm.method='POST';fm.action=ARSIP_URL;fm.target=fr.name;fm.style.display='none';
   var i=document.createElement('input');i.type='hidden';i.name='data';i.value=JSON.stringify(o);fm.appendChild(i);document.body.appendChild(fm);fm.submit();
   try{
-    for(var w=0;w<45;w++){
-      await tunda(w?700:500);
+    for(var w=0;w<70;w++){
+      await tunda(w?450:300);
       try{var r=await jsonp({aksi:'hasil',id:id,tag:'a'},12000);
         if(r&&r.ok)return r;
         if(r&&r.ok===false&&!r.tunggu)throw new Error(r.pesan||'Gagal menyimpan');
@@ -197,12 +199,14 @@ async function kirim(f){
 
 /* ---------- masuk dan keluar ---------- */
 function keluar(msg){
-  CRED=null;REK={};PER='';hapusCred();tutupSheet();tutupKamera();
+  CRED=null;REK={};PER='';hapusCred();try{localStorage.removeItem('terima-rekap')}catch(e){}tutupSheet();tutupKamera();
   $('app').classList.add('hidden');$('login').classList.remove('hidden');$('lp').value='';
   $('lb').disabled=false;$('lb').textContent='Masuk';$('lerr').textContent=typeof msg==='string'?msg:'';
 }
 function mulai(){
   $('login').classList.add('hidden');$('app').classList.remove('hidden');window.scrollTo(0,0);
+  if(rekapTersimpan()){tampilBeranda();isiFilter();tampilRekap()}
+  setTimeout(function(){if(!('BarcodeDetector' in window))muatJsQR().catch(function(){})},1200);
   muatRekap('').then(function(){
     var k=new URLSearchParams(location.search).get('k');
     if(k){history.replaceState(null,'',location.pathname);bukaKode(k)}
@@ -225,6 +229,19 @@ $('who').addEventListener('click',function(){if(confirm('Keluar dari akun '+NAMA
 /* ---------- data rekap ---------- */
 function terapRekap(r){
   REK[r.per]=r;REKPER=r.per;if(!PER)PER=r.per;NAMA=r.oleh||NAMA;$('whoN').textContent=NAMA;
+  try{if(CRED)localStorage.setItem('terima-rekap',JSON.stringify({u:CRED.u,r:r}))}catch(e){}
+}
+function rekapTersimpan(){
+  try{var o=JSON.parse(localStorage.getItem('terima-rekap')||'null');if(o&&CRED&&o.u===CRED.u&&o.r&&o.r.ok&&Array.isArray(o.r.list)&&Array.isArray(o.r.riwayat)){REK[o.r.per]=o.r;REKPER=o.r.per;PER=o.r.per;NAMA=o.r.oleh||NAMA;$('whoN').textContent=NAMA;return true}}catch(e){}
+  return false;
+}
+/* Konfirmasi dan koreksi lewat satu permintaan GET (lebih cepat). Kalau server belum diperbarui, otomatis memakai cara lama. */
+function tulis(aksiGet,aksiPost,extra,cek){
+  return api(aksiGet,extra).then(function(r){
+    if(r&&r.ok===false&&r.pesan)throw new Error(r.pesan);
+    if(r&&r.ok===true&&cek(r))return r;
+    var f={aksi:aksiPost};for(var k in extra)f[k]=extra[k];return kirim(f);
+  });
 }
 function muatRekap(per){
   return api('trekap',{per:per||''}).then(function(r){
@@ -308,7 +325,7 @@ function lembarLaporan(lap,hasil){
   }else{
     if(lap.pid)a.appendChild(tombol('KONFIRMASI DITERIMA','',function(b){
       muatTombol(b,'Menyimpan…');
-      kirim({aksi:'terima',k:lap.kode}).then(function(r){
+      tulis('tterima','terima',{k:lap.kode},function(r){return !!r.lap}).then(function(r){
         REK={};muatRekap(PER);
         if(r.sudah){lembarLaporan(r.lap,'sudah');toast('Laporan ini sudah pernah diterima')}
         else lembarLaporan(r.lap,'baru');
@@ -332,7 +349,7 @@ function koreksi(per,pid,nama){
   a.appendChild(tombol('Batalkan penerimaan','bad',function(b){
     if(i.value.trim().length<3){er.textContent='Tulis alasan koreksi';return}
     muatTombol(b,'Menyimpan…');
-    kirim({aksi:'terimabatal',per:per,pid:pid,alasan:i.value.trim()}).then(function(){tutupSheet();toast('Penerimaan dibatalkan');REK={};muatRekap(PER)}).catch(function(e){b.disabled=false;b.textContent='Batalkan penerimaan';er.textContent=e.message||'Gagal menyimpan'});
+    tulis('tbatal','terimabatal',{per:per,pid:pid,alasan:i.value.trim()},function(r){return r.per===per}).then(function(){tutupSheet();toast('Penerimaan dibatalkan');REK={};muatRekap(PER)}).catch(function(e){b.disabled=false;b.textContent='Batalkan penerimaan';er.textContent=e.message||'Gagal menyimpan'});
   }));
   a.appendChild(tombol('Kembali','line',tutupSheet));d.appendChild(a);sheet(d);
 }
