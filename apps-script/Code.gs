@@ -721,8 +721,9 @@ function infoLaporanKode(kode) {
   if (pid && per) o.terima = statusTerima(per, pid);
   return o;
 }
-function statusTerima(per, pid) {
-  var sl = bacaSetorLengkap(), tgl = (sl.d[per] || {})[pid];
+function statusTerima(per, pid, sl) {
+  sl = sl || bacaSetorLengkap();
+  var tgl = (sl.d[per] || {})[pid];
   if (!tgl) return null;
   var t = (sl.t[per] || {})[pid];
   return { tgl: tgl, jam: t ? t.jam : '', oleh: t ? t.oleh : '', nomor: t ? t.nomor : '', via: t ? 'qr' : 'manual' };
@@ -739,9 +740,10 @@ function terimaRekap(p) {
   var w = masukTerima(p.u, p.p);
   if (!w) return gagalLogin();
   var per = /^20\d\d-(0[1-9]|1[0-2])$/.test(String(p.per || '')) ? String(p.per) : '';
+  var batas = bacaPengaturan(PANTAU_USER).batas;
   if (!per) {   // bulan yang sedang ditunggu: sampai tanggal batas, laporan bulan sebelumnya
     var nw = new Date(), y0 = nw.getFullYear(), m0 = nw.getMonth();
-    if (nw.getDate() <= bacaPengaturan(PANTAU_USER).batas) { m0--; if (m0 < 0) { m0 = 11; y0--; } }
+    if (nw.getDate() <= batas) { m0--; if (m0 < 0) { m0 = 11; y0--; } }
     per = y0 + '-' + (m0 + 1 < 10 ? '0' : '') + (m0 + 1);
   }
   var pos = bacaPos(), sl = bacaSetorLengkap(), ada = {}, ver = {};
@@ -753,7 +755,7 @@ function terimaRekap(p) {
     });
   }
   var list = pos.filter(function (x) { return x.aktif !== false; }).map(function (x) {
-    var k = kunciPos(x.kel, x.jenis, x.nama), st = per ? statusTerima(per, x.id) : null;
+    var k = kunciPos(x.kel, x.jenis, x.nama), st = per ? statusTerima(per, x.id, sl) : null;
     return { pid: x.id, nama: x.nama, kel: x.kel, jenis: x.jenis, dibuat: !!ada[k], versi: ver[k] || 0, terima: st };
   });
   var byId = {}; pos.forEach(function (x) { byId[x.id] = x; });
@@ -765,7 +767,7 @@ function terimaRekap(p) {
     });
   });
   riw.sort(function (a, b) { return b.ts - a.ts; });
-  return { ok: true, per: per, list: list, riwayat: riw.slice(0, 15), batas: bacaPengaturan(PANTAU_USER).batas, oleh: namaOperator(w), peran: w.peran };
+  return { ok: true, per: per, list: list, riwayat: riw.slice(0, 15), batas: batas, oleh: namaOperator(w), peran: w.peran };
 }
 /** POST: konfirmasi penerimaan satu laporan fisik. Satu laporan hanya bisa dikonfirmasi satu kali. */
 function terimaKonfirmasi(d) {
