@@ -700,6 +700,7 @@ function jsonp(params,ms){
     var t=setTimeout(function(){end(rej,new Error('Server tidak menjawab'))},ms||20000);
   });
 }
+var PENERIMA=null;
 function pasangAdmin(){
   var c=$('cardAdm');if(!c)return;c.style.display=PERAN==='utama'?'':'none';if(PERAN!=='utama')return;
   $('admInfo').textContent='Admin utama: '+CRED.u+'. Admin tambahan: '+ADM.length+' dari 5.';
@@ -714,10 +715,11 @@ function pasangAdmin(){
     if(a.kunci){var b3=el('button','btn sm','Buka kunci');b3.type='button';b3.style.flexBasis='100%';b3.addEventListener('click',function(){kelolaAdm({op:'buka',nu:a.u},'Kunci akun '+a.u+' dibuka.')});r.appendChild(b3)}
     box.appendChild(r)});
   $('svAdm').disabled=ADM.length>=5;
+  if(window.pasangPenerima)pasangPenerima();
 }
 function kelolaAdm(f,ok){
   f.aksi='kelola';status('stAdm','Menyimpan…');
-  return kirimAtur(f).then(function(r){if(r.admins)ADM=r.admins;pasangAdmin();status('stAdm',ok,'ok');return true}).catch(function(e){status('stAdm',e.message,'bad')});
+  return kirimAtur(f).then(function(r){if(r.admins)ADM=r.admins;if(r.penerima!==undefined)PENERIMA=r.penerima;pasangAdmin();status('stAdm',ok,'ok');return true}).catch(function(e){status('stAdm',e.message,'bad')});
 }
 function lsNip(){try{return localStorage.getItem('pantau_nip')||''}catch(e){return ''}}
 function pasangProfil(){
@@ -741,7 +743,7 @@ function profKeCache(){try{localStorage.setItem(profKey(),JSON.stringify(PROFIL)
 function ambilProfil(){
   if(!CRED||profJalan)return;profJalan=true;
   jsonp({aksi:'profil',u:CRED.u,p:CRED.p}).then(function(r){profJalan=false;
-    if(r&&r.ok){if(r.peran){PERAN=r.peran}if(window.terapKel&&r.peran)terapKel(r.peran==='admin'?(r.kel||'-'):'');if(r.admins)ADM=r.admins;pasangAdmin();PROFIL={nama:r.nama||'Admin Posyandu',nip:(r.nip!==undefined&&r.nip!==''?r.nip:lsNip()),jabatan:r.jabatan||'',unit:r.unit||'',foto:r.foto||''};if(window.terimaProfil)terimaProfil(r);profilOk=true;PEND={foto:null};pasangProfil();profKeCache()}
+    if(r&&r.ok){if(r.peran){PERAN=r.peran}if(window.terapKel&&r.peran)terapKel(r.peran==='admin'?(r.kel||'-'):'');if(r.admins)ADM=r.admins;if(r.penerima!==undefined)PENERIMA=r.penerima;pasangAdmin();PROFIL={nama:r.nama||'Admin Posyandu',nip:(r.nip!==undefined&&r.nip!==''?r.nip:lsNip()),jabatan:r.jabatan||'',unit:r.unit||'',foto:r.foto||''};if(window.terimaProfil)terimaProfil(r);profilOk=true;PEND={foto:null};pasangProfil();profKeCache()}
   }).catch(function(){profJalan=false;profilOk=false});
 }
 function tunda(ms){return new Promise(function(r){setTimeout(r,ms)})}

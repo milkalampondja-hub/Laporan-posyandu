@@ -302,7 +302,7 @@ function renderBeranda() {
   kaderPengganti(box);
 }
 /* ---------- Penyerahan laporan ke kecamatan ---------- */
-var SETOR = {}, SETOR_T = {}, SETOR_BUSY = 0, SETOR_OPEN = {};
+var SETOR = {}, SETOR_T = {}, SETOR_BUSY = 0, SETOR_OPEN = {}, SETOR_VIA = {};
 function perKey(pr) { var m = BULAN.indexOf(pr.bl) + 1; return pr.th + '-' + (m < 10 ? '0' : '') + m; }
 function hariIni() { var d = new Date(), z = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
 function tglId(iso) { var m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(iso || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; }
@@ -311,7 +311,7 @@ function muatSetor(pr, paksa) {
   if (!paksa && SETOR_T[k] && Date.now() - SETOR_T[k] < 60000) return;
   SETOR_T[k] = Date.now();
   jsonp({ aksi: 'setoran', u: CRED.u, p: CRED.p, per: k }, 20000).then(function (r) {
-    if (r && r.ok && !SETOR_BUSY) { SETOR[k] = r.data || {}; renderBeranda(); }
+    if (r && r.ok && !SETOR_BUSY) { SETOR[k] = r.data || {}; SETOR_VIA[k] = r.via || {}; renderBeranda(); }
   }).catch(function () { SETOR_T[k] = 0; });
 }
 /* Catat atau batalkan penyerahan. Tampilan diperbarui lebih dulu, lalu dikirim ke server; bila gagal, kembali ke data server. */
@@ -616,7 +616,7 @@ window.unduhPdf = unduhPdf;
 function tombolPdf(d) { return btn('Unduh PDF', 'sm kc plain', function (ev) { unduhPdf(d, ev.currentTarget || ev.target); }); }
 function barisPos(r, pr) {
   var p = r.p, row = el('div', 'prow'), top = el('div', 'rt'), nm = el('div', 'nm');
-  nm.appendChild(el('b', null, p.nama)); nm.appendChild(el('small', null, p.jenis.replace('Posyandu ', '') + (r.d ? ' \u00b7 dibuat ' + (r.d.tk || '').slice(0, 10) : '') + ((SETOR[perKey(pr)] || {})[p.id] ? ' \u00b7 sudah diserahkan ke kecamatan ' + tglId(SETOR[perKey(pr)][p.id]) : '')));
+  nm.appendChild(el('b', null, p.nama)); nm.appendChild(el('small', null, p.jenis.replace('Posyandu ', '') + (r.d ? ' \u00b7 dibuat ' + (r.d.tk || '').slice(0, 10) : '') + ((SETOR[perKey(pr)] || {})[p.id] ? ' \u00b7 sudah diserahkan ke kecamatan ' + tglId(SETOR[perKey(pr)][p.id]) + (((SETOR_VIA[perKey(pr)] || {})[p.id]) ? ' (dipindai QR oleh ' + SETOR_VIA[perKey(pr)][p.id].oleh + ')' : '') : '')));
   var pl = pillSt(r); if (!r.d) pl.classList.add('kedip'); top.appendChild(nm); top.appendChild(pl); row.appendChild(top);
   var ct = el('div', 'ct'), n = nomorWA(p.hp);
   if (p.hp) ct.appendChild(el('span', null, (p.hpJenis === 'perwakilan' ? 'Perwakilan' : 'Ketua') + (namaKontak(p) ? ' ' + namaKontak(p) : '') + ' \u00b7 ' + p.hp));
@@ -1156,7 +1156,39 @@ window.ambilPos = function () {
   }).catch(function () { });
 };
 window.tampilBaru = function () { renderBeranda(); renderRekap(); renderData(); };
-window.setelahKeluar = function () { SETOR = {}; SETOR_T = {}; SETOR_BUSY = 0; SETOR_OPEN = {}; terapKel(''); RUANG = null; CAD = null; POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
+window.setelahKeluar = function () { SETOR_VIA = {}; SETOR = {}; SETOR_T = {}; SETOR_BUSY = 0; SETOR_OPEN = {}; terapKel(''); RUANG = null; CAD = null; POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
 document.addEventListener('DOMContentLoaded', function () { bangunBanner(); });
 if (document.readyState !== 'loading') bangunBanner();
 })();
+
+
+/* ---------- akun aplikasi Terima Posyandu (khusus admin kecamatan) ---------- */
+window.pasangPenerima = function () {
+  var c = $('cardTrm'), adm = $('cardAdm');
+  if (!adm) return;
+  if (!c) { c = el('div', 'card'); c.id = 'cardTrm'; adm.parentNode.insertBefore(c, adm.nextSibling); }
+  c.style.display = PERAN === 'utama' ? '' : 'none'; if (!PERAN === 'utama') return;
+  c.textContent = '';
+  c.appendChild(el('h4', null, 'Aplikasi Terima Posyandu'));
+  var link = new URL('terima.html', location.href).href;
+  var p1 = el('p', 'hint', 'Aplikasi terpisah untuk mencatat penerimaan laporan fisik dengan memindai QR di halaman terakhir laporan. Alamat: ' + link);
+  c.appendChild(p1);
+  var st = el('p', 'hint', PENERIMA ? 'Akun penerima: ' + PENERIMA.u + (PENERIMA.nama ? ' (' + PENERIMA.nama + ')' : '') + (PENERIMA.kunci ? (PENERIMA.kunci.permanen ? ' \u00b7 TERKUNCI' : ' \u00b7 terkunci sementara') : '') : 'Belum ada akun penerima. Admin kecamatan juga bisa masuk ke aplikasi Terima dengan akunnya sendiri.');
+  c.appendChild(st);
+  var row = el('div'); row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
+  var b1 = el('button', 'btn sm', PENERIMA ? 'Ganti akun penerima' : 'Buat akun penerima'); b1.type = 'button';
+  b1.addEventListener('click', function () {
+    var u = prompt('Nama pengguna akun penerima (3-20 huruf kecil atau angka):', PENERIMA ? PENERIMA.u : ''); if (u === null) return;
+    var s = prompt('Kata sandi (minimal 6 karakter):'); if (s === null) return;
+    var n = prompt('Nama petugas penerima (boleh dikosongkan):', PENERIMA ? PENERIMA.nama : ''); if (n === null) return;
+    kelolaAdm({ op: 'penerima', nu: u.trim().toLowerCase(), ns: s, nama: n }, 'Akun penerima disimpan.');
+  });
+  row.appendChild(b1);
+  if (PENERIMA) {
+    var b2 = el('button', 'btn sm plain', 'Hapus akun'); b2.type = 'button';
+    b2.addEventListener('click', function () { if (confirm('Hapus akun penerima?')) kelolaAdm({ op: 'hapuspenerima' }, 'Akun penerima dihapus.'); });
+    row.appendChild(b2);
+    if (PENERIMA.kunci) { var b3 = el('button', 'btn sm', 'Buka kunci'); b3.type = 'button'; b3.addEventListener('click', function () { kelolaAdm({ op: 'buka', nu: PENERIMA.u }, 'Kunci dibuka.'); }); row.appendChild(b3); }
+  }
+  c.appendChild(row);
+};

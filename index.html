@@ -139,6 +139,8 @@ a.btn.wa{display:flex;align-items:center;justify-content:center;text-decoration:
 .pg.t2 .rule{margin:4px 0 8px}.pg.t2 .jd{margin:0 0 6px;font-size:14px}
 .pg.t2 table.kv td{padding:2px 0}.pg.t2 table.hk td,.pg.t2 table.hk th{padding:0 5px}
 .pg.t2 .sign{margin-top:10px}.pg.t2 .sign .nm{margin-top:38px}
+.pg .qrbox{position:absolute;right:30px;bottom:12px;display:flex;flex-direction:column;align-items:center;font-family:Arial,Helvetica,sans-serif;font-size:8px;letter-spacing:.2px;color:#222;line-height:1.1}.pg .qrbox img{display:block}.pg .qrbox span{margin-top:-1px}
+.pg.qrp.has-cat .cat{right:150px}.pg.qrp{padding-bottom:116px}.pg.qrp.t1{padding-bottom:112px}.pg.qrp.t2{padding-bottom:108px}
 .export-host{position:absolute;left:-10000px;top:0;width:816px}
 .export-host .pg{box-shadow:none}
 .kop{position:relative;text-align:center;min-height:92px;padding:0 0 4px}
@@ -689,7 +691,88 @@ function hasilHtml(rs){
   return '<table class="hk"><tr><th>Bulan</th>'+j.fields.map(function(f){return '<th>'+esc(f.l)+'</th>'}).join("")+'</tr>'+
     rs.map(function(r){return '<tr><td>'+esc(r.bulan)+'</td>'+j.fields.map(function(f){return '<td>'+esc(r.v[f.k])+'</td>'}).join("")+'</tr>'}).join("")+'</table>';
 }
-function pagesHtml(){
+/* Pembuat QR Code kecil (mode byte, koreksi M, versi 1-6) tanpa pustaka luar. */
+function qrBuat(teks, paksaMask) {
+  var DATA = [0, 16, 28, 44, 64, 86, 108], ECN = [0, 10, 16, 26, 18, 24, 16], BLK = [0, 1, 1, 1, 2, 2, 4];
+  var ALIGN = [0, [], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34]];
+  var b = unescape(encodeURIComponent(String(teks))), by = [], i, j, v;
+  for (i = 0; i < b.length; i++) by.push(b.charCodeAt(i));
+  for (v = 1; v <= 6; v++) if (by.length <= DATA[v] - 2) break;
+  if (v > 6) throw new Error('Teks QR terlalu panjang');
+  var nd = DATA[v], bits = [];
+  function put(val, len) { for (var k = len - 1; k >= 0; k--) bits.push((val >> k) & 1); }
+  put(4, 4); put(by.length, 8); by.forEach(function (x) { put(x, 8); });
+  for (i = 0; i < 4 && bits.length < nd * 8; i++) bits.push(0);
+  while (bits.length % 8) bits.push(0);
+  var cw = []; for (i = 0; i < bits.length; i += 8) { var x = 0; for (j = 0; j < 8; j++) x = x * 2 + bits[i + j]; cw.push(x); }
+  for (i = 0; cw.length < nd; i++) cw.push(i % 2 ? 0x11 : 0xEC);
+  // Galois field
+  var EXP = [], LOG = []; x = 1;
+  for (i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 256) x ^= 0x11d; }
+  function mul(a, c) { return (a && c) ? EXP[(LOG[a] + LOG[c]) % 255] : 0; }
+  function gen(n) { var g = [1]; for (var k = 0; k < n; k++) { var ng = new Array(g.length + 1).fill(0); for (var q = 0; q < g.length; q++) { ng[q] ^= g[q]; ng[q + 1] ^= mul(g[q], EXP[k]); } g = ng; } return g; }
+  function ec(d, n) { var g = gen(n), r = new Array(n).fill(0); d.forEach(function (c) { var f = c ^ r[0]; r.shift(); r.push(0); for (var q = 0; q < n; q++) r[q] ^= mul(g[q + 1], f); }); return r; }
+  var nb = BLK[v], per = Math.floor(nd / nb), blocks = [], ecs = [], pos = 0;
+  for (i = 0; i < nb; i++) { var d = cw.slice(pos, pos + per); pos += per; blocks.push(d); ecs.push(ec(d, ECN[v])); }
+  var fin = [];
+  for (i = 0; i < per; i++) blocks.forEach(function (d) { fin.push(d[i]); });
+  for (i = 0; i < ECN[v]; i++) ecs.forEach(function (e) { fin.push(e[i]); });
+  var n = 17 + 4 * v, M = [], F = [];
+  for (i = 0; i < n; i++) { M.push(new Array(n).fill(0)); F.push(new Array(n).fill(false)); }
+  function set(r, c, val) { M[r][c] = val ? 1 : 0; F[r][c] = true; }
+  function finder(r, c) { for (var a = -1; a <= 7; a++) for (var d2 = -1; d2 <= 7; d2++) { var rr = r + a, cc = c + d2; if (rr < 0 || cc < 0 || rr >= n || cc >= n) continue; var dark = (a >= 0 && a <= 6 && (d2 === 0 || d2 === 6)) || (d2 >= 0 && d2 <= 6 && (a === 0 || a === 6)) || (a >= 2 && a <= 4 && d2 >= 2 && d2 <= 4); set(rr, cc, dark); } }
+  finder(0, 0); finder(0, n - 7); finder(n - 7, 0);
+  for (i = 8; i < n - 8; i++) { set(6, i, i % 2 === 0); set(i, 6, i % 2 === 0); }
+  var al = ALIGN[v];
+  al.forEach(function (r) { al.forEach(function (c) { if (F[r][c]) return; for (var a = -2; a <= 2; a++) for (var d2 = -2; d2 <= 2; d2++) set(r + a, c + d2, Math.max(Math.abs(a), Math.abs(d2)) !== 1); }); });
+  for (i = 0; i < 9; i++) { if (!F[8][i]) set(8, i, 0); if (!F[i][8]) set(i, 8, 0); }
+  for (i = 0; i < 8; i++) { if (!F[8][n - 1 - i]) set(8, n - 1 - i, 0); if (!F[n - 1 - i][8]) set(n - 1 - i, 8, 0); }
+  set(n - 8, 8, 1);
+  var dataBits = []; fin.forEach(function (c) { for (var k = 7; k >= 0; k--) dataBits.push((c >> k) & 1); });
+  var cells = [], up = true, bi = 0;
+  for (var col = n - 1; col > 0; col -= 2) {
+    if (col === 6) col--;
+    for (var t = 0; t < n; t++) { var r = up ? n - 1 - t : t; for (var dc = 0; dc < 2; dc++) { var c = col - dc; if (!F[r][c]) cells.push([r, c, bi < dataBits.length ? dataBits[bi] : 0]), bi++; } }
+    up = !up;
+  }
+  var MASK = [function (r, c) { return (r + c) % 2 === 0; }, function (r) { return r % 2 === 0; }, function (r, c) { return c % 3 === 0; }, function (r, c) { return (r + c) % 3 === 0; },
+    function (r, c) { return (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0; }, function (r, c) { return (r * c) % 2 + (r * c) % 3 === 0; },
+    function (r, c) { return ((r * c) % 2 + (r * c) % 3) % 2 === 0; }, function (r, c) { return ((r + c) % 2 + (r * c) % 3) % 2 === 0; }];
+  function fmt(mask) { var d3 = mask, rem = d3; for (var k = 0; k < 10; k++) rem = (rem << 1) ^ ((rem >> 9) * 0x537); return ((d3 << 10) | (rem & 0x3ff)) ^ 0x5412; }
+  function build(mask) {
+    var Q = M.map(function (r) { return r.slice(); });
+    cells.forEach(function (q) { Q[q[0]][q[1]] = q[2] ^ (MASK[mask](q[0], q[1]) ? 1 : 0); });
+    var f = fmt(mask), bit = function (k) { return (f >> k) & 1; };
+    for (var k = 0; k < 15; k++) {
+      var b1 = bit(k);
+      if (k < 6) Q[k][8] = b1; else if (k < 8) Q[k + 1][8] = b1; else Q[n - 15 + k][8] = b1;
+      if (k < 8) Q[8][n - 1 - k] = b1; else if (k < 9) Q[8][15 - k] = b1; else Q[8][15 - k - 1] = b1;
+    }
+    return Q;
+  }
+  function pen(Q) {
+    var p = 0, a, c, run, k;
+    for (a = 0; a < n; a++) { for (var dir = 0; dir < 2; dir++) { run = 1; for (c = 1; c < n; c++) { var cur = dir ? Q[c][a] : Q[a][c], pr = dir ? Q[c - 1][a] : Q[a][c - 1]; if (cur === pr) { run++; if (run === 5) p += 3; else if (run > 5) p++; } else run = 1; } } }
+    for (a = 0; a < n - 1; a++) for (c = 0; c < n - 1; c++) if (Q[a][c] === Q[a + 1][c] && Q[a][c] === Q[a][c + 1] && Q[a][c] === Q[a + 1][c + 1]) p += 3;
+    var pat = [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0], pat2 = pat.slice().reverse();
+    for (a = 0; a < n; a++) for (c = 0; c <= n - 11; c++) for (var d4 = 0; d4 < 2; d4++) { var m1 = true, m2 = true; for (k = 0; k < 11; k++) { var val = d4 ? Q[c + k][a] : Q[a][c + k]; if (val !== pat[k]) m1 = false; if (val !== pat2[k]) m2 = false; } if (m1) p += 40; if (m2) p += 40; }
+    var dark = 0; Q.forEach(function (r) { r.forEach(function (x) { dark += x; }); });
+    p += Math.floor(Math.abs(dark * 100 / (n * n) - 50) / 5) * 10;
+    return p;
+  }
+  var best = null, bp = 1e9;
+  for (var mk = 0; mk < 8; mk++) { if (paksaMask !== undefined && mk !== paksaMask) continue; var Q = build(mk), pp = pen(Q); if (pp < bp) { bp = pp; best = Q; } }
+  return { n: n, v: v, m: best };
+}
+
+function kodeBaru(){return Math.random().toString(36).slice(2,10)+Date.now().toString(36)}
+function qrGambar(kode){
+  var url=new URL("terima.html",location.href).href+"?k="+kode,r=qrBuat(url),S=8,Z=2,N=(r.n+2*Z)*S,cv=document.createElement("canvas");
+  cv.width=cv.height=N;var c=cv.getContext("2d");c.fillStyle="#fff";c.fillRect(0,0,N,N);c.fillStyle="#000";
+  for(var y=0;y<r.n;y++)for(var x=0;x<r.n;x++)if(r.m[y][x])c.fillRect((x+Z)*S,(y+Z)*S,S,S);
+  return {src:cv.toDataURL("image/png"),w:(r.n+2*Z)*2};
+}
+function pagesHtml(kode){
   var kel=(S.kelurahan||"").toUpperCase(),pos=(S.posyandu||"").trim();
   var kader=kaderList().map(function(n){return "- "+esc(n)}).join("<br>");
   var peng=penggantiList();
@@ -722,6 +805,8 @@ function pagesHtml(){
       out.push('<section class="pg"><div class="dh">'+esc(title)+'</div><div class="ph-grid">'+cells+'</div></section>');
     }
   });
+  var q=qrGambar(kode||"contoh00000000000"),li=out.length-1;
+  out[li]=out[li].replace('<section class="pg','<section class="pg qrp').replace(/<\/section>$/,'<div class="qrbox"><img src="'+q.src+'" alt="" style="width:'+q.w+'px;height:'+q.w+'px"><span>QR LAPORAN</span></div></section>');
   return out.join("");
 }
 function fitLetter(root){
@@ -738,7 +823,7 @@ function fit(){
 }
 function renderPreview(){
   var stage=document.getElementById("stage");if(!stage)return;
-  stage.innerHTML=pagesHtml();fitLetter(stage);fit();
+  stage.innerHTML=pagesHtml(arsipId||undefined);fitLetter(stage);fit();
   if(ro)ro.disconnect();
   if(window.ResizeObserver){ro=new ResizeObserver(fit);ro.observe(document.getElementById("pvbox"))}
 }
@@ -891,7 +976,7 @@ async function kirimAntrean(){
 async function buildPdf(){
   if(!window.html2canvas||!window.jspdf)throw new Error("lib");
   if(document.fonts&&document.fonts.ready)await document.fonts.ready;
-  var host=document.createElement("div");host.className="export-host";host.innerHTML=pagesHtml();document.body.appendChild(host);fitLetter(host);
+  var host=document.createElement("div");host.className="export-host";host.innerHTML=pagesHtml(arsipId||undefined);document.body.appendChild(host);fitLetter(host);
   try{
     var imgs=Array.prototype.slice.call(host.querySelectorAll("img"));
     await Promise.all(imgs.map(function(i){return i.complete?1:new Promise(function(r){i.onload=i.onerror=r})}));
@@ -916,11 +1001,12 @@ async function makePdf(btn){
   btn.disabled=true;res.innerHTML="";
   st.className="status";st.textContent="Membuat PDF, mohon tunggu sebentar…";
   try{
+    arsipId=kodeBaru();arsipInfo=null;
     var blob=await buildPdf();
     var bln=S.rows.filter(function(r){return r.bulan}).map(function(r){return r.bulan}).join("-");
     resName=((UJI?"UJI COBA ":"")+"Laporan "+J().label+" "+S.posyandu.trim()+(bln?" "+bln:"")+".pdf").replace(/[\\\/:*?"<>|]/g," ").replace(/\s+/g," ");
     if(resUrl)URL.revokeObjectURL(resUrl);
-    resBlob=blob;arsipDone=false;arsipBusy=false;arsipId=null;arsipInfo=null;resUrl=URL.createObjectURL(blob);
+    resBlob=blob;arsipDone=false;arsipBusy=false;arsipInfo=null;resUrl=URL.createObjectURL(blob);
     var canShare=false;
     try{canShare=!!(navigator.canShare&&navigator.share&&navigator.canShare({files:[new File([blob],resName,{type:"application/pdf"})]}))}catch(e){}
     res.innerHTML='<div class="result"><strong>PDF laporan siap</strong><div class="fn">'+esc(resName)+'</div><div>Simpan file ini, lalu cetak. Laporan juga otomatis dikirim ke arsip. Jangan tutup halaman sampai tertulis "Tersimpan di arsip".</div><div class="status" id="arsip" role="status" aria-live="polite"></div><div class="btnrow">'+
