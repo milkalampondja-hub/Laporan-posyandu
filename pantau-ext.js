@@ -1156,13 +1156,14 @@ window.ambilPos = function () {
   }).catch(function () { });
 };
 window.tampilBaru = function () { renderBeranda(); renderRekap(); renderData(); };
-window.setelahKeluar = function () { SETOR_VIA = {}; SETOR = {}; SETOR_T = {}; SETOR_BUSY = 0; SETOR_OPEN = {}; terapKel(''); RUANG = null; CAD = null; POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
+window.setelahKeluar = function () { TAUTAN_TRM = ''; SETOR_VIA = {}; SETOR = {}; SETOR_T = {}; SETOR_BUSY = 0; SETOR_OPEN = {}; terapKel(''); RUANG = null; CAD = null; POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
 document.addEventListener('DOMContentLoaded', function () { bangunBanner(); });
 if (document.readyState !== 'loading') bangunBanner();
 })();
 
 
 /* ---------- akun aplikasi Terima Posyandu (khusus admin kecamatan) ---------- */
+var TAUTAN_TRM = '';
 window.pasangPenerima = function () {
   var c = $('cardTrm'), adm = $('cardAdm');
   if (!adm) return;
@@ -1173,22 +1174,37 @@ window.pasangPenerima = function () {
   var link = new URL('terima.html', location.href).href;
   var p1 = el('p', 'hint', 'Aplikasi terpisah untuk mencatat penerimaan laporan fisik dengan memindai QR di halaman terakhir laporan. Alamat: ' + link);
   c.appendChild(p1);
-  var st = el('p', 'hint', PENERIMA ? 'Akun penerima: ' + PENERIMA.u + (PENERIMA.nama ? ' (' + PENERIMA.nama + ')' : '') + (PENERIMA.kunci ? (PENERIMA.kunci.permanen ? ' \u00b7 TERKUNCI' : ' \u00b7 terkunci sementara') : '') : 'Belum ada akun penerima. Admin kecamatan juga bisa masuk ke aplikasi Terima dengan akunnya sendiri.');
+  var st = el('p', 'hint', PENERIMA ? 'Akun penerima: ' + PENERIMA.u + (PENERIMA.nama ? ' (' + PENERIMA.nama + ')' : '') + (PENERIMA.kunci ? (PENERIMA.kunci.permanen ? ' \u00b7 TERKUNCI' : ' \u00b7 terkunci sementara') : '') : 'Belum ada akun penerima. Buat tautan akses supaya petugas tidak perlu mengetik sandi.');
   c.appendChild(st);
   var row = el('div'); row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
-  var b1 = el('button', 'btn sm', PENERIMA ? 'Ganti akun penerima' : 'Buat akun penerima'); b1.type = 'button';
-  b1.addEventListener('click', function () {
-    var u = prompt('Nama pengguna akun penerima (3-20 huruf kecil atau angka):', PENERIMA ? PENERIMA.u : ''); if (u === null) return;
-    var s = prompt('Kata sandi (minimal 6 karakter):'); if (s === null) return;
-    var n = prompt('Nama petugas penerima (boleh dikosongkan):', PENERIMA ? PENERIMA.nama : ''); if (n === null) return;
-    kelolaAdm({ op: 'penerima', nu: u.trim().toLowerCase(), ns: s, nama: n }, 'Akun penerima disimpan.');
+  var bt = el('button', 'btn sm', PENERIMA ? 'Buat tautan akses baru' : 'Buat tautan akses (tanpa sandi)'); bt.type = 'button';
+  bt.addEventListener('click', function () {
+    if (PENERIMA && !confirm('Tautan lama akan berhenti berlaku. Lanjutkan?')) return;
+    var abc = 'abcdefghjkmnpqrstuvwxyz23456789', s = '', i, rnd = new Uint32Array(14);
+    (window.crypto || window.msCrypto).getRandomValues(rnd);
+    for (i = 0; i < 14; i++) s += abc.charAt(rnd[i] % abc.length);
+    var u = PENERIMA ? PENERIMA.u : 'terima', n = PENERIMA ? PENERIMA.nama : 'Petugas Penerima';
+    kelolaAdm({ op: 'penerima', nu: u, ns: s, nama: n }, 'Tautan akses dibuat.').then(function (okk) {
+      if (okk) { TAUTAN_TRM = link + '#u=' + u + '&p=' + s; pasangPenerima(); }
+    });
   });
-  row.appendChild(b1);
+  row.appendChild(bt);
   if (PENERIMA) {
     var b2 = el('button', 'btn sm plain', 'Hapus akun'); b2.type = 'button';
-    b2.addEventListener('click', function () { if (confirm('Hapus akun penerima?')) kelolaAdm({ op: 'hapuspenerima' }, 'Akun penerima dihapus.'); });
+    b2.addEventListener('click', function () { if (confirm('Hapus akun penerima? Tautan akses berhenti berlaku.')) { TAUTAN_TRM = ''; kelolaAdm({ op: 'hapuspenerima' }, 'Akun penerima dihapus.'); } });
     row.appendChild(b2);
     if (PENERIMA.kunci) { var b3 = el('button', 'btn sm', 'Buka kunci'); b3.type = 'button'; b3.addEventListener('click', function () { kelolaAdm({ op: 'buka', nu: PENERIMA.u }, 'Kunci dibuka.'); }); row.appendChild(b3); }
   }
   c.appendChild(row);
+  if (TAUTAN_TRM) {
+    var bx = el('div'); bx.style.cssText = 'margin-top:12px;padding:12px;border-radius:12px;background:rgba(10,122,53,.08)';
+    bx.appendChild(el('p', 'hint', 'Buka tautan ini SEKALI di HP petugas penerima. Setelah itu aplikasi langsung bisa dipakai tanpa mengetik sandi. Jangan dibagikan ke kader.'));
+    var inp = el('input'); inp.type = 'text'; inp.readOnly = true; inp.value = TAUTAN_TRM; inp.style.cssText = 'width:100%;margin-bottom:8px'; inp.addEventListener('focus', function () { inp.select(); });
+    bx.appendChild(inp);
+    var r2 = el('div'); r2.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
+    var bs = el('button', 'btn sm', 'Salin tautan'); bs.type = 'button';
+    bs.addEventListener('click', function () { try { navigator.clipboard.writeText(TAUTAN_TRM).then(function () { bs.textContent = 'Tersalin'; }, function () { inp.select(); }); } catch (x) { inp.select(); } });
+    var bw = el('a', 'btn sm plain', 'Kirim lewat WhatsApp'); bw.target = '_blank'; bw.rel = 'noopener'; bw.href = 'https://wa.me/?text=' + encodeURIComponent('Tautan akses aplikasi Terima Posyandu (jangan dibagikan): ' + TAUTAN_TRM);
+    r2.appendChild(bs); r2.appendChild(bw); bx.appendChild(r2); c.appendChild(bx);
+  }
 };

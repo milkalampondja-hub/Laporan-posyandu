@@ -413,6 +413,11 @@ $('foto').addEventListener('change',async function(){
 
 /* ---------- awal ---------- */
 (function(){
+  // Tautan akses dari admin kecamatan: terima.html#u=...&p=... (disimpan di HP, lalu dihapus dari alamat)
+  try{
+    var hs=new URLSearchParams((location.hash||'').replace(/^#/,'')),hu=hs.get('u'),hp=hs.get('p');
+    if(hu&&hp){CRED={u:hu,p:hp};simpanCred();history.replaceState(null,'',location.pathname+location.search);$('login').classList.add('hidden');$('app').classList.remove('hidden');mulai();return}
+  }catch(e){}
   try{var s=localStorage.getItem(KUNCI_LS);if(s){CRED=JSON.parse(s);if(CRED&&CRED.u&&CRED.p){$('login').classList.add('hidden');$('app').classList.remove('hidden');mulai();return}CRED=null}}catch(e){CRED=null}
 })();
 </script>
