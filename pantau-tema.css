@@ -184,3 +184,21 @@ html #toastbaru{background:#241b00;color:#fff3b8}
 /* ---------- mode gelap: label abu-abu lebih terbaca ---------- */
 :root[data-theme=dark] .pill.no,:root[data-theme=dark] .tag.g{background:#23332a;color:#c9d9ce}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .pill.no,:root:not([data-theme=light]) .tag.g{background:#23332a;color:#c9d9ce}}
+
+/* ---------- perapian tata letak (tampilan saja) ---------- */
+/* Kartu Posyandu: label status di bawah nama agar kartu tidak tinggi di HP */
+@media (max-width:899px){
+  html .prow .rt{flex-direction:column;align-items:flex-start;gap:6px}
+  html .prow .rt .pill{align-self:flex-start}
+  html .prow .nm small{display:block;line-height:1.45}
+}
+/* Judul kelurahan: jelas bisa dibuka/ditutup */
+html summary.kh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 8px;padding:10px 12px;
+  background:var(--accent-soft);border:1px solid rgba(255,200,0,.45);border-radius:var(--r-tile);color:var(--fg);font-size:15px;line-height:1.35}
+html summary.kh::-webkit-details-marker{display:none}
+html summary.kh::after{content:"";flex:none;width:8px;height:8px;border-right:2px solid var(--accent-text);border-bottom:2px solid var(--accent-text);
+  transform:rotate(45deg);margin:-3px 4px 0 0;transition:transform .15s}
+html details[open]>summary.kh::after{transform:rotate(-135deg);margin:3px 4px 0 0}
+/* Tombol Isi/Ubah nomor: lebih kecil dan tenang */
+html .btn.sm.kc.plain{min-height:32px;padding:2px 10px;font-size:12.5px;font-weight:600;color:var(--muted);background:transparent;border:1px solid var(--line)}
+html .btn.sm.kc.plain:hover{color:var(--accent-text);background:var(--accent-soft)}
