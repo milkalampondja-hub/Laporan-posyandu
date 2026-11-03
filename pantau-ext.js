@@ -291,7 +291,7 @@ function renderBeranda() {
   if (!h.belum.length) c2.appendChild(el('div', 'ok2', 'Semua Posyandu sudah mengumpulkan laporan ' + pr.bl + ' ' + pr.th + '.'));
   KEL.forEach(function (k) {
     var l = h.belum.filter(function (r) { return r.p.kel === k; }); if (!l.length) return;
-    var dt = document.createElement('details'), sm = document.createElement('summary'); dt.open = l.length <= 6;
+    var dt = document.createElement('details'), sm = document.createElement('summary'); dt.open = !!BELUM_OPEN[k]; dt.addEventListener('toggle', function () { BELUM_OPEN[k] = dt.open; });
     sm.className = 'kh'; sm.style.cssText = 'cursor:pointer;list-style:none'; sm.textContent = k + ' (' + l.length + ' belum)';
     dt.appendChild(sm); l.forEach(function (r) { dt.appendChild(barisPos(r, pr)); }); c2.appendChild(dt);
   });
@@ -302,7 +302,7 @@ function renderBeranda() {
   kaderPengganti(box);
 }
 /* ---------- Penyerahan laporan ke kecamatan ---------- */
-var SETOR = {}, SETOR_T = {}, SETOR_BUSY = 0, SETOR_OPEN = {}, SETOR_VIA = {};
+var SETOR = {}, SETOR_T = {}, SETOR_BUSY = 0, SETOR_OPEN = {}, BELUM_OPEN = {}, SETOR_VIA = {};
 function perKey(pr) { var m = BULAN.indexOf(pr.bl) + 1; return pr.th + '-' + (m < 10 ? '0' : '') + m; }
 function hariIni() { var d = new Date(), z = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
 function tglId(iso) { var m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(iso || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; }
@@ -335,7 +335,7 @@ function kartuSetor(box, h, pr) {
     var l = h.rows.filter(function (r) { return r.p.kel === kel; }).sort(function (a, b) { return a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); });
     if (!l.length) return;
     var sudah = l.filter(function (r) { return M[r.p.id]; }).length, belum = l.filter(function (r) { return !M[r.p.id]; });
-    var dt = document.createElement('details'), sm = document.createElement('summary'); dt.open = (kel in SETOR_OPEN) ? SETOR_OPEN[kel] : (belum.length > 0 && belum.length < l.length);
+    var dt = document.createElement('details'), sm = document.createElement('summary'); dt.open = (kel in SETOR_OPEN) ? SETOR_OPEN[kel] : false;
     dt.addEventListener('toggle', function () { SETOR_OPEN[kel] = dt.open; });
     sm.className = 'kh'; sm.style.cssText = 'cursor:pointer;list-style:none'; sm.textContent = kel + ' (' + sudah + ' dari ' + l.length + ' sudah menyerahkan)';
     dt.appendChild(sm);
@@ -1156,7 +1156,7 @@ window.ambilPos = function () {
   }).catch(function () { });
 };
 window.tampilBaru = function () { renderBeranda(); renderRekap(); renderData(); };
-window.setelahKeluar = function () { TAUTAN_TRM = ''; SETOR_VIA = {}; SETOR = {}; SETOR_T = {}; SETOR_BUSY = 0; SETOR_OPEN = {}; terapKel(''); RUANG = null; CAD = null; POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
+window.setelahKeluar = function () { TAUTAN_TRM = ''; SETOR_VIA = {}; SETOR = {}; SETOR_T = {}; SETOR_BUSY = 0; SETOR_OPEN = {}; BELUM_OPEN = {}; terapKel(''); RUANG = null; CAD = null; POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
 document.addEventListener('DOMContentLoaded', function () { bangunBanner(); });
 if (document.readyState !== 'loading') bangunBanner();
 })();
