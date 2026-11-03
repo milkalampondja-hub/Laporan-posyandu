@@ -1,152 +1,171 @@
 /* =========================================================================
-   Tema tampilan Pantau Laporan Posyandu (redesain visual 2026)
+   Tema tampilan Pantau Laporan Posyandu: "Modern Government Dashboard"
    HANYA mengubah tampilan. Tidak ada fitur, teks, atau logika yang berubah.
    Untuk kembali ke tampilan lama: hapus baris <link ... pantau-tema.css> di pantau.html.
-   Arah: bersih dan lega, hijau tua (identitas kesehatan) dengan aksen emas dari lambang Kota Palu.
+   Pedoman: hijau emerald sebagai identitas, putih sebagai latar utama, abu-abu sangat muda
+   untuk kartu statistik, kuning hanya aksen kecil, sudut sedikit membulat, bayangan sangat tipis.
    ========================================================================= */
 
 /* ---------- warna dasar ---------- */
 :root{
-  --bg:#f2f5f3; --surface:#ffffff; --fg:#13241b; --muted:#5b6b62; --line:#e2e8e4;
-  --accent:#0f7a45; --accent-fg:#ffffff; --accent-text:#0b6538; --accent-soft:#e2f3e9; --gold:#f2b705;
-  --warn:#8a3b00; --warn-soft:#fff0df; --none:#edf1ee; --ok:#157a3b; --ok-soft:#e1f5e6;
-  --hero1:#12834c; --hero2:#0a5c36; --hero-fg:#ffffff;
-  --login-bg:radial-gradient(120% 90% at 50% 0%,#17935a 0%,#0c6c40 46%,#06402a 100%);
-  --shadow:0 1px 2px rgba(16,40,28,.05),0 6px 18px rgba(16,40,28,.06);
-  --side1:#0f7a45; --side2:#0b6238; --side3:#07442a; --side-fg:#eef8f2; --acct-bg:rgba(255,255,255,.12);
-  --bnav1:#ffffff; --bnav2:#ffffff; --bnav-line:#e2e8e4; --bnav-fg:#5b6b62; --bnav-on:#0f7a45; --sart-op:.30;
+  --bg:#ffffff; --soft:#f3f6f4; --surface:#ffffff; --fg:#0f1b14; --muted:#56655c; --line:#e5eae7;
+  --accent:#047857; --accent-fg:#ffffff; --accent-text:#065f46; --accent-soft:#e8f6ef; --gold:#f2b705;
+  --warn:#8a3b00; --warn-soft:#fff0df; --none:#eef2ef; --ok:#047857; --ok-soft:#e1f5ea;
+  --hero1:#ffffff; --hero2:#ffffff; --hero-fg:#0f1b14;
+  --login-bg:radial-gradient(120% 90% at 50% 0%,#0a8a5f 0%,#065f46 48%,#033d2c 100%);
+  --shadow:0 1px 2px rgba(15,27,20,.04);
+  --side1:#f3f6f4; --side2:#f3f6f4; --side3:#f3f6f4; --side-fg:#1b2a22; --acct-bg:#ffffff;
+  --bnav1:#ffffff; --bnav2:#ffffff; --bnav-line:#e5eae7; --bnav-fg:#56655c; --bnav-on:#047857; --sart-op:.38;
+  --r-card:14px; --r-tile:12px; --r-btn:10px;
 }
 :root[data-theme=dark]{
-  --bg:#0d1511; --surface:#15201a; --fg:#e8f1ec; --muted:#9db1a5; --line:#25332b;
-  --accent:#2fb374; --accent-fg:#03140b; --accent-text:#62d79c; --accent-soft:#16372a;
-  --warn:#ffb98a; --warn-soft:#3a2412; --none:#1c2822; --ok:#7be09a; --ok-soft:#14301f;
-  --hero1:#0f3d29; --hero2:#0a2d1e; --hero-fg:#f1faf5;
-  --login-bg:radial-gradient(120% 90% at 50% 0%,#0f5a3a 0%,#093d28 50%,#04241a 100%);
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.3);
-  --side1:#0d3d28; --side2:#0a2f1f; --side3:#061f14; --side-fg:#e8f1ec; --acct-bg:rgba(255,255,255,.08);
-  --bnav1:#121c17; --bnav2:#121c17; --bnav-line:#25332b; --bnav-fg:#a9bdb1; --bnav-on:#62d79c; --sart-op:.22;
+  --bg:#0b120f; --soft:#131d18; --surface:#101a15; --fg:#e9f2ed; --muted:#9db1a5; --line:#22302a;
+  --accent:#10b981; --accent-fg:#03150e; --accent-text:#34d399; --accent-soft:#0f2e22;
+  --warn:#ffb98a; --warn-soft:#3a2412; --none:#1a2620; --ok:#6ee7b7; --ok-soft:#0f2e22;
+  --hero1:#0f1a15; --hero2:#0f1a15; --hero-fg:#e9f2ed;
+  --login-bg:radial-gradient(120% 90% at 50% 0%,#0a5a42 0%,#063a2b 50%,#03211a 100%);
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+  --side1:#0e1713; --side2:#0e1713; --side3:#0e1713; --side-fg:#e9f2ed; --acct-bg:#16221c;
+  --bnav1:#0f1a15; --bnav2:#0f1a15; --bnav-line:#22302a; --bnav-fg:#a9bdb1; --bnav-on:#34d399; --sart-op:.28;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){
-  --bg:#0d1511; --surface:#15201a; --fg:#e8f1ec; --muted:#9db1a5; --line:#25332b;
-  --accent:#2fb374; --accent-fg:#03140b; --accent-text:#62d79c; --accent-soft:#16372a;
-  --warn:#ffb98a; --warn-soft:#3a2412; --none:#1c2822; --ok:#7be09a; --ok-soft:#14301f;
-  --hero1:#0f3d29; --hero2:#0a2d1e; --hero-fg:#f1faf5;
-  --login-bg:radial-gradient(120% 90% at 50% 0%,#0f5a3a 0%,#093d28 50%,#04241a 100%);
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.3);
-  --side1:#0d3d28; --side2:#0a2f1f; --side3:#061f14; --side-fg:#e8f1ec; --acct-bg:rgba(255,255,255,.08);
-  --bnav1:#121c17; --bnav2:#121c17; --bnav-line:#25332b; --bnav-fg:#a9bdb1; --bnav-on:#62d79c; --sart-op:.22;
+  --bg:#0b120f; --soft:#131d18; --surface:#101a15; --fg:#e9f2ed; --muted:#9db1a5; --line:#22302a;
+  --accent:#10b981; --accent-fg:#03150e; --accent-text:#34d399; --accent-soft:#0f2e22;
+  --warn:#ffb98a; --warn-soft:#3a2412; --none:#1a2620; --ok:#6ee7b7; --ok-soft:#0f2e22;
+  --hero1:#0f1a15; --hero2:#0f1a15; --hero-fg:#e9f2ed;
+  --login-bg:radial-gradient(120% 90% at 50% 0%,#0a5a42 0%,#063a2b 50%,#03211a 100%);
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+  --side1:#0e1713; --side2:#0e1713; --side3:#0e1713; --side-fg:#e9f2ed; --acct-bg:#16221c;
+  --bnav1:#0f1a15; --bnav2:#0f1a15; --bnav-line:#22302a; --bnav-fg:#a9bdb1; --bnav-on:#34d399; --sart-op:.28;
 }}
 
-html body{letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+/* ---------- huruf: lebih tegas, mudah dibaca ---------- */
+html body{background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;line-height:1.5}
+html h1,html h2,html h3,html h4{letter-spacing:-.012em}
+html .ch h3,html .fh h3,html h4{font-weight:800;color:var(--fg)}
+html .ch p,html .hint,html .lt{color:var(--muted)}
+html .tile b{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+html .tile span{font-size:12.5px;font-weight:500}
+html .stat b{font-weight:800;letter-spacing:-.02em}
+html .kh{font-weight:800}
+html th{font-weight:700;color:var(--muted);letter-spacing:.005em;background:var(--soft)}
+html td{color:var(--fg)}
+
+/* ---------- ikon sederhana dan seragam ---------- */
+html .ic{stroke-width:1.75}
+html .nav button.on .ic,html .bnav button.on .ic{stroke-width:2}
 
 /* ---------- halaman masuk ---------- */
 html .login{color:#fff}
-html .login::before{opacity:.22}
-html .login h1{font-weight:800;letter-spacing:.04em;font-size:21px}
-html .login p.sub{opacity:.85;letter-spacing:.02em}
-html .lf{border-radius:22px;padding:26px 22px;box-shadow:0 24px 60px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.08)}
-html .lf label{font-size:13px;letter-spacing:.01em;color:var(--muted)}
-html .lf input{background:var(--bg);border:1.5px solid var(--line);border-radius:12px}
-html .lf input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 4px rgba(15,122,69,.15)}
+html .login::before{opacity:.18}
+html .login h1{font-weight:800;letter-spacing:.03em;font-size:21px}
+html .login p.sub{opacity:.88}
+html .lf{border-radius:18px;padding:26px 22px;box-shadow:0 20px 50px rgba(0,0,0,.30),0 0 0 1px rgba(255,255,255,.06)}
+html .lf label{font-size:13px;font-weight:700;color:var(--muted)}
+html .lf input{background:var(--bg);border:1.5px solid var(--line);border-radius:var(--r-btn)}
+html .lf input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 4px rgba(4,120,87,.14)}
 html .pw button{color:var(--accent-text)}
-html .lfoot{opacity:.8}
+html .lfoot{opacity:.85}
 
 /* ---------- tombol ---------- */
-html .btn{border:1px solid rgba(0,0,0,.06);background:var(--accent);color:var(--accent-fg);border-radius:12px;
-  box-shadow:0 1px 2px rgba(10,80,45,.25),0 4px 10px rgba(15,122,69,.20);font-weight:700;letter-spacing:.01em;transition:background .15s,box-shadow .15s,transform .05s}
-html .btn:hover{filter:none;background:#0d6c3d}
+html .btn{border:1px solid var(--accent);background:var(--accent);color:var(--accent-fg);border-radius:var(--r-btn);
+  box-shadow:0 1px 2px rgba(6,95,70,.20);font-weight:700;letter-spacing:.005em;transition:background .15s,transform .05s}
+html .btn:hover{filter:none;background:#065f46;border-color:#065f46}
 html .btn:active{transform:translateY(1px)}
-html .btn.line{background:transparent;border:1.5px solid var(--accent);color:var(--accent-text);box-shadow:none}
+html .btn.line{background:#fff;border:1.5px solid var(--accent);color:var(--accent-text);box-shadow:none}
 html .btn.line:hover{background:var(--accent-soft)}
 html .btn.plain{background:var(--surface);color:var(--accent-text);border:1px solid var(--line);box-shadow:none}
 html .btn.plain:hover{background:var(--accent-soft)}
-:root[data-theme=dark] .btn:hover{background:#3cc383}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .btn:hover{background:#3cc383}}
+:root[data-theme=dark] .btn.line{background:transparent}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .btn.line{background:transparent}}
+:root[data-theme=dark] .btn:hover{background:#34d399;border-color:#34d399}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .btn:hover{background:#34d399;border-color:#34d399}}
 
-/* ---------- kepala halaman ---------- */
-html .top{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:var(--hero-fg)}
+/* ---------- kepala halaman: putih bersih ---------- */
+html .top{background:var(--surface);color:var(--fg);border-bottom:1px solid var(--line)}
 html .sky{display:none}
-html .trow .tt{font-weight:800;letter-spacing:.02em}
-html .wil.op span+span{border-top-color:rgba(255,255,255,.35)}
-html .top .ibtn{background:rgba(255,255,255,.14);border:0;color:#fff;border-radius:12px}
-html .top .ibtn:hover{background:rgba(255,255,255,.24)}
-html .dot{background:#ffc21a;border:2px solid #0f7a45}
-html .chip{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff}
-html .avt{background:linear-gradient(135deg,#f6c21b,#e39a00);border:2px solid rgba(255,255,255,.85)}
-html .hello .w{color:#fff}
+html .trow .lg,html .brand img{filter:none}
+html .trow .tt{font-weight:800;letter-spacing:-.005em;color:var(--fg)}
+html .trow .tt small,html .tt .wil{color:var(--muted)}
+html .wil.op span+span{border-top-color:rgba(15,27,20,.18)}
+html .top .ibtn{background:var(--soft);border:1px solid var(--line);color:var(--fg);border-radius:10px}
+html .top .ibtn:hover{background:var(--accent-soft)}
+html .dot{background:var(--gold);border:2px solid var(--surface);width:10px;height:10px}
+html .chip{background:var(--soft);border:1px solid var(--line);color:var(--fg)}
+html .avt{background:var(--accent-text);border:0;color:#fff}
+html .hello .w{color:var(--fg)}
 html .sheet{background:var(--bg)}
 
-/* ---------- banner ---------- */
-html .banner{background:linear-gradient(100deg,#0b6a3b 0%,#128a50 55%,#4cb585 100%);border-radius:18px;box-shadow:0 6px 18px rgba(10,80,45,.18)}
-html .banner h2{color:#fff}
-html .banner p{color:#e4f4ea}
-html .banner .bar1{background:#f6c21b;opacity:1}
-html .bdots i{background:rgba(255,255,255,.55);border-color:rgba(255,255,255,.7)}
-html .bdots i.on{background:#f6c21b}
-html .pvban{background:linear-gradient(100deg,#0b6a3b,#128a50 55%,#4cb585)}
+/* ---------- banner: kartu hijau gelap (satu-satunya blok berwarna penuh) ---------- */
+html .banner{background:linear-gradient(120deg,#064e3b 0%,#047857 62%,#10b981 130%);border-radius:var(--r-card);box-shadow:none}
+html .banner h2{color:#fff;font-weight:800}
+html .banner p{color:#d7f1e4}
+html .banner .bar1{background:var(--gold);opacity:1;height:3px;width:34px}
+html .bdots i{background:rgba(255,255,255,.5);border-color:rgba(255,255,255,.7)}
+html .bdots i.on{background:var(--gold)}
+html .pvban{background:linear-gradient(120deg,#064e3b,#047857 62%,#10b981);border-radius:var(--r-card)}
 
 /* ---------- kartu, tabel, kolom isian ---------- */
-html .card{border-radius:16px;border:1px solid var(--line);box-shadow:var(--shadow)}
-html .panel.big{border-radius:18px;border:1px solid var(--line);box-shadow:var(--shadow)}
-html .sq{background:var(--accent-soft);color:var(--accent-text);border-radius:14px}
-html .ch h3,html .fh h3{font-weight:800;letter-spacing:.005em}
-html .tile{border-radius:14px;box-shadow:none;background:var(--bg);border:1px solid var(--line)}
-html .tile .cc.g{background:#1f9d55}
-html .tile .cc.y{background:#f2b705}
+html .card{border-radius:var(--r-card);border:1px solid var(--line);box-shadow:var(--shadow);background:var(--surface)}
+html .panel.big{border-radius:var(--r-card);border:1px solid var(--line);box-shadow:var(--shadow)}
+html .sq{background:var(--accent-soft);color:var(--accent-text);border-radius:12px}
+html .tile{border-radius:var(--r-tile);box-shadow:none;background:var(--soft);border:1px solid transparent}
+html .tile .cc.g{background:var(--accent)}
+html .tile .cc.y{background:var(--gold)}
 html .tile .cc.p{background:#d9487f}
-html .tile b{font-weight:800}
-html th{background:var(--bg);letter-spacing:.01em}
-html .item,html .pos,html .prow,html .skc,html .stat{border-radius:14px;border:1px solid var(--line);background:var(--surface)}
-html .stat{box-shadow:none;background:var(--bg)}
-html .dl{background:var(--accent-soft);border-color:rgba(15,122,69,.18)}
-html .dl .cl{background:rgba(15,122,69,.14);color:var(--accent-text)}
-html .sel select,html .sel input,html .fld select,html .fld input,html .fl2 select,html .fl2 input{background:var(--surface);border:1.5px solid var(--line);border-radius:12px}
-html .sel select:focus,html .sel input:focus,html .fld select:focus,html .fld input:focus,html .fl2 select:focus,html .fl2 input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 4px rgba(15,122,69,.14)}
-html .ibtn{border:1px solid var(--line)}
+html .stat{border-radius:var(--r-tile);border:1px solid transparent;background:var(--soft);box-shadow:none}
+html .item,html .pos,html .prow,html .skc{border-radius:var(--r-tile);border:1px solid var(--line);background:var(--surface)}
+html .dl{background:var(--soft);border-color:var(--line)}
+html .dl .cl{background:var(--accent-soft);color:var(--accent-text)}
+html .sel select,html .sel input,html .fld select,html .fld input,html .fl2 select,html .fl2 input{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r-btn)}
+html .sel select:focus,html .sel input:focus,html .fld select:focus,html .fld input:focus,html .fl2 select:focus,html .fl2 input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 4px rgba(4,120,87,.12)}
+html .filters label,html .fld label{font-weight:700;color:var(--fg)}
+html .ibtn{border:1px solid var(--line);border-radius:10px}
 html .pill,html .tag,html .chip2,html .chipst{font-weight:700}
-html .pengum{border:1px solid rgba(15,122,69,.18)}
-html .kh{letter-spacing:.01em}
-html .modal .box{border-radius:20px 20px 0 0}
-@media(min-width:700px){html .modal .box{border-radius:20px}}
-html .accpop{border-radius:16px;box-shadow:0 14px 40px rgba(10,40,25,.28)}
+html .pill.ok,html .tag{background:var(--accent-soft);color:var(--accent-text)}
+html .pengum{background:var(--accent-soft);border:1px solid rgba(4,120,87,.14)}
+html .bar{background:var(--none)}
+html .bar i{background:linear-gradient(90deg,#10b981,#047857)}
+html .modal .box{border-radius:16px 16px 0 0}
+@media(min-width:700px){html .modal .box{border-radius:16px}}
+html .accpop{border-radius:14px;box-shadow:0 8px 28px rgba(15,27,20,.16);border:1px solid var(--line)}
+html .accpop button:hover{background:var(--soft)}
 
 /* ---------- menu bawah (HP) ---------- */
-html .bnav{background:var(--bnav1);border-top:1px solid var(--bnav-line);box-shadow:0 -6px 20px rgba(16,40,28,.08)}
+html .bnav{background:var(--bnav1);border-top:1px solid var(--bnav-line);box-shadow:0 -2px 10px rgba(15,27,20,.05)}
 html .bnav button{font-weight:600}
-html .bnav button.on{color:var(--bnav-on)}
-html .bnav button.on::after{background:var(--bnav-on);left:30%;right:30%}
+html .bnav button.on{color:var(--bnav-on);font-weight:700}
+html .bnav button.on::after{background:var(--bnav-on);left:32%;right:32%}
 
-/* ---------- menu samping ---------- */
-html .side{box-shadow:6px 0 30px rgba(0,0,0,.25)}
-html .brand b{letter-spacing:.02em}
-html .nav button{border-radius:12px;color:var(--side-fg);font-weight:600;transition:background .15s}
-html .nav button:hover{background:rgba(255,255,255,.10)}
-html .nav button.on{background:#fff;color:#0b6538;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.18)}
-html .acct{background:var(--acct-bg);border:1px solid rgba(255,255,255,.14);color:var(--side-fg)}
-html .acct .avt,html .uacct .avt{background:linear-gradient(135deg,#f6c21b,#e39a00);border:2px solid rgba(255,255,255,.85)}
-html .sart{mix-blend-mode:luminosity}
+/* ---------- menu samping: abu-abu sangat muda, aktif putih dengan penanda hijau ---------- */
+html .side{background:var(--side1);color:var(--side-fg);box-shadow:none;border-right:1px solid var(--line)}
+html .brand b{font-weight:800;letter-spacing:-.005em;color:var(--fg)}
+html .brand small{color:var(--muted)}
+html .nav button{border-radius:10px;color:var(--side-fg);font-weight:600;transition:background .15s}
+html .nav button:hover{background:rgba(4,120,87,.07)}
+html .nav button.on{background:var(--surface);color:var(--accent-text);font-weight:800;box-shadow:inset 3px 0 0 var(--accent),0 1px 2px rgba(15,27,20,.06)}
+html .acct{background:var(--acct-bg);border:1px solid var(--line);color:var(--side-fg);border-radius:14px}
+html .acct .avt,html .uacct .avt{background:var(--accent-text);border:0;color:#fff}
+html .sart{mix-blend-mode:multiply;filter:grayscale(1)}
+:root[data-theme=dark] .sart{mix-blend-mode:screen}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .sart{mix-blend-mode:screen}}
 
 /* ---------- panel kanan (komputer) ---------- */
-html .rail .quote{background:linear-gradient(135deg,#e6f4ec,#d2eadb);border:1px solid rgba(15,122,69,.18);border-radius:18px}
-html .rail .quote .cp{background:linear-gradient(180deg,#17935a,#0b6a3b);color:#fff}
-html .sig{border-bottom-color:#f2b705}
-:root[data-theme=dark] .rail .quote{background:linear-gradient(135deg,#16372a,#10281e)}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .rail .quote{background:linear-gradient(135deg,#16372a,#10281e)}}
+html .rail .quote{background:var(--soft);border:1px solid transparent;border-radius:var(--r-card)}
+html .rail .quote .cp{background:var(--accent);color:#fff;border-radius:14px}
+html .rail .quote p{font-weight:700}
+html .sig{border-bottom-color:var(--gold);border-bottom-width:2px}
 
 /* ---------- pemberitahuan ---------- */
-html #toastbaru{background:#0b3a25;color:#eafaf1}
+html #toastbaru{background:#0b3a2b;color:#e8f8f0}
 
-/* ---------- tampilan komputer: kepala halaman putih bersih ---------- */
+/* ---------- tampilan komputer ---------- */
 @media (min-width:900px){
-  html .top{background:var(--surface);color:var(--fg);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(16,40,28,.03);min-height:92px}
-  html .trow .lg{filter:none}
-  html .wil.op span+span{border-top-color:rgba(19,36,27,.22)}
-  html .top .ibtn{background:var(--bg);border:1px solid var(--line);color:var(--fg)}
-  html .top .ibtn:hover{background:var(--accent-soft)}
-  html .dot{border-color:var(--surface)}
-  html .uacct{background:var(--bg);border:1px solid var(--line);color:var(--fg)}
+  html .top{min-height:84px;box-shadow:none}
+  html .uacct{background:var(--soft);border:1px solid var(--line);color:var(--fg)}
   html .dchip{color:var(--muted)}
   html .sheet{padding-top:24px}
+  html .banner.d h2{font-size:24px}
 }
 
 /* ---------- HP: kepala halaman muat di layar sempit ---------- */
@@ -157,5 +176,5 @@ html #toastbaru{background:#0b3a25;color:#eafaf1}
 }
 
 /* ---------- mode gelap: label abu-abu lebih terbaca ---------- */
-:root[data-theme=dark] .pill.no,:root[data-theme=dark] .tag.g{background:#27372e;color:#c9d9ce}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .pill.no,:root:not([data-theme=light]) .tag.g{background:#27372e;color:#c9d9ce}}
+:root[data-theme=dark] .pill.no,:root[data-theme=dark] .tag.g{background:#23332a;color:#c9d9ce}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .pill.no,:root:not([data-theme=light]) .tag.g{background:#23332a;color:#c9d9ce}}
