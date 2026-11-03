@@ -371,7 +371,7 @@ function ambilKode(t){
 function muatJsQR(){
   if(window.jsQR)return Promise.resolve();
   if(JSQR_P)return JSQR_P;
-  var u=['https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js','https://unpkg.com/jsqr@1.4.0/dist/jsQR.js'];
+  var u=['jsQR.js','https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js','https://unpkg.com/jsqr@1.4.0/dist/jsQR.js'];
   JSQR_P=new Promise(function(res,rej){
     (function coba(i){
       if(i>=u.length){JSQR_P=null;rej(new Error('Pembaca QR belum bisa dimuat. Periksa internet.'));return}
