@@ -10,6 +10,11 @@
 <title>Terima Posyandu</title>
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="terima.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Terima Posyandu">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 :root{--g:#0a7a35;--g2:#086a2e;--gs:#e8f5ec;--bg:#f4f6f5;--card:#fff;--tx:#14211a;--mu:#6b7a72;--ln:#e2e8e4;--bad:#b3261e;--bads:#fdecea;--warn:#8a5a00;--warns:#fff4d6;--r:16px}
 *{box-sizing:border-box}
@@ -438,5 +443,6 @@ $('foto').addEventListener('change',async function(){
   try{var s=localStorage.getItem(KUNCI_LS);if(s){CRED=JSON.parse(s);if(CRED&&CRED.u&&CRED.p){$('login').classList.add('hidden');$('app').classList.remove('hidden');mulai();return}CRED=null}}catch(e){CRED=null}
 })();
 </script>
+<script>if('serviceWorker' in navigator)window.addEventListener('load',function(){try{navigator.serviceWorker.register('sw-terima.js').catch(function(){})}catch(e){}})</script>
 </body>
 </html>
