@@ -1,42 +1,41 @@
 /* =========================================================================
-   Tema tampilan Pantau Laporan Posyandu: "Modern Government Dashboard"
+   Tema tampilan Pantau Laporan Posyandu: "Dasbor Kuning Bersih"
    HANYA mengubah tampilan. Tidak ada fitur, teks, atau logika yang berubah.
    Untuk kembali ke tampilan lama: hapus baris <link ... pantau-tema.css> di pantau.html.
-   Pedoman: hijau emerald sebagai identitas, putih sebagai latar utama, abu-abu sangat muda
-   untuk kartu statistik, kuning hanya aksen kecil, sudut sedikit membulat, bayangan sangat tipis.
    ========================================================================= */
-
-/* ---------- warna dasar ---------- */
 :root{
-  --bg:#ffffff; --soft:#f3f6f4; --surface:#ffffff; --fg:#0f1b14; --muted:#56655c; --line:#e5eae7;
-  --accent:#047857; --accent-fg:#ffffff; --accent-text:#065f46; --accent-soft:#e8f6ef; --gold:#f2b705;
-  --warn:#8a3b00; --warn-soft:#fff0df; --none:#eef2ef; --ok:#047857; --ok-soft:#e1f5ea;
-  --hero1:#ffffff; --hero2:#ffffff; --hero-fg:#0f1b14;
-  --login-bg:radial-gradient(120% 90% at 50% 0%,#0a8a5f 0%,#065f46 48%,#033d2c 100%);
-  --shadow:0 1px 2px rgba(15,27,20,.04);
-  --side1:#f3f6f4; --side2:#f3f6f4; --side3:#f3f6f4; --side-fg:#1b2a22; --acct-bg:#ffffff;
-  --bnav1:#ffffff; --bnav2:#ffffff; --bnav-line:#e5eae7; --bnav-fg:#56655c; --bnav-on:#047857; --sart-op:.38;
-  --r-card:14px; --r-tile:12px; --r-btn:10px;
+  --bg:#ffffff; --soft:#f6f7f9; --surface:#ffffff; --fg:#1f2430; --muted:#5f6675; --line:#e8eaee;
+  --accent:#ffc800; --accent-fg:#241b00; --accent-text:#7a5600; --accent-soft:#fff5cc; --gold:#ffc800;
+  --warn:#8a3b00; --warn-soft:#fff0df; --none:#eceef2; --ok:#1d8a4e; --ok-soft:#e3f6e8;
+  --hero1:#ffffff; --hero2:#ffffff; --hero-fg:#1f2430;
+  --login-bg:linear-gradient(160deg,#ffe45c 0%,#ffd21f 55%,#ffc800 100%);
+  --shadow:0 1px 3px rgba(31,36,48,.06);
+  --side1:#ffffff; --side2:#ffffff; --side3:#ffffff; --side-fg:#2b3140; --acct-bg:#f6f7f9;
+  --bnav1:#ffffff; --bnav2:#ffffff; --bnav-line:#e8eaee; --bnav-fg:#5f6675; --bnav-on:#7a5600; --sart-op:1;
+  --r-card:16px; --r-tile:14px; --r-btn:10px;
+  --p-blue:#e6f0ff; --p-green:#e3f6e8; --p-orange:#ffeedb; --ink-blue:#1d4ed8; --ink-green:#1d8a4e; --ink-orange:#c2570c;
 }
 :root[data-theme=dark]{
-  --bg:#0b120f; --soft:#131d18; --surface:#101a15; --fg:#e9f2ed; --muted:#9db1a5; --line:#22302a;
-  --accent:#10b981; --accent-fg:#03150e; --accent-text:#34d399; --accent-soft:#0f2e22;
-  --warn:#ffb98a; --warn-soft:#3a2412; --none:#1a2620; --ok:#6ee7b7; --ok-soft:#0f2e22;
-  --hero1:#0f1a15; --hero2:#0f1a15; --hero-fg:#e9f2ed;
-  --login-bg:radial-gradient(120% 90% at 50% 0%,#0a5a42 0%,#063a2b 50%,#03211a 100%);
+  --bg:#12130f; --soft:#1b1c16; --surface:#17180f; --fg:#f2f0e6; --muted:#a8a794; --line:#2b2c22;
+  --accent:#ffc800; --accent-fg:#241b00; --accent-text:#ffd84d; --accent-soft:#2e2808;
+  --warn:#ffb98a; --warn-soft:#3a2412; --none:#25261c; --ok:#6ee79a; --ok-soft:#14301f;
+  --hero1:#17180f; --hero2:#17180f; --hero-fg:#f2f0e6;
+  --login-bg:linear-gradient(160deg,#5a4800 0%,#3a2f00 55%,#1f1a00 100%);
   --shadow:0 1px 2px rgba(0,0,0,.4);
-  --side1:#0e1713; --side2:#0e1713; --side3:#0e1713; --side-fg:#e9f2ed; --acct-bg:#16221c;
-  --bnav1:#0f1a15; --bnav2:#0f1a15; --bnav-line:#22302a; --bnav-fg:#a9bdb1; --bnav-on:#34d399; --sart-op:.28;
+  --side1:#14150e; --side2:#14150e; --side3:#14150e; --side-fg:#f2f0e6; --acct-bg:#1f2016;
+  --bnav1:#17180f; --bnav2:#17180f; --bnav-line:#2b2c22; --bnav-fg:#b4b39f; --bnav-on:#ffd84d; --sart-op:.6;
+  --p-blue:#16233f; --p-green:#14301f; --p-orange:#3a2412; --ink-blue:#9db9ff; --ink-green:#6ee79a; --ink-orange:#ffb98a;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){
-  --bg:#0b120f; --soft:#131d18; --surface:#101a15; --fg:#e9f2ed; --muted:#9db1a5; --line:#22302a;
-  --accent:#10b981; --accent-fg:#03150e; --accent-text:#34d399; --accent-soft:#0f2e22;
-  --warn:#ffb98a; --warn-soft:#3a2412; --none:#1a2620; --ok:#6ee7b7; --ok-soft:#0f2e22;
-  --hero1:#0f1a15; --hero2:#0f1a15; --hero-fg:#e9f2ed;
-  --login-bg:radial-gradient(120% 90% at 50% 0%,#0a5a42 0%,#063a2b 50%,#03211a 100%);
+  --bg:#12130f; --soft:#1b1c16; --surface:#17180f; --fg:#f2f0e6; --muted:#a8a794; --line:#2b2c22;
+  --accent:#ffc800; --accent-fg:#241b00; --accent-text:#ffd84d; --accent-soft:#2e2808;
+  --warn:#ffb98a; --warn-soft:#3a2412; --none:#25261c; --ok:#6ee79a; --ok-soft:#14301f;
+  --hero1:#17180f; --hero2:#17180f; --hero-fg:#f2f0e6;
+  --login-bg:linear-gradient(160deg,#5a4800 0%,#3a2f00 55%,#1f1a00 100%);
   --shadow:0 1px 2px rgba(0,0,0,.4);
-  --side1:#0e1713; --side2:#0e1713; --side3:#0e1713; --side-fg:#e9f2ed; --acct-bg:#16221c;
-  --bnav1:#0f1a15; --bnav2:#0f1a15; --bnav-line:#22302a; --bnav-fg:#a9bdb1; --bnav-on:#34d399; --sart-op:.28;
+  --side1:#14150e; --side2:#14150e; --side3:#14150e; --side-fg:#f2f0e6; --acct-bg:#1f2016;
+  --bnav1:#17180f; --bnav2:#17180f; --bnav-line:#2b2c22; --bnav-fg:#b4b39f; --bnav-on:#ffd84d; --sart-op:.6;
+  --p-blue:#16233f; --p-green:#14301f; --p-orange:#3a2412; --ink-blue:#9db9ff; --ink-green:#6ee79a; --ink-orange:#ffb98a;
 }}
 
 /* ---------- huruf: lebih tegas, mudah dibaca ---------- */
@@ -56,76 +55,84 @@ html .ic{stroke-width:1.75}
 html .nav button.on .ic,html .bnav button.on .ic{stroke-width:2}
 
 /* ---------- halaman masuk ---------- */
-html .login{color:#fff}
-html .login::before{opacity:.18}
+html .login{color:#241b00}
+html .login::before{opacity:.25}
 html .login h1{font-weight:800;letter-spacing:.03em;font-size:21px}
 html .login p.sub{opacity:.88}
-html .lf{border-radius:18px;padding:26px 22px;box-shadow:0 20px 50px rgba(0,0,0,.30),0 0 0 1px rgba(255,255,255,.06)}
+html .lf{border-radius:18px;padding:26px 22px;box-shadow:0 18px 44px rgba(90,70,0,.22)}
 html .lf label{font-size:13px;font-weight:700;color:var(--muted)}
 html .lf input{background:var(--bg);border:1.5px solid var(--line);border-radius:var(--r-btn)}
-html .lf input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 4px rgba(4,120,87,.14)}
+html .lf input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 4px rgba(255,200,0,.28)}
 html .pw button{color:var(--accent-text)}
 html .lfoot{opacity:.85}
 
 /* ---------- tombol ---------- */
 html .btn{border:1px solid var(--accent);background:var(--accent);color:var(--accent-fg);border-radius:var(--r-btn);
-  box-shadow:0 1px 2px rgba(6,95,70,.20);font-weight:700;letter-spacing:.005em;transition:background .15s,transform .05s}
-html .btn:hover{filter:none;background:#065f46;border-color:#065f46}
+  box-shadow:0 1px 2px rgba(122,86,0,.25);font-weight:700;letter-spacing:.005em;transition:background .15s,transform .05s}
+html .btn:hover{filter:none;background:#f0b800;border-color:#f0b800}
 html .btn:active{transform:translateY(1px)}
-html .btn.line{background:#fff;border:1.5px solid var(--accent);color:var(--accent-text);box-shadow:none}
+html .btn.line{background:#fff;border:1.5px solid var(--accent);color:#5c4200;box-shadow:none}
 html .btn.line:hover{background:var(--accent-soft)}
 html .btn.plain{background:var(--surface);color:var(--accent-text);border:1px solid var(--line);box-shadow:none}
 html .btn.plain:hover{background:var(--accent-soft)}
 :root[data-theme=dark] .btn.line{background:transparent}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .btn.line{background:transparent}}
-:root[data-theme=dark] .btn:hover{background:#34d399;border-color:#34d399}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .btn:hover{background:#34d399;border-color:#34d399}}
+:root[data-theme=dark] .btn:hover{background:#ffd84d;border-color:#ffd84d}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .btn:hover{background:#ffd84d;border-color:#ffd84d}}
 
 /* ---------- kepala halaman: putih bersih ---------- */
-html .top{background:var(--surface);color:var(--fg);border-bottom:1px solid var(--line)}
+html .top{background:linear-gradient(90deg,#ffd21f,#ffc800);color:#241b00;border-bottom:0}
+:root[data-theme=dark] .top{background:linear-gradient(90deg,#8a6a00,#6f5500);color:#fff6d1}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .top{background:linear-gradient(90deg,#8a6a00,#6f5500);color:#fff6d1}}
 html .sky{display:none}
 html .trow .lg,html .brand img{filter:none}
-html .trow .tt{font-weight:800;letter-spacing:-.005em;color:var(--fg)}
-html .trow .tt small,html .tt .wil{color:var(--muted)}
+html .trow .tt{font-weight:800;letter-spacing:-.005em;color:inherit}
+html .trow .tt small,html .tt .wil{color:inherit;opacity:.8}
 html .wil.op span+span{border-top-color:rgba(15,27,20,.18)}
-html .top .ibtn{background:var(--soft);border:1px solid var(--line);color:var(--fg);border-radius:10px}
-html .top .ibtn:hover{background:var(--accent-soft)}
-html .dot{background:var(--gold);border:2px solid var(--surface);width:10px;height:10px}
-html .chip{background:var(--soft);border:1px solid var(--line);color:var(--fg)}
-html .avt{background:var(--accent-text);border:0;color:#fff}
+html .top .ibtn{background:rgba(255,255,255,.55);border:1px solid rgba(36,27,0,.12);color:inherit;border-radius:10px}
+html .top .ibtn:hover{background:rgba(255,255,255,.85)}
+html .dot{background:#e5484d;border:2px solid #ffc800;width:10px;height:10px}
+html .chip{background:rgba(255,255,255,.6);border:1px solid rgba(36,27,0,.12);color:inherit}
+html .avt{background:#241b00;border:0;color:#ffd84d}
 html .hello .w{color:var(--fg)}
 html .sheet{background:var(--bg)}
 
-/* ---------- banner: kartu hijau gelap (satu-satunya blok berwarna penuh) ---------- */
-html .banner{background:linear-gradient(120deg,#064e3b 0%,#047857 62%,#10b981 130%);border-radius:var(--r-card);box-shadow:none}
-html .banner h2{color:#fff;font-weight:800}
-html .banner p{color:#d7f1e4}
-html .banner .bar1{background:var(--gold);opacity:1;height:3px;width:34px}
-html .bdots i{background:rgba(255,255,255,.5);border-color:rgba(255,255,255,.7)}
-html .bdots i.on{background:var(--gold)}
-html .pvban{background:linear-gradient(120deg,#064e3b,#047857 62%,#10b981);border-radius:var(--r-card)}
+/* ---------- banner: kartu kuning lembut ---------- */
+html .banner{background:linear-gradient(120deg,#fff3b8 0%,#ffe45c 70%,#ffd21f 130%);border-radius:var(--r-card);box-shadow:none}
+html .banner h2{color:#241b00;font-weight:800}
+html .banner p{color:#4a3a00}
+html .banner .bar1{background:#241b00;opacity:1;height:3px;width:34px}
+html .bdots i{background:rgba(36,27,0,.25);border-color:rgba(36,27,0,.4)}
+html .bdots i.on{background:#241b00}
+html .pvban{background:linear-gradient(120deg,#fff3b8,#ffe45c 70%,#ffd21f);border-radius:var(--r-card);color:#241b00}
 
 /* ---------- kartu, tabel, kolom isian ---------- */
 html .card{border-radius:var(--r-card);border:1px solid var(--line);box-shadow:var(--shadow);background:var(--surface)}
 html .panel.big{border-radius:var(--r-card);border:1px solid var(--line);box-shadow:var(--shadow)}
 html .sq{background:var(--accent-soft);color:var(--accent-text);border-radius:12px}
-html .tile{border-radius:var(--r-tile);box-shadow:none;background:var(--soft);border:1px solid transparent}
-html .tile .cc.g{background:var(--accent)}
-html .tile .cc.y{background:var(--gold)}
+html .ch h3,html .fh h3{border-left:4px solid var(--accent);padding-left:10px}
+html .tile{border-radius:var(--r-tile);box-shadow:none;background:var(--p-blue);border:1px solid transparent}
+html .tile:nth-child(3n+2){background:var(--p-green)}
+html .tile:nth-child(3n){background:var(--p-orange)}
+html .tile:nth-child(3n+1) b{color:var(--ink-blue)}
+html .tile:nth-child(3n+2) b{color:var(--ink-green)}
+html .tile:nth-child(3n) b{color:var(--ink-orange)}
+html .tile .cc.g{background:#1d8a4e}
+html .tile .cc.y{background:#ffc800}
 html .tile .cc.p{background:#d9487f}
-html .stat{border-radius:var(--r-tile);border:1px solid transparent;background:var(--soft);box-shadow:none}
+html .stat{border-radius:var(--r-tile);border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow)}
 html .item,html .pos,html .prow,html .skc{border-radius:var(--r-tile);border:1px solid var(--line);background:var(--surface)}
 html .dl{background:var(--soft);border-color:var(--line)}
 html .dl .cl{background:var(--accent-soft);color:var(--accent-text)}
 html .sel select,html .sel input,html .fld select,html .fld input,html .fl2 select,html .fl2 input{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r-btn)}
-html .sel select:focus,html .sel input:focus,html .fld select:focus,html .fld input:focus,html .fl2 select:focus,html .fl2 input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 4px rgba(4,120,87,.12)}
+html .sel select:focus,html .sel input:focus,html .fld select:focus,html .fld input:focus,html .fl2 select:focus,html .fl2 input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 4px rgba(255,200,0,.28)}
 html .filters label,html .fld label{font-weight:700;color:var(--fg)}
 html .ibtn{border:1px solid var(--line);border-radius:10px}
 html .pill,html .tag,html .chip2,html .chipst{font-weight:700}
-html .pill.ok,html .tag{background:var(--accent-soft);color:var(--accent-text)}
-html .pengum{background:var(--accent-soft);border:1px solid rgba(4,120,87,.14)}
+html .pill.ok,html .tag{background:var(--ok-soft);color:var(--ok)}
+html .pengum{background:var(--accent-soft);border:1px solid rgba(255,200,0,.5)}
 html .bar{background:var(--none)}
-html .bar i{background:linear-gradient(90deg,#10b981,#047857)}
+html .bar i{background:linear-gradient(90deg,#ffd84d,#ffc800)}
 html .modal .box{border-radius:16px 16px 0 0}
 @media(min-width:700px){html .modal .box{border-radius:16px}}
 html .accpop{border-radius:14px;box-shadow:0 8px 28px rgba(15,27,20,.16);border:1px solid var(--line)}
@@ -139,31 +146,30 @@ html .bnav button.on::after{background:var(--bnav-on);left:32%;right:32%}
 
 /* ---------- menu samping: abu-abu sangat muda, aktif putih dengan penanda hijau ---------- */
 html .side{background:var(--side1);color:var(--side-fg);box-shadow:none;border-right:1px solid var(--line)}
-html .brand b{font-weight:800;letter-spacing:-.005em;color:var(--fg)}
-html .brand small{color:var(--muted)}
+html .brand{background:linear-gradient(90deg,#ffd21f,#ffc800);color:#241b00;border-radius:14px;padding:10px}
+html .brand b{font-weight:800;letter-spacing:-.005em;color:#241b00}
+html .brand small{color:#4a3a00}
 html .nav button{border-radius:10px;color:var(--side-fg);font-weight:600;transition:background .15s}
-html .nav button:hover{background:rgba(4,120,87,.07)}
-html .nav button.on{background:var(--surface);color:var(--accent-text);font-weight:800;box-shadow:inset 3px 0 0 var(--accent),0 1px 2px rgba(15,27,20,.06)}
+html .nav button:hover{background:var(--accent-soft)}
+html .nav button.on{background:var(--accent);color:#241b00;font-weight:800;box-shadow:0 1px 3px rgba(122,86,0,.25);border-radius:999px}
 html .acct{background:var(--acct-bg);border:1px solid var(--line);color:var(--side-fg);border-radius:14px}
-html .acct .avt,html .uacct .avt{background:var(--accent-text);border:0;color:#fff}
-html .sart{mix-blend-mode:multiply;filter:grayscale(1)}
-:root[data-theme=dark] .sart{mix-blend-mode:screen}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .sart{mix-blend-mode:screen}}
+html .acct .avt,html .uacct .avt{background:#241b00;border:0;color:#ffd84d}
+html .sart{mix-blend-mode:normal;filter:none}
 
 /* ---------- panel kanan (komputer) ---------- */
-html .rail .quote{background:var(--soft);border:1px solid transparent;border-radius:var(--r-card)}
-html .rail .quote .cp{background:var(--accent);color:#fff;border-radius:14px}
+html .rail .quote{background:var(--accent-soft);border:1px solid transparent;border-radius:var(--r-card)}
+html .rail .quote .cp{background:var(--accent);color:#241b00;border-radius:14px}
 html .rail .quote p{font-weight:700}
-html .sig{border-bottom-color:var(--gold);border-bottom-width:2px}
+html .sig{border-bottom-color:#241b00;border-bottom-width:2px}
 
 /* ---------- pemberitahuan ---------- */
-html #toastbaru{background:#0b3a2b;color:#e8f8f0}
+html #toastbaru{background:#241b00;color:#fff3b8}
 
 /* ---------- tampilan komputer ---------- */
 @media (min-width:900px){
   html .top{min-height:84px;box-shadow:none}
-  html .uacct{background:var(--soft);border:1px solid var(--line);color:var(--fg)}
-  html .dchip{color:var(--muted)}
+  html .uacct{background:rgba(255,255,255,.6);border:1px solid var(--line);color:var(--fg)}
+  html .dchip{color:inherit}
   html .sheet{padding-top:24px}
   html .banner.d h2{font-size:24px}
 }
