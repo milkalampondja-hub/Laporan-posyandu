@@ -293,7 +293,7 @@ footer.dsk{display:none}
 #toastbaru.on{opacity:1;transform:translate(-50%,0)}
 @media (min-width:900px){#toastbaru{bottom:24px}}
 </style>
-<link rel="stylesheet" href="pantau-tema.css?v=20261103c">
+<link rel="stylesheet" href="pantau-tema.css?v=20261104a">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -348,6 +348,7 @@ footer.dsk{display:none}
       <button data-go="r"><svg class="ic "><use href="#i-bars"/></svg>Rekapitulasi</button>
       <button data-go="p"><svg class="ic "><use href="#i-gear"/></svg>Pengaturan</button>
     </nav>
+    <div class="pohon only-d" id="pohonKel"></div>
     <button class="acct acctbtn" type="button"><span class="avt"><svg class="ic "><use href="#i-user"/></svg></span><span><b class="nmadmin">Admin Posyandu</b><span class="nipadmin">NIP belum diisi</span></span><svg class="ic "><use href="#i-chev"/></svg></button>
     <div class="sart"></div>
   </aside>
@@ -411,6 +412,7 @@ footer.dsk{display:none}
         <section class="v v-l"><div class="card"><h4>Laporan yang sudah terkirim</h4><div class="opdl"><button class="btn sm line" id="dx2" type="button">Unduh Excel</button><button class="btn sm line" id="dc2" type="button">Unduh CSV</button></div><div id="ls"></div></div></section>
         <section class="v v-d" id="dpBox"></section>
         <section class="v v-r" id="rkBox"></section>
+        <section class="v v-k" id="kelBox"></section>
         <section class="v v-p">
           <div class="card"><h4>Akun</h4>
             <div class="kv"><span>Nama</span><b class="nmadmin">Admin Posyandu</b></div>
@@ -488,7 +490,7 @@ footer.dsk{display:none}
   </nav>
 </div>
 <script src="seed-posyandu.js"></script>
-<script src="pantau-ext.js?v=20261103c" defer></script>
+<script src="pantau-ext.js?v=20261104a" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script>
 var ARSIP_URL='https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec';
@@ -500,7 +502,7 @@ function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null
 function opt(s,v,t){var o=document.createElement('option');o.value=v;o.textContent=t;s.appendChild(o)}
 
 
-var VIEWS=['b','l','d','r','p'];
+var VIEWS=['b','l','d','r','p','k'];
 var VER='v7',HARI=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'],BLN3=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 function pad(n){return String(n).padStart(2,'0')}
 function jam(){var n=new Date();return pad(n.getHours())+'.'+pad(n.getMinutes())+' WITA'}
@@ -547,7 +549,7 @@ function tampilView(v){
   $('app').setAttribute('data-view',v);
   Array.prototype.forEach.call(document.querySelectorAll('.v'),function(s){
     var on=false;VIEWS.forEach(function(x){if(s.classList.contains('v-'+x)&&x===v)on=true});s.classList.toggle('hidden',!on)});
-  $('panel').classList.toggle('hidden',v==='p'||v==='r'||v==='d');
+  $('panel').classList.toggle('hidden',v==='p'||v==='r'||v==='d'||v==='k');
   var dl=document.querySelector('.panel .v-b');if(dl)dl.classList.toggle('hidden',v!=='b');
   Array.prototype.forEach.call(document.querySelectorAll('[data-go]'),function(b){
     if(b.closest('#nav')||b.closest('#bnav'))b.classList.toggle('on',b.getAttribute('data-go')===v)});
