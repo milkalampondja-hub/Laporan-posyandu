@@ -689,23 +689,26 @@ function periodeOpList() {
 function berandaOp(box) {
   if (PENGUMUMAN) box.appendChild(el('div', 'pengum', PENGUMUMAN));
   var ps = periodeOpList();
-  ps.forEach(function (pr) { muatSetor(pr); var h = hitung(pr.th, pr.bl); kartuOp(box, h, pr, persen(h.masuk.length, h.rows.length), ps.length > 1); kartuAntar(box, h, pr); });
+  ps.forEach(function (pr, i) { muatSetor(pr); var h = hitung(pr.th, pr.bl); kartuOp(box, h, pr, persen(h.masuk.length, h.rows.length), ps.length > 1, i); });
   pasangPeng();
 }
-function kartuOp(box, h, pr, pc, dua) {
-  var c = el('div', 'card'); c.appendChild(el('h4', null, 'Laporan ' + pr.bl + ' ' + pr.th));
-  var tot = h.rows.length, msk = h.masuk.length;
-  var k = el('div'); k.style.cssText = 'font-size:17px;margin:2px 0 8px'; var bb = el('b', null, msk + ' dari ' + tot); k.appendChild(bb); k.appendChild(document.createTextNode(' Posyandu sudah membuat laporan')); c.appendChild(k);
-  var br = el('div', 'bar'); br.appendChild(document.createElement('i')).style.width = pc + '%'; c.appendChild(br);
-  if (tot && msk === tot) c.appendChild(el('div', 'hm ok', 'Semua Posyandu sudah membuat laporan. Terima kasih.'));
-  else { var hm = hitungMundur(pr); c.appendChild(el('div', 'hm ' + hm.c, hm.t)); }
-  if (h.asing.length) c.appendChild(el('div', 'warn2', h.asing.length + ' laporan memakai nama Posyandu yang belum cocok dengan Data Posyandu, sehingga tidak dihitung.'));
-  box.appendChild(c);
-  var c2 = el('div', 'card'); c2.appendChild(el('h4', null, 'Posyandu Kelurahan ' + KELSAYA + (dua ? ' · laporan ' + pr.bl : '')));
-  var urut = { lewat: 0, belum: 1, telat: 2, tepat: 3 };
-  h.rows.slice().sort(function (a, b) { return urut[a.st] - urut[b.st] || a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); }).forEach(function (r) { c2.appendChild(barisPos(r, pr)); });
-  if (!tot) c2.appendChild(el('div', 'empty', 'Belum ada Posyandu terdaftar untuk kelurahan ini.'));
-  box.appendChild(c2);
+var OP_BUKA = {};
+function kartuOp(box, h, pr, pc, dua, idx) {
+  var c = el('div', 'card opc'), kp = perKey(pr); if (!(kp in OP_BUKA)) OP_BUKA[kp] = idx === 0;
+  var hd = el('div', 'fold'), ht = el('div'); ht.appendChild(el('h4', null, 'Laporan ' + pr.bl + ' ' + pr.th));
+  var tot = h.rows.length, msk = h.masuk.length, body = el('div', 'opb'), ar = el('span', 'ar', OP_BUKA[kp] ? '\u25BE' : '\u25B8');
+  if (!OP_BUKA[kp] && dua) ht.appendChild(el('div', 'lt', msk + ' dari ' + tot + ' sudah membuat laporan \u00b7 ' + hitungMundur(pr).t));
+  hd.appendChild(ht); if (dua) hd.appendChild(ar); c.appendChild(hd);
+  if (dua) { hd.style.cursor = 'pointer'; hd.addEventListener('click', function () { OP_BUKA[kp] = !OP_BUKA[kp]; renderBeranda(); }); }
+  if (!OP_BUKA[kp] && dua) { box.appendChild(c); return; }
+  var k = el('div'); k.style.cssText = 'font-size:17px;margin:2px 0 8px'; var bb = el('b', null, msk + ' dari ' + tot); k.appendChild(bb); k.appendChild(document.createTextNode(' Posyandu sudah membuat laporan')); body.appendChild(k);
+  var br = el('div', 'bar'); br.appendChild(document.createElement('i')).style.width = pc + '%'; body.appendChild(br);
+  if (tot && msk === tot) body.appendChild(el('div', 'hm ok', 'Semua Posyandu sudah membuat laporan. Terima kasih.'));
+  else { var hm = hitungMundur(pr); body.appendChild(el('div', 'hm ' + hm.c, hm.t)); }
+  if (h.asing.length) body.appendChild(el('div', 'warn2', h.asing.length + ' laporan memakai nama Posyandu yang belum cocok dengan Data Posyandu, sehingga tidak dihitung.'));
+  if (!tot) body.appendChild(el('div', 'empty', 'Belum ada Posyandu terdaftar untuk kelurahan ini.'));
+  else kartuAntar(body, h, pr, true);
+  c.appendChild(body); box.appendChild(c);
 }
 function formNomor(p) {
   var f = el('div');
@@ -1601,11 +1604,11 @@ async function unduhGabungan(lm, info) {
   var blob = await susunPdfGabungan(lm, info);
   unduhBerkas(blob, 'Antar Laporan ' + lm.kel + ' ' + lm.bln + ' ' + lm.thn + '.pdf');
 }
-function kartuAntar(box, h, pr) {
-  muatLembarKel(pr); var k = perKey(pr), D = LEMB[k], S = SETOR[k] || {}, c = el('div', 'card antar');
-  c.appendChild(el('h4', null, 'Antar laporan ke kecamatan' + (periodeOpList().length > 1 ? ' · ' + pr.bl : '')));
+function kartuAntar(box, h, pr, gabung) {
+  muatLembarKel(pr); var k = perKey(pr), D = LEMB[k], S = SETOR[k] || {}, c = gabung ? box : el('div', 'card antar');
+  if (gabung) { var sj = el('div', 'kh', 'Centang yang akan diantar ke kecamatan'); sj.style.marginTop = '12px'; c.appendChild(sj); } else c.appendChild(el('h4', null, 'Antar laporan ke kecamatan' + (periodeOpList().length > 1 ? ' · ' + pr.bl : '')));
   c.appendChild(el('div', 'lt', 'Batas mengantar laporan fisik ke kecamatan: tanggal ' + teksBatasKel(pr.th, pr.bl) + '.'));
-  c.appendChild(el('p', 'hint', 'Centang laporan yang akan diantar. Setelah lembar dibuat, laporan yang ikut tidak bisa dikirim ulang oleh kader kecuali Anda membukanya kembali.'));
+  c.appendChild(el('p', 'hint', (gabung ? '' : 'Centang laporan yang akan diantar. ') + 'Setelah lembar dibuat, laporan yang ikut tidak bisa dikirim ulang oleh kader kecuali Anda membukanya kembali.'));
   var cek = {}, rows = h.rows.slice().sort(function (a, b) { return a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); }), siap = 0;
   rows.forEach(function (r) {
     var diterima = S[r.p.id], ada = !!(r.d && r.d.pdf), terkunci = !!(D && D.kunci[r.p.id]), it = el('div', 'item'), lb = document.createElement('label');
@@ -1614,6 +1617,11 @@ function kartuAntar(box, h, pr) {
     lb.appendChild(cb); var tb = el('div'); tb.appendChild(el('b', null, r.p.nama + ' · ' + r.p.jenis.replace('Posyandu ', '')));
     var ket = diterima ? 'Sudah diterima kecamatan ' + tglId(diterima) : !r.d ? 'Belum mengirim laporan ke kelurahan' : !r.d.pdf ? 'PDF laporan belum tersimpan' : terkunci ? 'Siap diantar · terkunci (sudah dicetak)' : 'Siap diantar';
     var sm = el('div', null, ket); sm.style.cssText = 'font-size:13px;color:var(--muted)'; tb.appendChild(sm); lb.appendChild(tb); it.appendChild(lb);
+    var pl = el('span', 'pill'), pt = diterima ? (r.d ? 'Sudah diterima kecamatan' : 'Fisik diterima, belum lewat aplikasi') : !r.d ? (r.st === 'lewat' ? 'Belum kirim (terlambat)' : 'Belum kirim') : r.st === 'telat' ? 'Masuk terlambat' : 'Siap diantar';
+    pl.textContent = pt; pl.style.cssText = 'white-space:nowrap;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;' + (diterima && r.d ? 'background:var(--ok-soft);color:var(--ok)' : diterima ? 'background:var(--accent-soft);color:var(--accent-text)' : !r.d ? 'background:var(--none);color:var(--muted)' : 'background:var(--accent-soft);color:var(--accent-text)'); it.appendChild(pl);
+    if (r.d && r.d.pdf) it.appendChild(tombolPdf(r.d));
+    if (!r.d && r.p.hp) { var wa = document.createElement('a'); wa.className = 'btn sm kc wa'; wa.target = '_blank'; wa.rel = 'noopener'; wa.textContent = 'Ingatkan lewat WhatsApp'; wa.href = 'https://wa.me/' + nomorWA(r.p.hp) + '?text=' + encodeURIComponent(pesanWA(r.p, pr, r.st === 'lewat')); it.appendChild(wa); }
+    var bn = btn(r.p.hp ? 'Ubah no. HP' : '+ No. HP', 'sm kc plain', function () { formNomor(r.p); }); if (!r.p.hp) { bn.style.color = 'var(--ink-orange)'; bn.style.borderColor = 'var(--ink-orange)'; } it.appendChild(bn);
     if (terkunci && !diterima) it.appendChild(btn('Buka kembali', 'sm kc plain', function () {
       var a = prompt('Alasan membuka kembali laporan ' + r.p.nama + ' (kader akan bisa mengirim ulang):'); if (a == null) return; a = a.trim(); if (a.length < 3) { toast('Tulis alasan singkat.'); return; }
       LEMB_BUSY++; kirimAtur({ aksi: 'bukalaporan', per: k, pid: r.p.id, alasan: a }).then(function () { LEMB_BUSY--; toast('Laporan dibuka kembali. Kader bisa mengirim ulang.'); muatLembarKel(pr, true); })
@@ -1643,7 +1651,7 @@ function kartuAntar(box, h, pr) {
       unduhGabungan(akt, function (t) { b.textContent = t; }).then(function () { toast('PDF diunduh.'); }).catch(function (e) { toast(e.message || 'Gagal'); }).then(function () { b.disabled = false; b.textContent = awal; });
     }));
   }
-  c.appendChild(st); box.appendChild(c);
+  c.appendChild(st); if (!gabung) box.appendChild(c);
 }
 
 /* ---------- kait ke aplikasi utama ---------- */
