@@ -1826,3 +1826,26 @@ window.pasangPenerima = function () {
     r2.appendChild(bs); r2.appendChild(bw); bx.appendChild(r2); c.appendChild(bx);
   }
 };
+
+/* Judul kartu Beranda yang tetap diam saat kartu digulir (hanya tampilan: membungkus judul dan keterangan). */
+(function () {
+  function bungkus(card) {
+    var h = card.firstElementChild;
+    if (!h || h.tagName !== 'H4' || (h.parentNode && h.parentNode.classList.contains('sthd'))) return;
+    var w = document.createElement('div'); w.className = 'sthd';
+    var nx = h.nextElementSibling;
+    card.insertBefore(w, h); w.appendChild(h);
+    if (nx && nx.classList.contains('lt')) w.appendChild(nx);
+  }
+  function rapikan() {
+    var a = document.querySelectorAll('#sumB>.card, #secMx>.card');
+    for (var i = 0; i < a.length; i++) bungkus(a[i]);
+  }
+  function pasang() {
+    var t = [document.getElementById('sumB'), document.getElementById('secMx')], i;
+    if (!window.MutationObserver) return;
+    for (i = 0; i < t.length; i++) if (t[i]) new MutationObserver(function () { rapikan(); }).observe(t[i], { childList: true });
+    rapikan();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pasang); else pasang();
+})();
