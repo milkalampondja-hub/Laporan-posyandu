@@ -406,3 +406,16 @@ html .card .card{background:transparent;border:0;box-shadow:none;-webkit-backdro
   html .bnav{left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom));width:auto;border:1px solid var(--kc-line);border-radius:28px;background:var(--kc-bg);box-shadow:0 8px 24px rgba(40,30,0,.16)}
   html .sheet{padding-bottom:104px}
 }
+
+/* ---------- Tahap 3: isi kartu ---------- */
+html .card>h4:first-child,html .card>h3:first-child,html .card>.ch>h4,html .card>.ch>h3{display:flex;align-items:center;gap:10px;font-weight:800}
+html .card>h4:first-child::before,html .card>h3:first-child::before,html .card>.ch>h4::before,html .card>.ch>h3::before{content:"";flex:0 0 auto;width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,#34b36b,#1d8a4e);box-shadow:inset 0 0 0 9px rgba(255,255,255,0),0 2px 6px rgba(29,138,78,.28);-webkit-mask:none;mask:none;background-image:radial-gradient(circle at 50% 50%,#fff 0 3.5px,transparent 4px),linear-gradient(135deg,#34b36b,#1d8a4e)}
+html .mainc>.card:nth-of-type(3n+2)>h4:first-child::before,html .mainc>.card:nth-of-type(3n+2)>h3:first-child::before{background-image:radial-gradient(circle at 50% 50%,#fff 0 3.5px,transparent 4px),linear-gradient(135deg,#5b8def,#2f5fe0);box-shadow:0 2px 6px rgba(47,95,224,.28)}
+html .mainc>.card:nth-of-type(3n)>h4:first-child::before,html .mainc>.card:nth-of-type(3n)>h3:first-child::before{background-image:radial-gradient(circle at 50% 50%,#fff 0 3.5px,transparent 4px),linear-gradient(135deg,#f0932b,#d9731a);box-shadow:0 2px 6px rgba(217,115,26,.28)}
+/* hasil: lebih besar */
+html .hasil2{padding:20px 22px;border-radius:20px}
+html .hasil2 b,html .hasil2 .hasil2n{font-size:clamp(26px,3.2vw,38px)}
+/* tombol & isian */
+html .btn{border-radius:14px}
+html input[type=text],html input[type=password],html input[type=search],html input[type=number],html input[type=date],html select,html textarea{border-radius:12px;border:1px solid var(--kc-line);background:var(--surface)}
+html .btn:not(.primary):not(.line):not(.kc){box-shadow:0 1px 3px rgba(40,30,0,.10)}
