@@ -293,3 +293,6 @@ html .item.lrow>.btn{flex:none}
 html #sumB summary.kh .kmasuk{color:var(--muted);font-weight:600;font-size:12.5px;white-space:nowrap}
 @media (max-width:899px){html #sumB summary.kh .bukakel{display:none}}
 html #sumB summary.kh .kht{white-space:normal}
+html #rkBox:has(#rkIsi[data-rtab=ang])>.card:first-child{display:none}
+html .rkhd{display:flex;align-items:center;justify-content:space-between;gap:10px}
+html .rkhd h4{margin:0}

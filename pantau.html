@@ -294,7 +294,7 @@ footer.dsk{display:none}
 #toastbaru.on{opacity:1;transform:translate(-50%,0)}
 @media (min-width:900px){#toastbaru{bottom:24px}}
 </style>
-<link rel="stylesheet" href="pantau-tema.css?v=20261104e">
+<link rel="stylesheet" href="pantau-tema.css?v=20261104g">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -399,10 +399,10 @@ footer.dsk{display:none}
               <div><label for="ft">Tahun</label><div class="sel"><select id="ft"></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
               <div><label for="fj">Jenis</label><div class="sel"><select id="fj"><option value="">Semua Jenis</option><option>Posyandu Balita</option><option>Posyandu Lansia</option></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
               <div id="fkw"><label for="fk">Kelurahan</label><div class="sel"><select id="fk"><option value="">Semua</option></select><svg class="ic dn"><use href="#i-down"/></svg></div></div>
-              <div class="full"><div class="sel cari"><svg class="ic si"><use href="#i-search"/></svg><input id="fq" type="search" placeholder="Cari nama Posyandu…" aria-label="Cari nama Posyandu" autocomplete="off"></div></div>
+              <div class="full"><div class="sel cari"><svg class="ic si"><use href="#i-search"/></svg><input id="fq" type="search" name="cari-laporan-x" readonly onfocus="this.removeAttribute('readonly')" placeholder="Cari nama Posyandu…" aria-label="Cari nama Posyandu" autocomplete="off" autocapitalize="none" spellcheck="false"></div></div>
             </div>
           </div>
-          <div class="v v-b">
+          <div class="v v-l">
             <div class="card dl">
               <div class="top2"><span class="cl"><svg class="ic "><use href="#i-cloud"/></svg></span><div><small id="stamp">Memuat data…</small><h3>Tarik data untuk laporan bulanan</h3><p>Data mengikuti pilihan Bulan, Tahun, Jenis, dan Kelurahan di atas.</p></div></div>
               <div class="btns"><button class="btn line" id="dx" type="button"><svg class="ic "><use href="#i-cloud"/></svg>Unduh Excel (.xlsx)</button><button class="btn" id="dc" type="button"><svg class="ic "><use href="#i-doc"/></svg>Unduh CSV</button></div>
@@ -411,7 +411,7 @@ footer.dsk{display:none}
           </div>
         </div>
 
-        <section class="v v-b" id="secMx"><div class="card"><h4>Status per kelurahan</h4><div id="mx2"></div></div></section>
+        <section class="v v-b" id="secMx"><div class="card"><h4 id="mx2h">Status per kelurahan</h4><div id="mx2"></div></div></section>
         <section class="v v-l"><div class="card"><h4>Laporan yang sudah terkirim</h4><div class="opdl"><button class="btn sm line" id="dx2" type="button">Unduh Excel</button><button class="btn sm line" id="dc2" type="button">Unduh CSV</button></div><div id="ls"></div></div></section>
         <section class="v v-d" id="dpBox"></section>
         <section class="v v-d" id="pengBox"></section>
@@ -496,7 +496,7 @@ footer.dsk{display:none}
   </nav>
 </div>
 <script src="seed-posyandu.js"></script>
-<script src="pantau-ext.js?v=20261104e" defer></script>
+<script src="pantau-ext.js?v=20261104g" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script>
 var ARSIP_URL='https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec';
@@ -556,8 +556,8 @@ function tampilView(v){
   var jd={b:'Beranda',l:'Laporan',d:'Data Posyandu',r:'Rekapitulasi',p:'Pengaturan',k:'Kelurahan'},pg=$('pgt');if(pg)pg.textContent=jd[v]||'';
   Array.prototype.forEach.call(document.querySelectorAll('.v'),function(s){
     var on=false;VIEWS.forEach(function(x){if(s.classList.contains('v-'+x)&&x===v)on=true});s.classList.toggle('hidden',!on)});
-  $('panel').classList.toggle('hidden',v==='p'||v==='r'||v==='d'||v==='k');
-  var dl=document.querySelector('.panel .v-b');if(dl)dl.classList.toggle('hidden',v!=='b');
+  $('panel').classList.toggle('hidden',v==='p'||v==='r'||v==='d'||v==='k'||v==='b');
+  var dl=document.querySelector('.panel .v-l');if(dl)dl.classList.toggle('hidden',v!=='l');
   Array.prototype.forEach.call(document.querySelectorAll('[data-go]'),function(b){
     if(b.closest('#nav')||b.closest('#bnav'))b.classList.toggle('on',b.getAttribute('data-go')===v)});
   var ac=document.querySelector('.panel.big'),pl=$('panel');
@@ -584,7 +584,7 @@ function keluar(msg){
   ST=null;sebelum=-1;CRED=null;PERAN='';ADM=[];ADA=false;DATA=[];try{sessionStorage.removeItem('pantau-cred')}catch(x){}
   $('app').classList.add('hidden');$('login').classList.remove('hidden');$('lp').value='';
   $('lb').disabled=false;$('lb').textContent='Masuk';$('lerr').textContent=typeof msg==='string'?msg:'';
-  ['tot','mx2','ls','tt','msg'].forEach(function(i){$(i).textContent=''});tampilView('b');if(window.setelahKeluar)setelahKeluar();
+  ['tot','mx2','ls','msg'].forEach(function(i){$(i).textContent=''});tampilView('b');if(window.setelahKeluar)setelahKeluar();
   PROFIL={nama:'Admin Posyandu',nip:lsNip(),jabatan:'',unit:'',foto:''};PEND={foto:null};profilOk=false;pasangProfil();
 }
 function gagalLogin(m){keluar(m)}
@@ -626,7 +626,7 @@ function muat(dariLogin){
 function gagal(t){
   var m=$('msg');m.textContent='';m.appendChild(el('div','msg',t));
   $('stamp').textContent=ADA?'Menampilkan data terakhir':'Belum ada data';setLast(false);
-  if(!ADA){['tot','mx','mx2','ls','dp','tt'].forEach(function(i){$(i).textContent=''})}
+  if(!ADA){['tot','mx','mx2','ls','dp'].forEach(function(i){$(i).textContent=''})}
 }
 var FIELD={'Posyandu Balita':['Sasaran Ibu Hamil','Kunjungan Ibu Hamil','Sasaran Bayi Balita (S)','Memiliki KMS (K)','Kunjungan (D)','BB Naik (N)','BB Tidak Naik (T)','BGM','Stunting'],
  'Posyandu Lansia':['Sasaran lansia','Kunjungan lansia']};
@@ -921,8 +921,8 @@ function tampil(){
   tot.appendChild(tile('g','doc',lihat.length,'Laporan terkirim',function(){$('fj').value='';go('l');tampil()}));
   tot.appendChild(tile('y','check',tb,'Balita',function(){$('fj').value='Posyandu Balita';go('l');tampil()}));
   tot.appendChild(tile('p','user',tl,'Lansia',function(){$('fj').value='Posyandu Lansia';go('l');tampil()}));
-  matriks($('mx2'),uniq,kl,jn);
-  if($('tt'))jumlahTabel($('tt'),lihat,kl);
+  var pb=periodeAktif();matriks($('mx2'),terbaru(DATA.filter(function(d){return d.thn===pb.th&&d.bln===pb.bl})),'','');
+  var mh=$('mx2h');if(mh)mh.textContent='Status per kelurahan - '+pb.bl+' '+pb.th;
   // daftar laporan
   var ls=$('ls');ls.textContent='';
   if(!lihat.length){ls.appendChild(el('div','empty',DATA.length?'Belum ada laporan untuk pilihan ini.':'Belum ada laporan yang masuk.'))}

@@ -289,7 +289,8 @@ function renderBeranda() {
   box.classList.toggle('bgrid', !isOp());
   var pr = periodeBeranda(), h = hitung(pr.th, pr.bl);
   if (isOp()) { berandaOp(box); return; }
-  var c = el('div', 'card span2'); c.appendChild(el('h4', null, 'Ringkasan ' + pr.bl + ' ' + pr.th));
+  var c = el('div', 'card span2'), hr = el('div', 'rkhd'); hr.appendChild(el('h4', null, 'Ringkasan ' + pr.bl + ' ' + pr.th));
+  hr.appendChild(btn('Muat ulang data', 'sm plain', function () { if (typeof muat === 'function') muat(); })); c.appendChild(hr);
   c.appendChild(el('div', 'lt', 'Batas kader mengumpulkan laporan: tanggal ' + teksBatas(pr.th, pr.bl) + ' \u00b7 Batas kelurahan mengantar laporan fisik: tanggal ' + teksBatasKel(pr.th, pr.bl) + '.'));
   var g = el('div', 'grid4');
   var SS = SETOR[perKey(pr)], lg = h.rows.filter(function (x) { return fisikOK(x, pr); }), pc2 = persen(lg.length, h.rows.length);
@@ -834,9 +835,78 @@ function renderRekap() {
   }
   isi.appendChild(c6);
   // 7 angka
-  var c7 = el('div', 'card'); c7.appendChild(el('h4', null, 'Jumlah angka hasil kegiatan per kelurahan - ' + R.bl)); var tt = el('div'); tt.id = 'tt'; c7.appendChild(tt); isi.appendChild(c7);
-  jumlahTabel(tt, h.uniq, '');
-  [[c1, 'ring'], [c2, 'ring'], [c3, 'ring'], [c6, 'ring'], [c4, 'pos'], [c5, 'pos'], [c7, 'ang']].forEach(function (x) { x[0].setAttribute('data-tab', x[1]); });
+  var c7 = kartuAngka(isi);
+  [[c1, 'ring'], [c2, 'ring'], [c3, 'ring'], [c6, 'ring'], [c4, 'pos'], [c5, 'pos']].forEach(function (x) { x[0].setAttribute('data-tab', x[1]); });
+}
+/* ---------- Hasil laporan (angka kegiatan): filter sendiri, hanya dari laporan yang fisiknya sudah diterima ---------- */
+var ANG = null;
+function angDaftar() {
+  var pr = { bl: ANG.bl, th: ANG.th }, h = hitung(pr.th, pr.bl);
+  var rows = h.rows.filter(function (r) { return r.d && (!ANG.j || r.p.jenis === ANG.j) && (!ANG.k || r.p.kel === ANG.k); });
+  if (isOp()) return { op: true, pakai: rows.map(function (r) { return r.d; }), n: rows.length, m: 0 };
+  if (!SETOR[perKey(pr)]) { muatSetor(pr); return { muat: true, pakai: [], n: 0, m: 0 }; }
+  var ok = rows.filter(function (r) { return fisikOK(r, pr); });
+  return { pakai: ok.map(function (r) { return r.d; }), n: ok.length, m: rows.length - ok.length };
+}
+function angKet(a) {
+  if (a.muat) return 'Memuat status penerimaan laporan fisik\u2026';
+  if (a.op) return 'Dihitung dari semua laporan digital kelurahan Anda.';
+  return a.n + ' laporan fisik diterima' + (a.m ? ', ' + a.m + ' lainnya menunggu berkas fisik.' : '.');
+}
+function renderAngkaIsi() {
+  var box = $('angTab'); if (!box) return; box.textContent = '';
+  var a = angDaftar();
+  $('angHd').textContent = 'Jumlah angka hasil kegiatan' + (ANG.k ? ' - ' + ANG.k : ' per kelurahan') + ' - ' + ANG.bl + ' ' + ANG.th;
+  $('angKet').textContent = angKet(a);
+  if (a.muat) return;
+  jumlahTabel(box, a.pakai, ANG.k);
+}
+function kartuAngka(isi) {
+  if (!ANG) { var pa = periodeAktif(new Date()); ANG = { bl: pa.bl, th: pa.th, j: '', k: '' }; }
+  var c = el('div', 'card'); c.setAttribute('data-tab', 'ang');
+  c.innerHTML = '<h4>Filter hasil laporan</h4><div class="fl2"><select id="angB" aria-label="Bulan"></select><select id="angT" aria-label="Tahun"></select><select id="angJ" aria-label="Jenis"></select><select id="angK" aria-label="Kelurahan"></select></div>' +
+    '<div class="toolbar"><button class="btn sm" id="angX" type="button">Unduh angka kegiatan (Excel)</button></div>';
+  isi.appendChild(c);
+  var c2 = el('div', 'card'); c2.setAttribute('data-tab', 'ang');
+  c2.innerHTML = '<h4 id="angHd"></h4><div class="lt" id="angKet"></div><div id="angTab"></div>';
+  isi.appendChild(c2);
+  var th = {}; th[String(new Date().getFullYear())] = 1; th[ANG.th] = 1; DATA.forEach(function (d) { if (d.thn) th[d.thn] = 1; });
+  pilihEl('angB', BULAN.map(function (b) { return [b, b]; }), ANG.bl);
+  pilihEl('angT', Object.keys(th).sort().reverse().map(function (t) { return [t, t]; }), ANG.th);
+  pilihEl('angJ', [['', 'Semua jenis'], [J_B(), 'Balita'], [J_L(), 'Lansia']], ANG.j);
+  pilihEl('angK', [['', 'Semua kelurahan']].concat(KEL.map(function (k) { return [k, k]; })), ANG.k);
+  if (KEL.length < 2) $('angK').style.display = 'none';
+  [['angB', 'bl'], ['angT', 'th'], ['angJ', 'j'], ['angK', 'k']].forEach(function (x) {
+    $(x[0]).addEventListener('change', function () { ANG[x[1]] = this.value; renderAngkaIsi(); });
+  });
+  $('angX').addEventListener('click', unduhAngka);
+  renderAngkaIsi();
+  return c2;
+}
+function unduhAngka() {
+  if (!ADA) { alert('Data belum dimuat.'); return; }
+  var a = angDaftar(); if (a.muat) { alert('Status penerimaan laporan fisik masih dimuat. Coba lagi sebentar.'); return; }
+  var bag = [], kl = ANG.k;
+  ['Posyandu Balita', 'Posyandu Lansia'].forEach(function (j) {
+    var fl = FIELD[j], sb = a.pakai.filter(function (d) { return d.jenis === j; }); if (!sb.length) return;
+    var rows = [], gt = fl.map(function () { return 0; }), gl = 0;
+    KEL.filter(function (k) { return !kl || k === kl; }).forEach(function (k) {
+      var ds = sb.filter(function (d) { return d.kel === k; }), tot = fl.map(function () { return 0; });
+      ds.forEach(function (d) { ambil(d).forEach(function (r) { fl.forEach(function (f, i) { if (r.v[f] !== '') tot[i] += r.v[f]; }); }); });
+      var o = { Kelurahan: k, Laporan: ds.length }; fl.forEach(function (f, i) { o[f] = tot[i]; gt[i] += tot[i]; }); gl += ds.length; rows.push(o);
+    });
+    var jm = { Kelurahan: 'JUMLAH', Laporan: gl }; fl.forEach(function (f, i) { jm[f] = gt[i]; }); rows.push(jm);
+    bag.push([j.replace('Posyandu ', ''), rows]);
+  });
+  if (!bag.length) { alert('Belum ada laporan untuk pilihan ini.'); return; }
+  bag.push(['Keterangan', [{ Periode: ANG.bl + ' ' + ANG.th, Keterangan: angKet(a) }]]);
+  var nm = 'Angka-kegiatan-' + ANG.bl + '-' + ANG.th + (kl ? '-' + kl.replace(/\s+/g, '-') : '');
+  if (window.XLSX) {
+    var wb = XLSX.utils.book_new();
+    bag.forEach(function (x) { XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(x[1]), x[0]); });
+    XLSX.writeFile(wb, nm + '.xlsx'); return;
+  }
+  csvUnduh(nm + '.csv', bag);
 }
 function esc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 function cetakRekap() {
@@ -905,7 +975,7 @@ function dpSiap() {
   var box = $('dpBox'); if (!box || dpDibuat) return; dpDibuat = true;
   box.innerHTML = '<div class="card"><h4>Data Posyandu</h4><p class="hint">Sumber nama Posyandu untuk menu Laporan dan Rekap.</p>' +
     '<div class="grid4" id="dpStat"></div><div class="toolbar" id="dpTool"></div>' +
-    '<div class="fl2"><input class="full" id="dfq" type="search" placeholder="Cari Posyandu atau kader…" aria-label="Cari Posyandu atau kader" autocomplete="off"><select class="full" id="dfk" aria-label="Kelurahan"></select><select id="dfj" aria-label="Jenis"></select><select id="dfs" aria-label="Status"></select></div></div>' +
+    '<div class="fl2"><input class="full" id="dfq" type="search" name="cari-posyandu-x" readonly onfocus="this.removeAttribute(\'readonly\')" placeholder="Cari Posyandu atau kader…" aria-label="Cari Posyandu atau kader" autocomplete="off"><select class="full" id="dfk" aria-label="Kelurahan"></select><select id="dfj" aria-label="Jenis"></select><select id="dfs" aria-label="Status"></select></div></div>' +
     '<div id="dpList"></div><div class="card"><h4>Surat Keputusan (SK) Kader</h4><p class="hint">Ketuk SK untuk membacanya utuh.</p><div id="skBox"></div></div>';
   if (KELSAYA && KELSAYA !== '-') $('dfk').style.display = 'none';
   pilihEl('dfk', [['', 'Semua kelurahan']].concat(KEL.map(function (k) { return [k, k]; })));
