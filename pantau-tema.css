@@ -251,3 +251,45 @@ html #kelBox .ktwo .prow{border:0;padding:0}
 @media (min-width:900px){html #app[data-view=k] .cols{grid-template-columns:minmax(0,1fr)}}
 :root[data-theme=dark] .pohon .kn.open,:root[data-theme=dark] .pohon .kn.on{background:#4a3c08}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .pohon .kn.open,:root:not([data-theme=light]) .pohon .kn.on{background:#4a3c08}}
+
+/* ---------- perapian 4 Nov: kurangi pengulangan, tab, baris ringkas (tampilan saja) ---------- */
+html .pgt{display:none}
+html .onl{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:inherit}
+html .onl i{width:9px;height:9px;border-radius:50%;background:#1d8a4e;box-shadow:0 0 0 3px rgba(29,138,78,.18)}
+html .onl.off i{background:#c0392b;box-shadow:0 0 0 3px rgba(192,57,43,.18)}
+@media (min-width:900px){
+  html .top .trow .lg,html .top .trow .tt{display:none}
+  html .pgt{display:block;margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em;color:inherit}
+  html .top{min-height:72px}
+  html .side .acct{display:none}
+  html .pohon{display:none}
+  html .rail{display:none}
+  html .cols{grid-template-columns:minmax(0,1fr)}
+  html #app[data-view=b] .dmeta .dchip{opacity:.9}
+}
+@media (min-width:1000px){
+  html #sumB.bgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+  html #sumB.bgrid>.span2{grid-column:1/-1}
+  html #sumB.bgrid>.card{margin:0}
+}
+html #sumB summary.kh{display:flex;align-items:center;gap:8px}
+html #sumB summary.kh .kht{flex:1;min-width:0}
+html #sumB summary.kh .bukakel{margin-left:auto;min-height:30px;padding:2px 10px;font-size:12.5px}
+html .tabbar{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:4px 0 14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+html .tabbar button{border:0;background:none;padding:10px 16px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;border-radius:0}
+html .tabbar button.on{color:var(--fg);font-weight:800;border-bottom-color:var(--accent)}
+html #rkIsi[data-rtab=ring]>[data-tab]:not([data-tab=ring]),
+html #rkIsi[data-rtab=pos]>[data-tab]:not([data-tab=pos]),
+html #rkIsi[data-rtab=ang]>[data-tab]:not([data-tab=ang]){display:none}
+html #secP[data-ptab=akun]>[data-tab]:not([data-tab=akun]),
+html #secP[data-ptab=app]>[data-tab]:not([data-tab=app]),
+html #secP[data-ptab=pengguna]>[data-tab]:not([data-tab=pengguna]){display:none!important}
+html .dtbl tr.nol td{opacity:.42}
+html .dtbl tr.sel td{background:var(--accent-soft);font-weight:700;opacity:1}
+html .item.lrow{display:flex;align-items:center;gap:12px}
+html .item.lrow .lmain{flex:1;min-width:0}
+html .item.lrow>.btn{flex:none}
+@media (max-width:560px){html .item.lrow{flex-direction:column;align-items:stretch}}
+html #sumB summary.kh .kmasuk{color:var(--muted);font-weight:600;font-size:12.5px;white-space:nowrap}
+@media (max-width:899px){html #sumB summary.kh .bukakel{display:none}}
+html #sumB summary.kh .kht{white-space:normal}

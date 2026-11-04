@@ -294,7 +294,7 @@ footer.dsk{display:none}
 #toastbaru.on{opacity:1;transform:translate(-50%,0)}
 @media (min-width:900px){#toastbaru{bottom:24px}}
 </style>
-<link rel="stylesheet" href="pantau-tema.css?v=20261104b">
+<link rel="stylesheet" href="pantau-tema.css?v=20261104e">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -361,8 +361,10 @@ footer.dsk{display:none}
       <div class="trow">
         <img class="lg" src="logo.png" alt="">
         <div class="tt">PANTAU LAPORAN<br class="only-m"> POSYANDU<small class="wil">Kecamatan Palu Utara</small></div>
+        <h1 class="pgt" id="pgt">Beranda</h1>
         <div class="sp"></div>
         <div class="dmeta only-d">
+          <div class="onl" id="onl" title="Status sistem"><i></i><span>Online</span></div>
           <div class="dchip"><svg class="ic "><use href="#i-cal"/></svg><span><span class="dtgl">-</span><br>v11</span></div>
         </div>
         <button class="ibtn" id="tema" type="button" aria-label="Ganti tampilan terang atau gelap"><svg class="ic"><use href="#i-moon" id="temaic"/></svg></button>
@@ -412,10 +414,12 @@ footer.dsk{display:none}
         <section class="v v-b" id="secMx"><div class="card"><h4>Status per kelurahan</h4><div id="mx2"></div></div></section>
         <section class="v v-l"><div class="card"><h4>Laporan yang sudah terkirim</h4><div class="opdl"><button class="btn sm line" id="dx2" type="button">Unduh Excel</button><button class="btn sm line" id="dc2" type="button">Unduh CSV</button></div><div id="ls"></div></div></section>
         <section class="v v-d" id="dpBox"></section>
+        <section class="v v-d" id="pengBox"></section>
         <section class="v v-r" id="rkBox"></section>
         <section class="v v-k" id="kelBox"></section>
-        <section class="v v-p">
-          <div class="card"><h4>Akun</h4>
+        <section class="v v-p" id="secP" data-ptab="akun">
+          <div class="tabbar" id="tabP" data-for="secP" data-attr="data-ptab"><button type="button" class="on" data-t="akun">Akun saya</button><button type="button" data-t="app">Aplikasi</button><button type="button" data-t="pengguna">Pengguna</button></div>
+          <div class="card" data-tab="akun"><h4>Akun</h4>
             <div class="kv"><span>Nama</span><b class="nmadmin">Admin Posyandu</b></div>
             <div class="kv"><span>Nama pengguna</span><b id="pu">-</b></div>
             <div class="kv"><span>Peran</span><b id="peranTxt">-</b></div>
@@ -423,7 +427,7 @@ footer.dsk{display:none}
             <div class="kv"><span>Terakhir diperbarui</span><b class="lastt">-</b></div>
             <div class="kv"><span>Status</span><span class="okpill">Online</span></div>
           </div>
-          <div class="card"><h4>Profil admin</h4>
+          <div class="card" data-tab="akun"><h4>Profil admin</h4>
             <div class="pf"><span class="avt big" id="pvfoto"><svg class="ic "><use href="#i-user"/></svg></span>
               <div style="display:grid;gap:8px">
                 <label class="btn sm fbtn">Pilih foto profil<input id="inFoto" type="file" accept="image/*"></label>
@@ -437,8 +441,8 @@ footer.dsk{display:none}
             <button class="btn wide" id="svProfil" type="button">Simpan profil</button>
             <div class="st" id="stProfil" role="status"></div>
           </div>
-          <div class="card" id="cardBan" style="display:none"></div>
-          <div class="card"><h4>Ganti kata sandi</h4>
+          <div class="card" id="cardBan" data-tab="app" style="display:none"></div>
+          <div class="card" data-tab="akun"><h4>Ganti kata sandi</h4>
             <div class="fld"><label for="pwLama">Kata sandi sekarang</label><input id="pwLama" type="password" autocomplete="current-password"></div>
             <div class="fld"><label for="pwBaru">Kata sandi baru</label><input id="pwBaru" type="password" autocomplete="new-password"></div>
             <div class="fld"><label for="pwUlang">Ulangi kata sandi baru</label><input id="pwUlang" type="password" autocomplete="new-password"></div>
@@ -446,9 +450,10 @@ footer.dsk{display:none}
             <button class="btn wide" id="svPw" type="button">Ubah kata sandi</button>
             <div class="st" id="stPw" role="status"></div>
           </div>
-          <div class="card" id="cardApp" style="display:none"></div>
-          <div class="card" id="cardCad" style="display:none"></div>
-          <div class="card" id="cardAdm" style="display:none"><h4>Pengelolaan akun pengguna</h4>
+          <div class="card" id="cardApp" data-tab="app" style="display:none"></div>
+          <div class="card" id="cardCad" data-tab="app" style="display:none"></div>
+          <div id="boxRuang" data-tab="app"></div>
+          <div class="card" id="cardAdm" data-tab="pengguna" style="display:none"><h4>Pengelolaan akun pengguna</h4>
             <p class="hint" id="admInfo"></p>
             <p class="hint">Anda adalah Admin kecamatan: dapat mengelola data, memeriksa laporan, dan mengatur aplikasi. Akun tambahan berperan sebagai Petugas/operator: dapat melihat, memeriksa, dan merekap laporan, tetapi tidak dapat mengubah data Posyandu, SK, banner, atau akun.</p>
             <div id="admList"></div>
@@ -491,7 +496,7 @@ footer.dsk{display:none}
   </nav>
 </div>
 <script src="seed-posyandu.js"></script>
-<script src="pantau-ext.js?v=20261104b" defer></script>
+<script src="pantau-ext.js?v=20261104e" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script>
 var ARSIP_URL='https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec';
@@ -548,6 +553,7 @@ function jam(){var n=new Date();return pad(n.getHours())+'.'+pad(n.getMinutes())
 function tutupLaci(){$('side').classList.remove('open');$('scrim').classList.remove('on')}
 function tampilView(v){
   $('app').setAttribute('data-view',v);
+  var jd={b:'Beranda',l:'Laporan',d:'Data Posyandu',r:'Rekapitulasi',p:'Pengaturan',k:'Kelurahan'},pg=$('pgt');if(pg)pg.textContent=jd[v]||'';
   Array.prototype.forEach.call(document.querySelectorAll('.v'),function(s){
     var on=false;VIEWS.forEach(function(x){if(s.classList.contains('v-'+x)&&x===v)on=true});s.classList.toggle('hidden',!on)});
   $('panel').classList.toggle('hidden',v==='p'||v==='r'||v==='d'||v==='k');
@@ -595,7 +601,7 @@ function cekUbah(){
   }).catch(function(){})}
 function setLast(ok){
   Array.prototype.forEach.call(document.getElementsByClassName('lastt'),function(e){e.textContent=ok?jam():e.textContent});
-  $('stt').textContent=ok?'Online':'Terputus';$('stt').className=ok?'okpill':'okpill';
+  $('stt').textContent=ok?'Online':'Terputus';var onl=$('onl');if(onl){onl.className='onl'+(ok?'':' off');onl.lastChild.textContent=ok?'Online':'Terputus'}$('stt').className=ok?'okpill':'okpill';
   var b=$('okb');b.className='okbox'+(ok?'':' bad');$('okt').textContent=ok?'Sistem berjalan dengan baik':'Data belum bisa dimuat';
 }
 function muat(dariLogin){
@@ -912,7 +918,7 @@ function tampil(){
   var ubahF=bl!==pa0.bl||th!==pa0.th||jn||kl||q;$('fres').classList.toggle('hidden',!ubahF);
   var tb=lihat.filter(function(d){return d.jenis==='Posyandu Balita'}).length,tl=lihat.filter(function(d){return d.jenis==='Posyandu Lansia'}).length;
   var tot=$('tot');tot.textContent='';
-  tot.appendChild(tile('g','doc',lihat.length,'Laporan masuk',function(){$('fj').value='';go('l');tampil()}));
+  tot.appendChild(tile('g','doc',lihat.length,'Laporan terkirim',function(){$('fj').value='';go('l');tampil()}));
   tot.appendChild(tile('y','check',tb,'Balita',function(){$('fj').value='Posyandu Balita';go('l');tampil()}));
   tot.appendChild(tile('p','user',tl,'Lansia',function(){$('fj').value='Posyandu Lansia';go('l');tampil()}));
   matriks($('mx2'),uniq,kl,jn);
@@ -921,17 +927,16 @@ function tampil(){
   var ls=$('ls');ls.textContent='';
   if(!lihat.length){ls.appendChild(el('div','empty',DATA.length?'Belum ada laporan untuk pilihan ini.':'Belum ada laporan yang masuk.'))}
   lihat.slice().sort(function(a,b){return b.n<a.n?-1:b.n>a.n?1:0}).forEach(function(d){
-    var it=el('div','item');
-    it.appendChild(el('div','a',d.pos));
-    it.appendChild(el('div','b',d.kel+' · '+d.jenis));
-    it.appendChild(el('div','b','Kegiatan '+(d.tgl||'-')+' · Terkirim '+(d.tk||'-')));
+    var it=el('div','item lrow'),lm=el('div','lmain');
+    lm.appendChild(el('div','a',d.pos));
+    lm.appendChild(el('div','b',[d.kel,String(d.jenis||'').replace('Posyandu ',''),'Kegiatan '+String(d.tgl||'-').replace(/\s+00:00:00$/,''),'Terkirim '+(d.tk||'-')].join(' \u00b7 ')));
     var tg=el('div','tags');
     tg.appendChild(el('span','tag g',d.n));
     tg.appendChild(el('span','tag',d.bln+' '+d.thn));
     tg.appendChild(el('span','tag '+(d.pdf?'':'w'),d.pdf?'PDF tersimpan':'PDF menunggu'));
     if(d.ver>1)tg.appendChild(el('span','tag g','Revisi ke-'+d.ver));
-    it.appendChild(tg);
-    if(d.pdf&&window.unduhPdf){var bp=el('button','btn sm plain','Unduh PDF');bp.type='button';bp.style.marginTop='8px';bp.addEventListener('click',function(){unduhPdf(d,bp)});it.appendChild(bp)}
+    lm.appendChild(tg);it.appendChild(lm);
+    if(d.pdf&&window.unduhPdf){var bp=el('button','btn sm plain','Unduh PDF');bp.type='button';bp.addEventListener('click',function(){unduhPdf(d,bp)});it.appendChild(bp)}
     ls.appendChild(it);
   });
   if(window.tampilBaru)tampilBaru();
