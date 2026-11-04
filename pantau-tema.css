@@ -327,3 +327,27 @@ html .hasil2 .pc{flex:none;font-size:30px;font-weight:800;letter-spacing:-.02em;
 :root[data-theme=dark] .kk .kkd em{color:#ff8a80}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .kk .kkd em{color:#ff8a80}}
 html .hasil2n{font-weight:700;color:var(--warn)}
+
+/* Ubah data Posyandu: dua pilihan dan impor Excel dengan pratinjau */
+html .hl-ubah{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:800}
+html .ubah{border:2px solid var(--ink-blue)}
+html .ubah2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:10px}
+html .pil{background:var(--surface);border:1px solid var(--line);border-top:4px solid;border-radius:14px;padding:16px 18px}
+html .pil.a{border-top-color:var(--ink-blue)}html .pil.b{border-top-color:var(--ink-green)}
+html .pil .pic{font-size:26px}html .pil h5{margin:6px 0 4px;font-size:16px}html .pil p{margin:0 0 8px;color:var(--muted);font-size:13px}
+html .pil ul{margin:0 0 12px;padding-left:18px;font-size:13px}
+html .lgk{display:flex;align-items:center;gap:8px;margin:14px 0 6px}html .lgk .no{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ink-blue);color:#fff;font-size:12px;font-weight:800}
+html .ist{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0}
+html .is{border-radius:12px;padding:8px 12px}html .is b{display:block;font-size:24px;line-height:1.1}html .is span{font-size:12px}
+html .is.s1{background:var(--p-blue);color:var(--ink-blue)}html .is.s2{background:var(--p-green);color:var(--ink-green)}
+html .is.s3{background:#fdeaea;color:#c62828}html .is.s4{background:var(--none);color:var(--muted)}
+html .is.s5,html .is.s6{background:var(--p-orange);color:var(--ink-orange)}
+html .itbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}html .itbl td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+html .itg{display:inline-block;font-size:11.5px;font-weight:700;border-radius:99px;padding:2px 10px;white-space:nowrap}
+html .itg.tu{background:var(--p-blue);color:var(--ink-blue)}html .itg.tb{background:var(--p-green);color:var(--ink-green)}
+html .itg.tn{background:var(--p-orange);color:var(--ink-orange)}html .itg.th{background:#fdeaea;color:#c62828}
+html .ilama{color:#c62828;text-decoration:line-through}html .ibaru{color:var(--ink-green);font-weight:700}
+html .inon{display:flex;align-items:flex-start;gap:10px;margin-top:12px;font-size:13px;cursor:pointer}html .inon input{width:20px;height:20px;flex:none;accent-color:var(--ok)}
+:root[data-theme=dark] .is.s3,:root[data-theme=dark] .itg.th{background:#3a1a1a;color:#ff8a80}:root[data-theme=dark] .ilama{color:#ff8a80}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .is.s3,:root:not([data-theme=light]) .itg.th{background:#3a1a1a;color:#ff8a80}:root:not([data-theme=light]) .ilama{color:#ff8a80}}
+@media (max-width:760px){html .ubah2{grid-template-columns:1fr}}

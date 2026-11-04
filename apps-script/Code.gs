@@ -47,7 +47,7 @@ function doGet(e) {
     if (masuk(p.u, p.p)) {
       var w0 = masuk(p.u, p.p);
       hasil = { ok: true, list: bacaPos().filter(function (x) { return w0.peran !== 'admin' || x.kel === w0.kel; }),
-                sk: bacaPengaturan(PANTAU_USER).sk, kel: w0.kel || '' };
+                sk: bacaPengaturan(PANTAU_USER).sk, kel: w0.kel || '', fitur: ['alias'] };
     } else {
       hasil = gagalLogin();
     }
@@ -609,6 +609,14 @@ function bacaPos() {
 function kunciPos(kel, jenis, nama) {
   return [kel, jenis, String(nama || '').toLowerCase().replace(/posyandu/g, '').replace(/[^a-z0-9]/g, '').replace(/bougenv[a-z]*/, 'bougenvil')].join('|');
 }
+/** Nama lama sebuah Posyandu (bila pernah ganti nama): laporan lama tetap dikenali lewat nama ini. */
+function cariLap(lap, x) {
+  var r = lap[kunciPos(x.kel, x.jenis, x.nama)];
+  if (r) return r;
+  var al = Array.isArray(x.alias) ? x.alias : [];
+  for (var i = 0; i < al.length; i++) { r = lap[kunciPos(x.kel, x.jenis, al[i])]; if (r) return r; }
+  return null;
+}
 /** Rapikan dan periksa seluruh daftar sebelum disimpan. */
 function bersihPos(arr) {
   if (!Array.isArray(arr)) throw new Error('Data tidak valid');
@@ -631,7 +639,8 @@ function bersihPos(arr) {
     out.push({ id: id, nama: nama, kel: kel, jenis: jenis, alamat: bersih(x.alamat, 120), puskesmas: bersih(x.puskesmas, 40),
                ketua: bersih(x.ketua, 60), hp: String(x.hp || '').replace(/[^0-9+ \-]/g, '').slice(0, 20),
                jadwal: bersih(x.jadwal, 80), aktif: x.aktif !== false, kader: kader,
-               hpJenis: x.hpJenis === 'perwakilan' ? 'perwakilan' : 'ketua', hpNama: bersih(x.hpNama, 60) });
+               hpJenis: x.hpJenis === 'perwakilan' ? 'perwakilan' : 'ketua', hpNama: bersih(x.hpNama, 60),
+               alias: (Array.isArray(x.alias) ? x.alias : []).map(function (a) { return bersih(a, 60); }).filter(function (a) { return a && kunciPos(kel, jenis, a) !== k; }).slice(0, 5) });
   });
   return out;
 }
@@ -800,7 +809,7 @@ function buatLembar(d) {
     var pos = bacaPos().filter(function (x) { return x.aktif !== false && x.kel === kel; })
       .sort(function (a, b) { return a.jenis.localeCompare(b.jenis) || a.nama.localeCompare(b.nama); });
     var items = pos.map(function (x) {
-      var r = lap[kunciPos(x.kel, x.jenis, x.nama)], st;
+      var r = cariLap(lap, x), st;
       if ((sl.d[per] || {})[x.id]) st = 'diterima';
       else if (!r) st = 'belum';
       else if (!r.pdf) st = 'pdfbelum';
@@ -893,7 +902,7 @@ function terimaLembarGet(p) {
       sl.d[o.per] = sl.d[o.per] || {}; sl.t[o.per] = sl.t[o.per] || {};
       o.items.forEach(function (it) {
         if (it.st !== 'ikut' || !ids[it.pid] || sl.d[o.per][it.pid]) return;
-        var q = byId[it.pid], r = q ? lap[kunciPos(q.kel, q.jenis, q.nama)] : null;
+        var q = byId[it.pid], r = q ? cariLap(lap, q) : null;
         if (!q || !r || r.nomor !== it.nomor) { lewati.push(it.nama + ': laporan berubah setelah lembar dibuat'); return; }
         if (K[kunciLap(o.per, q.kel, q.jenis, q.nama)] !== o.kode) { lewati.push(it.nama + ': laporan sudah dibuka kembali'); return; }
         sl.d[o.per][it.pid] = Utilities.formatDate(now, zona, 'yyyy-MM-dd');
@@ -940,7 +949,11 @@ function infoLaporanKode(kode) {
   if (!r) return null;
   rows.forEach(function (x) { if (x[2] == r[2] && x[3] == r[3] && x[4] == r[4] && x[5] == r[5] && x[6] == r[6]) maks = Math.max(maks, parseInt(x[9], 10) || 1); });
   var per = kodePeriode(r[2], r[3]), kp = kunciPos(String(r[4]), String(r[6]), String(r[5])), pid = '', nmPos = '';
-  bacaPos().forEach(function (x) { if (!pid && kunciPos(x.kel, x.jenis, x.nama) === kp) { pid = x.id; nmPos = x.nama; } });
+  bacaPos().forEach(function (x) {
+    if (pid) return;
+    var cocok = kunciPos(x.kel, x.jenis, x.nama) === kp || (Array.isArray(x.alias) ? x.alias : []).some(function (a) { return kunciPos(x.kel, x.jenis, a) === kp; });
+    if (cocok) { pid = x.id; nmPos = x.nama; }
+  });
   var o = { nomor: String(r[0]), versi: parseInt(r[9], 10) || 1, versiTerbaru: maks, pos: String(r[5]), kel: String(r[4]), jenis: String(r[6]),
             kader: String(r[8] || ''), bln: String(r[3]), thn: String(r[2]), per: per, pid: pid, kode: kode, terima: null };
   if (pid && per) o.terima = statusTerima(per, pid);
@@ -992,6 +1005,7 @@ function hitungRekap(per, batas) {
   }
   var list = pos.filter(function (x) { return x.aktif !== false; }).map(function (x) {
     var k = kunciPos(x.kel, x.jenis, x.nama), st = per ? statusTerima(per, x.id, sl) : null;
+    (Array.isArray(x.alias) ? x.alias : []).forEach(function (a) { var ka = kunciPos(x.kel, x.jenis, a); if (!ada[k] && ada[ka]) k = ka; });
     return { pid: x.id, nama: x.nama, kel: x.kel, jenis: x.jenis, dibuat: !!ada[k], versi: ver[k] || 0, terima: st };
   });
   var byId = {}; pos.forEach(function (x) { byId[x.id] = x; });

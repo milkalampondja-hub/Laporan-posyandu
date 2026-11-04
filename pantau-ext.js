@@ -79,7 +79,7 @@ function kunci(kel, jenis, nama) {
   return [kel, jenis, String(nama || '').toLowerCase().replace(/posyandu/g, '').replace(/[^a-z0-9]/g, '').replace(/bougenv[a-z]*/, 'bougenvil')].join('|');
 }
 function aktifKader(p) { return (p.kader || []).filter(function (k) { return k.aktif !== false; }); }
-var KELSAYA = '';
+var KELSAYA = '', SERVER_ALIAS = false, UBAH_BUKA = false, UBAH_MODE = '', IMPOR = null;
 function dasarPos() { var l = POS.length ? POS : (window.SEED_POS || []); return KELSAYA ? l.filter(function (p) { return p.kel === KELSAYA; }) : l; }
 window.terapKel = function (k) {
   KELSAYA = k || ''; try { pasangAs(); } catch (x) { }
@@ -124,6 +124,7 @@ function hitung(th, bl) {
   var rows = master.map(function (p) {
     var k = kunci(p.kel, p.jenis, p.nama), d = idx[k], st;
     dikenal[k] = 1;
+    (p.alias || []).forEach(function (a) { var ka = kunci(p.kel, p.jenis, a); dikenal[ka] = 1; if (!d && idx[ka]) d = idx[ka]; });
     if (d) { var tk = tglKirim(d); st = (tk && tk > batas) ? 'telat' : 'tepat'; }
     else st = now > batas ? 'lewat' : 'belum';
     return { p: p, d: d, st: st };
@@ -738,7 +739,7 @@ function penggantiSementara() {
     var d = akhir[k], re = /([^,()]+?)\s*\(([^()]+?)\s+\u2014\s+Kader Pengganti Sementara\)/g, m, ps = [];
     while ((m = re.exec(d.kader || ''))) ps.push({ lama: m[1].trim(), baru: m[2].trim() });
     if (!ps.length) return;
-    var p = dasarPos().filter(function (x) { return kunci(x.kel, x.jenis, x.nama) === k; })[0] || { nama: d.pos, kel: d.kel, jenis: d.jenis };
+    var p = dasarPos().filter(function (x) { return kunci(x.kel, x.jenis, x.nama) === k || (x.alias || []).some(function (a) { return kunci(x.kel, x.jenis, a) === k; }); })[0] || { nama: d.pos, kel: d.kel, jenis: d.jenis };
     out.push({ p: p, d: d, pasangan: ps });
   });
   return out.sort(function (a, b) { return a.p.kel.localeCompare(b.p.kel) || a.p.nama.localeCompare(b.p.nama); });
@@ -998,7 +999,7 @@ function dpSiap() {
   box.innerHTML = '<div class="card"><h4>Data Posyandu</h4><p class="hint">Sumber nama Posyandu untuk menu Laporan dan Rekap.</p>' +
     '<div class="grid4" id="dpStat"></div><div class="toolbar" id="dpTool"></div>' +
     '<div class="fl2"><input class="full" id="dfq" type="search" name="cari-posyandu-x" readonly onfocus="this.removeAttribute(\'readonly\')" placeholder="Cari Posyandu atau kader…" aria-label="Cari Posyandu atau kader" autocomplete="off"><select class="full" id="dfk" aria-label="Kelurahan"></select><select id="dfj" aria-label="Jenis"></select><select id="dfs" aria-label="Status"></select></div></div>' +
-    '<div id="dpList"></div><div class="card"><h4>Surat Keputusan (SK) Kader</h4><p class="hint">Ketuk SK untuk membacanya utuh.</p><div id="skBox"></div></div>';
+    '<div id="dpUbah"></div><div id="dpList"></div><div class="card"><h4>Surat Keputusan (SK) Kader</h4><p class="hint">Ketuk SK untuk membacanya utuh.</p><div id="skBox"></div></div>';
   if (KELSAYA && KELSAYA !== '-') $('dfk').style.display = 'none';
   pilihEl('dfk', [['', 'Semua kelurahan']].concat(KEL.map(function (k) { return [k, k]; })));
   pilihEl('dfj', [['', 'Semua jenis'], [J_B(), 'Balita'], [J_L(), 'Lansia']]);
@@ -1017,11 +1018,11 @@ function renderData() {
   var tb = $('dpTool'); tb.textContent = '';
   if (utama()) {
     if (!POS.length) tb.appendChild(btn('Simpan daftar dari SK', '', simpanDariSK));
-    else tb.appendChild(btn('Tambah Posyandu', '', function () { formPos(null); }));
-    tb.appendChild(btn('Impor Excel', 'line', function () { $('impPos').click(); }));
+    tb.appendChild(btn('\u270E Ubah data Posyandu', 'hl-ubah', function () { UBAH_BUKA = !UBAH_BUKA; if (!UBAH_BUKA) { UBAH_MODE = ''; IMPOR = null; } pasangUbah(); }));
   }
   tb.appendChild(btn('Ekspor Excel', 'line', ekspor));
-  if (utama() && !$('impPos')) { var inp = document.createElement('input'); inp.type = 'file'; inp.id = 'impPos'; inp.accept = '.xlsx,.xls,.csv'; inp.style.display = 'none'; inp.addEventListener('change', function () { var f = this.files[0]; this.value = ''; if (f) impor(f); }); document.body.appendChild(inp); }
+  if (utama() && !$('impPos')) { var inp = document.createElement('input'); inp.type = 'file'; inp.id = 'impPos'; inp.accept = '.xlsx,.xls,.csv'; inp.style.display = 'none'; inp.addEventListener('change', function () { var f = this.files[0]; this.value = ''; if (f) imporPratinjau(f); }); document.body.appendChild(inp); }
+  pasangUbah();
   var l = $('dpList'); l.textContent = '';
   var q = (dpFilter.q || '').toLowerCase();
   var fl = all.filter(function (p) {
@@ -1066,6 +1067,11 @@ function simpanDariSK() {
   if (!confirm('Simpan daftar ' + (window.SEED_POS || []).length + ' Posyandu dan nama kader dari SK ke server?')) return;
   simpanDaftar(JSON.parse(JSON.stringify(window.SEED_POS || [])), 'Daftar dari SK tersimpan.');
 }
+function aliasBaru(p, namaBaru) {
+  var al = (p.alias || []).slice();
+  if (p.nama && p.nama !== namaBaru && kunci(p.kel, p.jenis, p.nama) !== kunci(p.kel, p.jenis, namaBaru)) al.push(p.nama);
+  var seen = {}; return al.filter(function (a) { var k = kunci(p.kel, p.jenis, a); if (seen[k] || k === kunci(p.kel, p.jenis, namaBaru)) return false; seen[k] = 1; return true; }).slice(0, 5);
+}
 function formPos(p) {
   var baru = !p; p = p || { id: 'n' + Date.now().toString(36), nama: '', kel: KEL[0], jenis: J_B(), alamat: '', puskesmas: '', ketua: '', hp: '', jadwal: '', aktif: true, kader: [] };
   var f = el('div');
@@ -1089,7 +1095,7 @@ function formPos(p) {
   var sv = btn(baru ? 'Tambah Posyandu' : 'Simpan perubahan', 'wide', function () {
     var nama = $('fpN').value.trim(); if (!nama) { er.textContent = 'Nama Posyandu wajib diisi'; er.className = 'st bad'; return; }
     var kader = Array.prototype.map.call(kl.children, function (r) { var i = r.querySelectorAll('input'); return { nama: i[0].value.trim(), jabatan: i[1].value.trim(), aktif: i[2].checked }; }).filter(function (k) { return k.nama; });
-    var np = { id: p.id, nama: nama, kel: $('fpK').value, jenis: $('fpJ').value, alamat: $('fpA').value.trim(), puskesmas: $('fpP').value.trim(), ketua: $('fpQ').value.trim(), hp: $('fpH').value.trim(), hpJenis: p.hpJenis, hpNama: p.hpNama, jadwal: $('fpD').value.trim(), aktif: $('fpAk').checked, kader: kader };
+    var np = { id: p.id, alias: aliasBaru(p, nama), nama: nama, kel: $('fpK').value, jenis: $('fpJ').value, alamat: $('fpA').value.trim(), puskesmas: $('fpP').value.trim(), ketua: $('fpQ').value.trim(), hp: $('fpH').value.trim(), hpJenis: p.hpJenis, hpNama: p.hpNama, jadwal: $('fpD').value.trim(), aktif: $('fpAk').checked, kader: kader };
     var dup = POS.some(function (x) { return x.id !== p.id && kunci(x.kel, x.jenis, x.nama) === kunci(np.kel, np.jenis, np.nama); });
     if (dup) { er.textContent = 'Posyandu dengan nama, kelurahan, dan jenis yang sama sudah ada'; er.className = 'st bad'; return; }
     var n = baru ? POS.concat([np]) : POS.map(function (x) { return x.id === p.id ? np : x; });
@@ -1099,11 +1105,11 @@ function formPos(p) {
   f.appendChild(sv); bukaModal(baru ? 'Tambah Posyandu' : 'Edit Posyandu', f);
 }
 /* ekspor dan impor Excel */
-var KOLOM = ['Nama Posyandu', 'Kelurahan', 'Jenis (Balita/Lansia)', 'Alamat', 'Puskesmas', 'Ketua/Penanggung Jawab', 'Nomor HP', 'Jadwal Kegiatan', 'Status (Aktif/Nonaktif)', 'Kader (pisahkan dengan titik koma; format: Nama - Jabatan)'];
+var KOLOM = ['Nama Posyandu', 'Kelurahan', 'Jenis (Balita/Lansia)', 'Alamat', 'Puskesmas', 'Ketua/Penanggung Jawab', 'Nomor HP', 'Jadwal Kegiatan', 'Status (Aktif/Nonaktif)', 'Kader (pisahkan dengan titik koma; format: Nama - Jabatan)', 'Nama lama (isi hanya jika ganti nama)'];
 function ekspor() {
   var data = dasarPos().map(function (p) {
     var o = {}; o[KOLOM[0]] = p.nama; o[KOLOM[1]] = p.kel; o[KOLOM[2]] = p.jenis.replace('Posyandu ', ''); o[KOLOM[3]] = p.alamat || ''; o[KOLOM[4]] = p.puskesmas || ''; o[KOLOM[5]] = p.ketua || ''; o[KOLOM[6]] = p.hp || ''; o[KOLOM[7]] = p.jadwal || '';
-    o[KOLOM[8]] = p.aktif === false ? 'Nonaktif' : 'Aktif'; o[KOLOM[9]] = (p.kader || []).map(function (k) { return k.nama + (k.jabatan ? ' - ' + k.jabatan : '') + (k.aktif === false ? ' (nonaktif)' : ''); }).join('; '); return o;
+    o[KOLOM[8]] = p.aktif === false ? 'Nonaktif' : 'Aktif'; o[KOLOM[10]] = ''; o[KOLOM[9]] = (p.kader || []).map(function (k) { return k.nama + (k.jabatan ? ' - ' + k.jabatan : '') + (k.aktif === false ? ' (nonaktif)' : ''); }).join('; '); return o;
   });
   var kader = []; dasarPos().forEach(function (p) { (p.kader || []).forEach(function (k, i) { kader.push({ Kelurahan: p.kel, Jenis: p.jenis, Posyandu: p.nama, No: i + 1, 'Nama Kader': k.nama, Jabatan: k.jabatan || '', Status: k.aktif === false ? 'Nonaktif' : 'Aktif' }); }); });
   if (window.XLSX) {
@@ -1112,25 +1118,126 @@ function ekspor() {
   }
   csvUnduh('Data-Posyandu-Palu-Utara.csv', [['Data Posyandu', data], ['Daftar Kader', kader]]);
 }
-function impor(file) {
+/* ---------- Ubah data Posyandu: satu per satu, atau sekaligus dari Excel ---------- */
+function pasangUbah() {
+  var box = $('dpUbah'); if (!box) return; box.textContent = '';
+  if (!utama() || !UBAH_BUKA) return;
+  var c = el('div', 'card ubah');
+  if (UBAH_MODE === 'excel') { kartuExcel(c); box.appendChild(c); return; }
+  var rh = el('div', 'rkhd'); rh.appendChild(el('h4', null, 'Mau mengubah data dengan cara apa?'));
+  rh.appendChild(btn('Tutup', 'sm plain', function () { UBAH_BUKA = false; UBAH_MODE = ''; IMPOR = null; pasangUbah(); })); c.appendChild(rh);
+  var dua = el('div', 'ubah2');
+  function pil(cls, ikon, judul, ket, poin, aksi) {
+    var k = el('div', 'pil ' + cls); k.appendChild(el('div', 'pic', ikon)); k.appendChild(el('h5', null, judul)); k.appendChild(el('p', null, ket));
+    var ul = el('ul'); poin.forEach(function (x) { ul.appendChild(el('li', null, x)); }); k.appendChild(ul);
+    aksi.forEach(function (a) { k.appendChild(a); k.appendChild(document.createTextNode(' ')); }); return k;
+  }
+  dua.appendChild(pil('a', '✎', 'Satu per satu', 'Untuk perubahan sedikit, misalnya satu kader pindah atau ada Posyandu baru.',
+    ['Tambah Posyandu baru', 'Atau ketuk nama Posyandu di daftar untuk mengubah kader, nomor HP, dan status'],
+    POS.length ? [btn('Tambah Posyandu', '', function () { formPos(null); })] : [el('small', 'lt', 'Simpan daftar dari SK dulu agar bisa diubah.')]));
+  dua.appendChild(pil('b', '📊', 'Sekaligus dari Excel', 'Untuk SK baru: banyak nama kader berganti dalam sekali kerja.',
+    ['Unduh templat berisi data sekarang', 'Ubah di Excel, unggah, periksa, lalu setujui dengan sandi'],
+    POS.length ? [btn('Mulai dari Excel', '', function () { UBAH_MODE = 'excel'; IMPOR = null; pasangUbah(); })] : [el('small', 'lt', 'Simpan daftar dari SK dulu.')]));
+  c.appendChild(dua); box.appendChild(c);
+}
+function kartuExcel(c) {
+  var rh = el('div', 'rkhd'); rh.appendChild(el('h4', null, 'Ubah sekaligus dari Excel'));
+  rh.appendChild(btn('‹ Kembali', 'sm plain', function () { UBAH_MODE = ''; IMPOR = null; pasangUbah(); })); c.appendChild(rh);
+  function langkah(n, t) { var h = el('div', 'lgk'); h.appendChild(el('span', 'no', String(n))); h.appendChild(el('b', null, t)); return h; }
+  c.appendChild(langkah(1, 'Unduh templat, ubah di Excel, lalu unggah'));
+  var tl = el('div', 'toolbar'); tl.appendChild(btn('Unduh templat Excel (berisi data sekarang)', 'sm', ekspor)); tl.appendChild(document.createTextNode(' '));
+  tl.appendChild(btn(IMPOR ? 'Pilih berkas lain' : 'Pilih berkas Excel / CSV', 'sm line', function () { $('impPos').click(); })); c.appendChild(tl);
+  c.appendChild(el('p', 'hint', 'Kolom "Nama lama" diisi hanya kalau nama Posyandunya diganti. Kalau yang berubah hanya nama kader, kosongkan.'));
+  if (!IMPOR) return;
+  var I = IMPOR, H = I.hasil;
+  c.appendChild(langkah(2, 'Periksa perbedaannya (belum tersimpan)'));
+  c.appendChild(el('div', 'lt', I.nama + ' · ' + I.baris + ' baris terbaca' + (H.lewat.length ? ' · ' + H.lewat.length + ' baris dilewati (baris ' + H.lewat.slice(0, 8).join(', ') + ')' : '')));
+  var st = el('div', 'ist');
+  [['s1', H.kader.length, 'kader berubah'], ['s5', H.ganti.length, 'nama Posyandu berubah'], ['s2', H.baru.length, 'Posyandu baru'], ['s3', H.nonaktif.length, I.nonaktifkan ? 'dinonaktifkan' : 'tidak ada di berkas'], ['s6', H.ubahLain.length, 'data lain berubah'], ['s4', H.tetap.length, 'tidak berubah']].forEach(function (x) {
+    var b = el('div', 'is ' + x[0]); b.appendChild(el('b', null, String(x[1]))); b.appendChild(el('span', null, x[2])); st.appendChild(b);
+  }); c.appendChild(st);
+  var tb = el('table', 'itbl');
+  function bar(nm, ket, tag, tc) { var tr = el('tr'), a = el('td'); a.appendChild(el('b', null, nm)); tr.appendChild(a); var k = el('td'); if (typeof ket === 'string') k.textContent = ket; else k.appendChild(ket); tr.appendChild(k); var t = el('td'); t.appendChild(el('span', 'itg ' + tc, tag)); tr.appendChild(t); tb.appendChild(tr); }
+  function lamaBaru(a, b) { var f = document.createDocumentFragment(), s1 = el('span', 'ilama', a || '(kosong)'); f.appendChild(s1); f.appendChild(document.createTextNode(' → ')); f.appendChild(el('span', 'ibaru', b || '(kosong)')); return f; }
+  var maks = 40, n = 0;
+  function ada() { return n++ < maks; }
+  H.kader.forEach(function (x) { if (ada()) bar(x.baru.nama + ' (' + x.baru.jenis.replace('Posyandu ', '') + ') · ' + x.baru.kel, lamaBaru(x.dari, x.ke), 'ganti kader', 'tu'); });
+  H.ganti.forEach(function (x) { if (ada()) bar(x.baru.jenis.replace('Posyandu ', '') + ' · ' + x.baru.kel, lamaBaru(x.lama.nama, x.baru.nama), 'ganti nama Posyandu', 'tn'); });
+  H.baru.forEach(function (x) { if (ada()) bar(x.nama + ' (' + x.jenis.replace('Posyandu ', '') + ') · ' + x.kel, 'Posyandu baru' + (x.ketua ? ' · ketua ' + x.ketua : ''), 'baru', 'tb'); });
+  H.ubahLain.forEach(function (x) { if (ada()) bar(x.baru.nama + ' (' + x.baru.jenis.replace('Posyandu ', '') + ') · ' + x.baru.kel, x.ket, 'data lain', 'tu'); });
+  H.nonaktif.forEach(function (x) { if (ada()) bar(x.nama + ' (' + x.jenis.replace('Posyandu ', '') + ') · ' + x.kel, I.nonaktifkan ? 'Tidak ada di berkas · laporan lama tetap aman' : 'Tidak ada di berkas · dibiarkan seperti sekarang', I.nonaktifkan ? 'nonaktif' : 'dibiarkan', 'th'); });
+  if (n > maks) { var tr = el('tr'), td = el('td', 'lt', '… dan ' + (n - maks) + ' baris lainnya'); td.colSpan = 3; tr.appendChild(td); tb.appendChild(tr); }
+  if (n) c.appendChild(tb);
+  H.peringatan.forEach(function (w) { c.appendChild(el('div', 'warn2', w)); });
+  if (H.ganti.length && !SERVER_ALIAS) c.appendChild(el('div', 'warn2', 'Ganti nama Posyandu belum bisa diterapkan: Code.gs di Apps Script belum diperbarui. Perubahan lain tetap bisa diterapkan jika baris ganti nama dikosongkan, atau perbarui Code.gs dulu.'));
+  var lb = document.createElement('label'); lb.className = 'inon'; var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = I.nonaktifkan;
+  cb.addEventListener('change', function () { IMPOR = rakitImpor(I.rows, I.nama, I.baris, cb.checked); pasangUbah(); });
+  lb.appendChild(cb); lb.appendChild(el('span', null, 'Nonaktifkan Posyandu yang tidak ada di berkas (laporan lamanya tetap aman)')); c.appendChild(lb);
+  c.appendChild(langkah(3, 'Setujui'));
+  var total = H.kader.length + H.ganti.length + H.baru.length + H.ubahLain.length + (I.nonaktifkan ? H.nonaktif.length : 0);
+  if (!total) { c.appendChild(el('div', 'ok2', 'Tidak ada perbedaan dengan data sekarang.')); return; }
+  var w = el('div', 'fld'); w.appendChild(el('label', null, 'Masukkan sandi Anda untuk menyimpan'));
+  var inp = document.createElement('input'); inp.type = 'password'; inp.name = 'konfirmasi-impor'; inp.autocomplete = 'new-password'; inp.setAttribute('readonly', ''); inp.addEventListener('focus', function () { inp.removeAttribute('readonly'); }); w.appendChild(inp); c.appendChild(w);
+  var er = el('div', 'st'); c.appendChild(er);
+  var bt = el('div', 'toolbar'), ok = btn('Terapkan ' + total + ' perubahan', '', function () {
+    if (H.ganti.length && !SERVER_ALIAS) { er.textContent = 'Perbarui Code.gs dulu untuk ganti nama Posyandu'; er.className = 'st bad'; return; }
+    if (!CRED || inp.value !== CRED.p) { er.textContent = 'Sandi tidak cocok'; er.className = 'st bad'; inp.value = ''; return; }
+    ok.disabled = true; er.textContent = 'Menyimpan…'; er.className = 'st';
+    simpanDaftar(I.daftar, total + ' perubahan diterapkan.').then(function (b) { if (b) { UBAH_BUKA = false; UBAH_MODE = ''; IMPOR = null; pasangUbah(); } else { ok.disabled = false; er.textContent = ''; } });
+  });
+  bt.appendChild(ok); bt.appendChild(document.createTextNode(' ')); bt.appendChild(btn('Batal', 'plain', function () { IMPOR = null; pasangUbah(); })); c.appendChild(bt);
+  inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ok.click(); } });
+}
+function mirip(a, b) { a = a.split('|')[2] || ''; b = b.split('|')[2] || ''; if (!a || !b) return false; return a.indexOf(b) === 0 || b.indexOf(a) === 0 || (a.length >= 5 && b.length >= 5 && a.slice(0, 5) === b.slice(0, 5)); }
+function rakitImpor(rows, nama, baris, nonaktifkan) {
+  var H = { kader: [], ganti: [], baru: [], ubahLain: [], tetap: [], nonaktif: [], lewat: [], peringatan: [] }, pakai = {}, sudah = {}, daftar = POS.map(function (x) { return x; });
+  var namaKader = function (p) { return aktifKader(p).map(function (k) { return k.nama; }).join(', '); };
+  rows.forEach(function (r) {
+    if (r.lewat) { H.lewat.push(r.baris); return; }
+    var kk = kunci(r.kel, r.jenis, r.nama); if (sudah[kk]) { H.lewat.push(r.baris); return; } sudah[kk] = 1;
+    var ix = -1, lama = null;
+    daftar.forEach(function (x, j) { if (ix < 0 && kunci(x.kel, x.jenis, x.nama) === kk) ix = j; });
+    if (ix < 0 && r.namaLama) daftar.forEach(function (x, j) { if (ix < 0 && kunci(x.kel, x.jenis, x.nama) === kunci(r.kel, r.jenis, r.namaLama)) { ix = j; lama = x; } });
+    var np = { nama: r.nama, kel: r.kel, jenis: r.jenis, alamat: r.alamat, puskesmas: r.puskesmas, ketua: r.ketua, hp: r.hp, jadwal: r.jadwal, aktif: r.aktif, kader: r.kader };
+    if (ix >= 0) {
+      var ex = daftar[ix]; pakai[ex.id] = 1; np.id = ex.id; if (!np.hp) np.hp = ex.hp || ''; np.hpJenis = ex.hpJenis; np.hpNama = ex.hpNama; np.alias = aliasBaru(ex, np.nama);
+      if (lama) { H.ganti.push({ lama: ex, baru: np }); }
+      else {
+        var kb = namaKader(ex) !== namaKader(np) || (ex.ketua || '') !== (np.ketua || '');
+        var lain = []; [['alamat', 'alamat'], ['puskesmas', 'puskesmas'], ['jadwal', 'jadwal'], ['hp', 'nomor HP']].forEach(function (f) { if ((ex[f[0]] || '') !== (np[f[0]] || '')) lain.push(f[1]); });
+        if ((ex.aktif !== false) !== (np.aktif !== false)) lain.push('status');
+        if (kb) H.kader.push({ baru: np, dari: namaKader(ex) || (ex.ketua || ''), ke: namaKader(np) || (np.ketua || '') });
+        else if (lain.length) H.ubahLain.push({ baru: np, ket: 'Berubah: ' + lain.join(', ') });
+        else H.tetap.push(np);
+      }
+      daftar[ix] = np;
+    } else { np.id = 'n' + Date.now().toString(36) + r.baris; np.alias = []; H.baru.push(np); daftar.push(np); }
+  });
+  var jmlBaru = H.baru.length;
+  daftar.forEach(function (x, j) {
+    if (!x.id || pakai[x.id] || x.aktif === false) return; if (H.baru.indexOf(x) >= 0) return;
+    if (j >= POS.length) return;
+    H.nonaktif.push(x); if (nonaktifkan) daftar[j] = Object.assign({}, x, { aktif: false });
+  });
+  H.nonaktif.forEach(function (x) { H.baru.forEach(function (b) { if (b.kel === x.kel && b.jenis === x.jenis && mirip(kunci(x.kel, x.jenis, x.nama), kunci(b.kel, b.jenis, b.nama))) H.peringatan.push('"' + x.nama + '" tidak ada di berkas, dan ada "' + b.nama + '" yang baru. Apakah ini Posyandu yang sama? Kalau ya, isi kolom "Nama lama" dengan "' + x.nama + '" lalu unggah lagi, supaya laporan lama ikut.'); }); });
+  return { nama: nama, baris: baris, rows: rows, hasil: H, daftar: daftar, nonaktifkan: nonaktifkan, jmlBaru: jmlBaru };
+}
+function imporPratinjau(file) {
   if (!window.XLSX) { alert('Fitur Excel belum termuat. Periksa internet lalu coba lagi.'); return; }
   var rd = new FileReader();
   rd.onload = function () {
     try {
       var wb = XLSX.read(rd.result, { type: 'array' }), rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
       var kolom = function (r, i) { var key = Object.keys(r).filter(function (k) { return k.toLowerCase().indexOf(KOLOM[i].toLowerCase().slice(0, 8)) === 0; })[0]; return key ? String(r[key]).trim() : ''; };
-      var n = POS.slice(), baru = 0, ubah = 0, lewat = [];
-      rows.forEach(function (r, i) {
-        var nama = kolom(r, 0), kel = KEL.filter(function (k) { return k.toLowerCase() === kolom(r, 1).toLowerCase(); })[0], jr = kolom(r, 2).toLowerCase(), jenis = jr.indexOf('bal') === 0 ? J_B() : jr.indexOf('lan') === 0 ? J_L() : '';
-        if (!nama || !kel || !jenis) { lewat.push(i + 2); return; }
+      var baca = rows.map(function (r, i) {
+        var nama = kolom(r, 0), kel = KEL_SEMUA.filter(function (k) { return k.toLowerCase() === kolom(r, 1).toLowerCase(); })[0], jr = kolom(r, 2).toLowerCase(), jenis = jr.indexOf('bal') === 0 ? J_B() : jr.indexOf('lan') === 0 ? J_L() : '';
+        if (!nama || !kel || !jenis) return { lewat: true, baris: i + 2 };
         var kader = kolom(r, 9).split(/[;\n]+/).map(function (s) { s = s.trim(); if (!s) return null; var off = /\(nonaktif\)\s*$/i.test(s); s = s.replace(/\(nonaktif\)\s*$/i, '').trim(); var m = s.split(/\s+[-–]\s+/); return { nama: m[0].trim(), jabatan: (m[1] || '').trim(), aktif: !off }; }).filter(Boolean);
-        var st = kolom(r, 8).toLowerCase(), np = { nama: nama, kel: kel, jenis: jenis, alamat: kolom(r, 3), puskesmas: kolom(r, 4), ketua: kolom(r, 5), hp: kolom(r, 6), jadwal: kolom(r, 7), aktif: st.indexOf('non') !== 0, kader: kader };
-        var ix = -1; n.forEach(function (x, j) { if (kunci(x.kel, x.jenis, x.nama) === kunci(kel, jenis, nama)) ix = j; });
-        if (ix >= 0) { np.id = n[ix].id; if (!np.hp) np.hp = n[ix].hp || ''; np.hpJenis = n[ix].hpJenis; np.hpNama = n[ix].hpNama; n[ix] = np; ubah++; } else { np.id = 'n' + Date.now().toString(36) + i; n.push(np); baru++; }
+        return { baris: i + 2, nama: nama, namaLama: kolom(r, 10), kel: kel, jenis: jenis, alamat: kolom(r, 3), puskesmas: kolom(r, 4), ketua: kolom(r, 5), hp: kolom(r, 6), jadwal: kolom(r, 7), aktif: kolom(r, 8).toLowerCase().indexOf('non') !== 0, kader: kader };
       });
-      if (!baru && !ubah) { alert('Tidak ada baris yang bisa dibaca. Pastikan kolom Nama Posyandu, Kelurahan, dan Jenis terisi (gunakan hasil Ekspor Excel sebagai contoh).'); return; }
-      if (!confirm('Impor: ' + baru + ' Posyandu baru, ' + ubah + ' diperbarui' + (lewat.length ? ', ' + lewat.length + ' baris dilewati (baris ' + lewat.slice(0, 8).join(', ') + ')' : '') + '. Lanjutkan?')) return;
-      simpanDaftar(n, 'Impor berhasil.');
+      if (!baca.some(function (x) { return !x.lewat; })) { alert('Tidak ada baris yang bisa dibaca. Pastikan kolom Nama Posyandu, Kelurahan, dan Jenis terisi (gunakan templat dari tombol Unduh templat).'); return; }
+      UBAH_BUKA = true; UBAH_MODE = 'excel'; IMPOR = rakitImpor(baca, file.name, baca.length, true); pasangUbah();
+      var k = $('dpUbah'); if (k && k.scrollIntoView) k.scrollIntoView({ block: 'start', behavior: 'smooth' });
     } catch (e) { alert('Berkas tidak bisa dibaca: ' + e.message); }
   };
   rd.readAsArrayBuffer(file);
@@ -1561,7 +1668,7 @@ window.pasangExt = function () { pasangSetelan(); };
 window.ambilPos = function () {
   if (!CRED) return;
   jsonp({ aksi: 'posyandu', u: CRED.u, p: CRED.p }).then(function (r) {
-    if (r && r.ok) { POS = r.list || []; SK = r.sk || SK; POSOK = true; POSDIMUAT = true; renderData(); renderBeranda(); renderRekap(); }
+    if (r && r.ok) { POS = r.list || []; SK = r.sk || SK; SERVER_ALIAS = !!(r.fitur && r.fitur.indexOf('alias') >= 0); POSOK = true; POSDIMUAT = true; renderData(); renderBeranda(); renderRekap(); }
   }).catch(function () { });
 };
 
