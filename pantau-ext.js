@@ -316,6 +316,7 @@ function renderBeranda() {
     if (bs > 0) kt.push(bs + ' di antaranya hanya berkas fisik (belum lewat aplikasi)');
     if (md > 0) kt.push(md + ' menunggu laporan digital');
     if (kt.length) c.appendChild(el('div', 'hasil2k', kt.join(' \u00b7 ')));
+    if (!fisikSaja()) c.appendChild(el('div', 'hasil2k hasil2n', 'Masa peralihan dimatikan: laporan dihitung masuk bila digital dan berkas fisik sudah ada.'));
   }
   if (h.asing.length) c.appendChild(el('div', 'warn2', h.asing.length + ' laporan memakai nama Posyandu yang belum cocok dengan Data Posyandu, sehingga tidak dihitung. Periksa ejaan di menu Data Posyandu.'));
   if (!POS.length) c.appendChild(el('div', 'warn2', 'Memakai daftar Posyandu dari SK. ' + (utama() ? 'Buka menu Data Posyandu lalu tekan "Simpan daftar dari SK" agar bisa diubah.' : '')));
@@ -1182,6 +1183,28 @@ async function unggahSK(jenis, file, info) {
 }
 
 /* ---------- Pengaturan lanjutan ---------- */
+/* Mengubah masa peralihan harus lewat konfirmasi dan sandi, supaya tidak berubah karena salah sentuh. */
+function dialogPeralihan(hidup, sesudah) {
+  var pr = periodeBeranda(), h = hitung(pr.th, pr.bl), M = SETOR[perKey(pr)], tot = h.rows.length, f = el('div');
+  var onN = M ? h.rows.filter(function (r) { return M[r.p.id]; }).length : null, offN = M ? h.rows.filter(function (r) { return r.d && M[r.p.id]; }).length : null;
+  var sel = M ? onN - offN : null;
+  var t = el('p', 'lt');
+  if (hidup) t.textContent = M ? 'Berkas fisik yang diterima tanpa laporan digital akan dihitung masuk. Kartu hasil ' + pr.bl + ' ' + pr.th + ' naik dari ' + offN + ' menjadi ' + onN + ' dari ' + tot + '.' : 'Berkas fisik yang diterima tanpa laporan digital akan dihitung masuk.';
+  else t.textContent = M ? sel + ' Posyandu yang hanya berkas fisik tidak lagi dihitung masuk. Kartu hasil ' + pr.bl + ' ' + pr.th + ' turun dari ' + onN + ' menjadi ' + offN + ' dari ' + tot + '.' : 'Berkas fisik tanpa laporan digital tidak lagi dihitung masuk. Laporan baru masuk bila digital dan fisik sudah ada.';
+  f.appendChild(t);
+  var w = el('div', 'fld'); w.appendChild(el('label', null, 'Masukkan sandi Anda untuk melanjutkan'));
+  var inp = document.createElement('input'); inp.type = 'password'; inp.name = 'konfirmasi-peralihan'; inp.autocomplete = 'new-password'; inp.setAttribute('readonly', ''); inp.addEventListener('focus', function () { inp.removeAttribute('readonly'); }); w.appendChild(inp); f.appendChild(w);
+  var er = el('div', 'st'); f.appendChild(er);
+  function ok() {
+    if (!CRED || inp.value !== CRED.p) { er.textContent = 'Sandi tidak cocok'; er.className = 'st bad'; inp.value = ''; return; }
+    setFisikSaja(hidup); tutupModal(); sesudah();
+    renderBeranda(); renderRekap(); renderKelAll(); if (typeof ANG !== 'undefined' && ANG && typeof renderAngkaIsi === 'function') renderAngkaIsi();
+    toast(hidup ? 'Masa peralihan dihidupkan.' : 'Masa peralihan dimatikan.');
+  }
+  inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ok(); } });
+  var bt = el('div', 'toolbar'); bt.appendChild(btn(hidup ? 'Ya, hidupkan' : 'Ya, matikan', 'wide', ok)); bt.appendChild(document.createTextNode(' ')); bt.appendChild(btn('Batal', 'wide plain', function () { tutupModal(); }));
+  f.appendChild(bt); bukaModal(hidup ? 'Hidupkan masa peralihan?' : 'Matikan masa peralihan?', f);
+}
 function pasangSetelan() {
   var cb = $('cardBan'), ca = $('cardApp'), tp = $('tabP');
   if (tp) tp.style.display = utama() ? '' : 'none'; if (!utama() && $('secP')) $('secP').setAttribute('data-ptab', 'akun');
@@ -1241,11 +1264,16 @@ function pasangSetelan() {
     kirimAtur({ wa: v }).then(function () { var n = v.replace(/[^0-9]/g, ''); if (n.indexOf('0') === 0) n = '62' + n.slice(1); WABANTU = n; wi.value = n ? '+' + n : ''; swa.textContent = n ? 'Nomor tersimpan.' : 'Nomor dihapus.'; swa.className = 'st ok'; }).catch(function (e) { swa.textContent = e.message; swa.className = 'st bad'; });
   })); ca.appendChild(swa);
   ca.appendChild(el('div', 'kh', 'Masa peralihan ke aplikasi'));
-  var fl = document.createElement('label'); fl.style.cssText = 'display:flex;align-items:flex-start;gap:10px;min-height:44px;cursor:pointer';
-  var fc = document.createElement('input'); fc.type = 'checkbox'; fc.checked = fisikSaja(); fc.style.cssText = 'width:22px;height:22px;flex:none;accent-color:var(--ok);margin-top:2px';
-  fl.appendChild(fc); fl.appendChild(el('span', null, 'Berkas fisik tanpa laporan digital tetap dihitung masuk')); ca.appendChild(fl);
-  ca.appendChild(el('p', 'hint', 'Hidupkan selama Posyandu belum terbiasa membuat laporan lewat aplikasi. Matikan setelah semua memakai aplikasi: laporan baru dihitung masuk bila digital dan berkas fisik sudah ada. Pilihan ini tersimpan di perangkat ini.'));
-  fc.addEventListener('change', function () { setFisikSaja(fc.checked); renderBeranda(); renderRekap(); renderKelAll(); if (typeof renderAngkaIsi === 'function' && typeof ANG !== 'undefined' && ANG) renderAngkaIsi(); });
+  var pst = el('div', 'hm'), pbox = el('div'); ca.appendChild(pst); ca.appendChild(pbox);
+  function pasangPeralihan() {
+    var on = fisikSaja(); pst.textContent = ''; pbox.textContent = '';
+    pst.className = 'hm ' + (on ? 'warn' : 'ok');
+    pst.appendChild(el('b', null, 'Masa peralihan: ' + (on ? 'HIDUP' : 'MATI') + '. '));
+    pst.appendChild(document.createTextNode(on ? 'Berkas fisik tanpa laporan digital tetap dihitung masuk.' : 'Laporan dihitung masuk bila digital dan berkas fisik sudah ada.'));
+    pbox.appendChild(el('p', 'hint', on ? 'Hidupkan selama Posyandu belum terbiasa membuat laporan lewat aplikasi. Matikan setelah semua memakai aplikasi. Pilihan ini tersimpan di perangkat ini.' : 'Nyalakan lagi bila ada Posyandu yang masih mengantar laporan kertas tanpa aplikasi. Pilihan ini tersimpan di perangkat ini.'));
+    pbox.appendChild(btn(on ? 'Matikan masa peralihan' : 'Hidupkan masa peralihan', on ? 'wide plain' : 'wide', function () { dialogPeralihan(!on, pasangPeralihan); }));
+  }
+  pasangPeralihan();
   ca.appendChild(el('div', 'kh', 'Catatan perubahan'));
   ca.appendChild(el('p', 'hint', 'Daftar perubahan terakhir pada data Posyandu, SK, operator, banner, dan pengaturan (300 terakhir).'));
   var lg = el('div'), sl2 = el('div', 'st');

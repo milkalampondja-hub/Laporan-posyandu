@@ -326,3 +326,4 @@ html .hasil2 .pc{flex:none;font-size:30px;font-weight:800;letter-spacing:-.02em;
 @media (max-width:760px){html .rk2{grid-template-columns:1fr}html .hasil2{flex-wrap:wrap}html .hasil2 .bar{flex:1 1 100%;order:5}}
 :root[data-theme=dark] .kk .kkd em{color:#ff8a80}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .kk .kkd em{color:#ff8a80}}
+html .hasil2n{font-weight:700;color:var(--warn)}
