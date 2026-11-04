@@ -1,0 +1,58 @@
+<!doctype html><html lang="id"><meta charset="utf-8"><style>
+:root{--bl:#1d4ed8;--bll:#e6f0ff;--g:#1d8a4e;--gl:#e3f6e8;--y:#8a6a00;--yl:#fff6d6;--r:#c62828;--rl:#fdeaea;--o:#b45309;--ol:#fff0df;--t:#23211c;--m:#6b7280;--l:#e5e7eb;--a:#ffc800}
+*{box-sizing:border-box}body{margin:0;background:#e9e9e9;font:15px/1.45 system-ui,Segoe UI,Roboto,sans-serif;color:var(--t);padding:20px;width:1100px}
+.lab{display:inline-block;background:#222;color:#fff;font-size:12px;padding:3px 12px;border-radius:99px;margin:0 0 10px}
+.flow{display:grid;grid-template-columns:1fr 34px 1fr 34px 1fr 34px 1fr;align-items:stretch;gap:0}
+.ar{display:grid;place-items:center;font-size:26px;color:var(--m)}
+.st{background:#fff;border:1px solid var(--l);border-radius:16px;padding:14px 14px 16px;border-top:6px solid}
+.st .who{display:inline-block;font-size:11.5px;font-weight:800;border-radius:99px;padding:3px 11px;margin-bottom:8px}
+.st h5{margin:0 0 4px;font-size:15.5px}.st p{margin:0 0 8px;color:#444;font-size:13px}
+.k{border-top-color:var(--bl)}.k .who{background:var(--bll);color:var(--bl)}
+.l{border-top-color:var(--y)}.l .who{background:var(--yl);color:var(--y)}
+.c{border-top-color:var(--g)}.c .who{background:var(--gl);color:var(--g)}
+.n{font-size:30px}
+.mini{border:1px solid var(--l);border-radius:10px;padding:8px 10px;background:#fafafa;font-size:13px;display:flex;align-items:center;gap:8px}
+.cb{width:20px;height:20px;border:2px solid #9ca3af;border-radius:5px;flex:none;display:inline-block}
+.cb.b{background:#2f6fed;border-color:#2f6fed;color:#fff;text-align:center;line-height:16px;font-size:13px;font-weight:800}
+.cb.g{background:var(--g);border-color:var(--g);color:#fff;text-align:center;line-height:16px;font-size:13px;font-weight:800}
+.tag{font-size:11.5px;font-weight:700;border-radius:99px;padding:2px 9px;white-space:nowrap}
+.t1{background:var(--bll);color:var(--bl)}.t2{background:var(--yl);color:var(--y)}.t3{background:var(--gl);color:var(--g)}.t4{background:#f1f2f4;color:var(--m)}
+.res{margin-top:8px;font-size:12.5px;color:var(--m)}.res b{color:var(--t)}
+.box{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.bx{background:#fff;border:1px solid var(--l);border-radius:16px;padding:14px 18px}
+.bx h5{margin:0 0 6px;font-size:15px}.bx p{margin:0;font-size:13.5px;color:#444}
+.bad{border-left:6px solid var(--y)}.good{border-left:6px solid var(--g)}
+.big{margin-top:18px;background:var(--gl);border:2px solid var(--g);border-radius:16px;padding:14px 18px;font-size:15px}
+</style><body>
+<div class="lab">SKETSA · Siapa mencentang apa, dan kapan laporan dihitung masuk</div>
+<div class="flow">
+
+<div class="st k"><span class="who">① KADER POSYANDU</span><h5>Kirim laporan digital</h5><p>Mengisi dan mengirim laporan lewat aplikasi kader.</p>
+<div class="mini"><span class="n">📱</span><b>Melati 1</b> <span class="tag t1">sudah kirim</span></div>
+<div class="res">Belum dihitung masuk</div></div>
+
+<div class="ar">➜</div>
+
+<div class="st l"><span class="who">② KELURAHAN</span><h5>Centang "Siap diantar"</h5><p>Operator kelurahan memilih laporan yang akan diantar, lalu tekan <b>Buat lembar pengantar</b>.</p>
+<div class="mini"><span class="cb b">✓</span><b>Melati 1</b> <span class="tag t2">siap diantar</span></div>
+<div class="res"><b>Laporan terkunci</b> (kader tidak bisa kirim ulang). Belum dihitung masuk.</div></div>
+
+<div class="ar">➜</div>
+
+<div class="st l"><span class="who">③ KELURAHAN</span><h5>Antar kertas ke kecamatan</h5><p>Lembar pengantar dan laporan dicetak, ditandatangani, lalu diantar.</p>
+<div class="mini"><span class="n">📄</span><b>Lembar + laporan</b></div>
+<div class="res">Masih dalam perjalanan. Belum dihitung masuk.</div></div>
+
+<div class="ar">➜</div>
+
+<div class="st c"><span class="who">④ KECAMATAN</span><h5>Centang "Fisik diterima"</h5><p>Admin kecamatan mencentang di kotak Penyerahan, atau memindai QR lembar di aplikasi Terima.</p>
+<div class="mini"><span class="cb g">✓</span><b>Melati 1</b> <span class="tag t3">fisik diterima</span></div>
+<div class="res"><b style="color:var(--g)">✓ Sekarang dihitung masuk</b> di Ringkasan dan hilang dari PDF "belum mengumpulkan".</div></div>
+</div>
+
+<div class="box">
+<div class="bx bad"><h5>Centang di foto Anda (biru) = langkah ②</h5><p>Ini centang dari <b>kelurahan</b>. Artinya hanya "akan saya antar". Laporan belum dianggap sampai di kecamatan.</p></div>
+<div class="bx good"><h5>Centang yang Anda pakai untuk PDF grup kader = langkah ④</h5><p>Ini centang dari <b>kecamatan</b>. Inilah yang membuat Posyandu dihitung masuk, walaupun laporan digitalnya belum ada (masa peralihan).</p></div>
+</div>
+<div class="big"><b>Ringkasnya:</b> kelurahan hanya menyiapkan dan mengantar (centang ②). Kecamatan yang menyatakan "sudah terima" (centang ④). Laporan baru dihitung masuk setelah centang ④.</div>
+</body></html>

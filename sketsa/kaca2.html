@@ -1,0 +1,125 @@
+<!doctype html><html lang="id"><meta charset="utf-8"><style>
+:root{--ky:#FFC800;--kyd:#7a5c00;--ink:#14213d;--m:#5b6475;--g:#1d8a4e;--bl:#2f5fe0;--o:#d9731a;--r:#d33a3a;--p:#7c4dde}
+*{box-sizing:border-box}body{margin:0;background:#cfcfcf;font:14px/1.4 system-ui,Segoe UI,Roboto,sans-serif;color:var(--ink);padding:20px;width:1500px}
+.lab{display:inline-block;background:#222;color:#fff;font-size:12px;padding:3px 12px;border-radius:99px;margin:0 0 8px}
+.row{display:flex;gap:30px;align-items:flex-start}
+.scr{position:relative;overflow:hidden;border-radius:22px;background:#e9e3d2}
+.scr::before{content:"";position:absolute;inset:-30px;background:url(kantor.jpg) center/cover;filter:blur(22px) saturate(1.1);opacity:.75}
+.scr::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,248,225,.55),rgba(255,255,255,.35))}
+.in{position:relative;z-index:2}
+.glass{background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.75);border-radius:22px;box-shadow:0 8px 24px rgba(40,30,0,.10)}
+/* laptop */
+.lap{width:1030px;height:780px}
+.lap .in{display:flex;height:100%;padding:14px;gap:14px}
+.side{width:200px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:10px}.logo img{width:40px}.logo b{font-size:13px;line-height:1.15}.logo small{display:block;color:var(--m);font-weight:500}
+.nav{padding:10px 12px;border-radius:14px;font-weight:700;color:var(--m);display:flex;gap:10px;align-items:center}
+.nav.on{background:var(--ky);color:#3a2b00;box-shadow:0 6px 14px rgba(255,200,0,.45)}
+.ic{width:20px;height:20px;border-radius:6px;background:currentColor;opacity:.35}.nav.on .ic{opacity:.6}
+.main{flex:1;display:flex;flex-direction:column;gap:14px;min-width:0}
+.top{padding:12px 18px;display:flex;align-items:center;justify-content:space-between}
+.top h1{margin:0;font-size:26px;letter-spacing:-.02em}.top small{color:var(--m)}
+.pill{background:rgba(255,255,255,.8);border-radius:99px;padding:7px 14px;font-weight:700;font-size:12.5px}
+.pill.k{background:var(--ky);color:#3a2b00}
+.card{padding:16px 20px}
+.ch{display:flex;align-items:center;gap:12px;margin-bottom:10px}.ci{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.ch h4{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase}.ch small{display:block;color:var(--m);font-size:12px;text-transform:none;letter-spacing:0;font-weight:500;margin-top:1px}
+.hasil{display:flex;align-items:center;gap:18px;background:linear-gradient(135deg,rgba(29,138,78,.14),rgba(29,138,78,.06));border:1px solid rgba(29,138,78,.25);border-radius:18px;padding:14px 18px}
+.hasil .big{font-size:44px;font-weight:900;color:var(--g);line-height:1}.hasil .t{flex:1}.hasil .t b{font-size:16px}.hasil .t small{display:block;color:var(--m)}
+.bar{height:10px;background:rgba(0,0,0,.08);border-radius:9px;overflow:hidden;width:260px}.bar i{display:block;height:100%;width:5%;background:var(--g)}
+.pc{font-size:30px;font-weight:900;color:var(--g)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.kel{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.7);border-radius:14px;padding:10px 14px;margin-top:8px;font-weight:700}
+.kel span{color:var(--m);font-weight:600;font-size:12.5px}
+.tag{font-size:11.5px;font-weight:800;border-radius:99px;padding:3px 10px}.t1{background:#fde7e7;color:var(--r)}.t2{background:#fff0c2;color:var(--kyd)}.t3{background:#dff3e7;color:var(--g)}
+.tb{width:100%;border-collapse:collapse;font-size:13px}.tb td,.tb th{padding:8px 6px;border-bottom:1px solid rgba(0,0,0,.07);text-align:left}.tb th{color:var(--m);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em}
+/* hp */
+.hp{width:390px;height:780px;border:9px solid #1d1d1f;border-radius:44px}
+.hp .in{height:100%;padding:12px 12px 80px;display:flex;flex-direction:column;gap:12px}
+.hp .hd{background:var(--ky);border-radius:20px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 14px rgba(255,200,0,.45)}
+.hp .hd img{width:34px}.hp .hd b{font-size:12.5px;line-height:1.1;flex:1}
+.hp .card{padding:14px}
+.hp .hasil{flex-wrap:wrap;gap:8px;padding:12px 14px}.hp .hasil .big{font-size:38px}.hp .bar{width:100%;order:5}
+.tabbar{position:absolute;left:12px;right:12px;bottom:12px;z-index:3;display:flex;justify-content:space-around;padding:8px 6px;font-size:10.5px;font-weight:700;color:var(--m)}
+.tabbar div{text-align:center}.tabbar .on{color:#3a2b00}.tabbar .on span{display:block;background:var(--ky);border-radius:14px;padding:4px 14px;margin-bottom:2px}.tabbar i{display:block;width:20px;height:20px;border-radius:6px;background:currentColor;opacity:.35;margin:0 auto 3px}
+.ket{width:1500px;margin-top:14px;font-size:13px;color:#333;line-height:1.7}.ket b{color:#a15c00}
+
+.scr.ringan::before{filter:none;inset:0;opacity:1;background:url(kantor.jpg) center/cover;}
+.scr.ringan::after{background:linear-gradient(180deg,rgba(255,248,232,.88),rgba(255,252,243,.93))}
+.ringan .glass{background:#fffdf7;border:1px solid #efe6cf;box-shadow:0 4px 12px rgba(60,45,0,.08)}
+.ringan .kel{background:#f7f2e4}
+.cap{font-weight:800;margin:0 0 6px;font-size:13px}.cap small{font-weight:500;color:#444}
+.grp{display:flex;gap:24px;align-items:flex-start;margin-bottom:26px}
+.bd .scr::after,.scr.gelap::after{background:linear-gradient(180deg,rgba(10,14,28,.78),rgba(8,10,20,.86))}
+.gelap{--ink:#f2f4fa;--m:#a7b0c4;--ky:#ffc800;--kyd:#ffd966;--g:#5fe39a;--r:#ff8a80;--bl:#8fb0ff;--o:#ffb36b}
+.gelap,.gelap h1,.gelap h4,.gelap b,.gelap td,.gelap .kel,.gelap .t b{color:#f2f4fa}
+.gelap .hd b,.gelap .hd{color:#3a2b00}
+.gelap .nav{color:#a7b0c4}.gelap .nav.on{color:#3a2b00}
+.gelap .glass{background:rgba(30,36,56,.62);border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.gelap .kel{background:rgba(255,255,255,.07)}
+.gelap .pill{background:rgba(255,255,255,.12);color:#f2f4fa}.gelap .pill.k{background:var(--ky);color:#3a2b00}
+.gelap .bar{background:rgba(255,255,255,.14)}
+.gelap .hasil{background:linear-gradient(135deg,rgba(95,227,154,.18),rgba(95,227,154,.06));border-color:rgba(95,227,154,.35)}
+.gelap .tag.t1{background:#4a1f24;color:#ff8a80}.gelap .tag.t2{background:#4a3a0c;color:#ffd966}.gelap .tag.t3{background:#12382a;color:#5fe39a}
+.gelap .tb td,.gelap .tb th{border-bottom-color:rgba(255,255,255,.1)}
+.gelap .hd{color:#3a2b00}.gelap .hd b{color:#3a2b00}
+.gelap .hasil .t small,.gelap .top small{color:var(--m)}
+.gelap .tabbar{color:#a7b0c4}.gelap .tabbar .on{color:#3a2b00}
+</style><body><div class="lab">SKETSA 2 · HP: kaca penuh (berat) dibanding versi ringan (disarankan)</div>
+<div class="grp">
+ <div><p class="cap">A. Kaca penuh <small>buram hidup di tiap kartu, latar berwarna kuat. Lebih "wah", tapi berat di HP murah.</small></p><div class="scr hp"><div class="in">
+ <div class="hd"><img src="logo.png"><b>PANTAU LAPORAN POSYANDU<br><span style="font-weight:500">Kecamatan Palu Utara</span></b><span class="pill" style="padding:6px 10px">☰</span></div>
+ <div class="glass card"><div class="ch"><div class="ci" style="background:linear-gradient(135deg,#34b36b,#1d8a4e)">✓</div><h4>Ringkasan Oktober<small>Batas kader 8 Nov · kelurahan 15 Nov</small></h4><span style="margin-left:auto;font-size:18px;color:var(--m)">↻</span></div>
+  <div class="hasil"><div class="big">2<span style="font-size:18px;color:var(--m)"> / 38</span></div><div class="t"><b>laporan sudah masuk ke kecamatan</b></div><div class="pc">5%</div><div class="bar"><i></i></div></div>
+  <div style="margin-top:8px;color:var(--m);font-size:12px">1 menunggu berkas fisik · 2 hanya berkas fisik</div></div>
+ <div class="glass card"><div class="ch"><div class="ci" style="background:linear-gradient(135deg,#5b8def,#2f5fe0)">▦</div><h4>Status per kelurahan</h4></div>
+  <table class="tb"><tr><th>Kelurahan</th><th>Balita</th><th>Lansia</th></tr><tr><td>Mamboro Barat</td><td><span class="tag t3">1</span></td><td><span class="tag t2">Menunggu</span></td></tr><tr><td>Taipa</td><td><span class="tag t3">1</span></td><td><span class="tag t1">Belum</span></td></tr></table></div>
+ <div class="glass card"><div class="ch"><div class="ci" style="background:linear-gradient(135deg,#f0932b,#d9731a)">!</div><h4>Belum lengkap</h4></div>
+  <div class="kel">Mamboro Barat <span>2/6 ▾</span></div><div class="kel">Taipa <span>0/10 ▾</span></div></div>
+ <div class="glass tabbar"><div class="on"><span>⌂</span>Beranda</div><div><i></i>Laporan</div><div><i></i>Posyandu</div><div><i></i>Rekap</div><div><i></i>Atur</div></div>
+</div></div>
+</div>
+ <div><p class="cap">B. Ringan <small>latar foto statis dan tenang, kartu krem putih tanpa buram. Tampilan sama rapi, gulir ringan.</small></p><div class="scr hp ringan"><div class="in">
+ <div class="hd"><img src="logo.png"><b>PANTAU LAPORAN POSYANDU<br><span style="font-weight:500">Kecamatan Palu Utara</span></b><span class="pill" style="padding:6px 10px">☰</span></div>
+ <div class="glass card"><div class="ch"><div class="ci" style="background:linear-gradient(135deg,#34b36b,#1d8a4e)">✓</div><h4>Ringkasan Oktober<small>Batas kader 8 Nov · kelurahan 15 Nov</small></h4><span style="margin-left:auto;font-size:18px;color:var(--m)">↻</span></div>
+  <div class="hasil"><div class="big">2<span style="font-size:18px;color:var(--m)"> / 38</span></div><div class="t"><b>laporan sudah masuk ke kecamatan</b></div><div class="pc">5%</div><div class="bar"><i></i></div></div>
+  <div style="margin-top:8px;color:var(--m);font-size:12px">1 menunggu berkas fisik · 2 hanya berkas fisik</div></div>
+ <div class="glass card"><div class="ch"><div class="ci" style="background:linear-gradient(135deg,#5b8def,#2f5fe0)">▦</div><h4>Status per kelurahan</h4></div>
+  <table class="tb"><tr><th>Kelurahan</th><th>Balita</th><th>Lansia</th></tr><tr><td>Mamboro Barat</td><td><span class="tag t3">1</span></td><td><span class="tag t2">Menunggu</span></td></tr><tr><td>Taipa</td><td><span class="tag t3">1</span></td><td><span class="tag t1">Belum</span></td></tr></table></div>
+ <div class="glass card"><div class="ch"><div class="ci" style="background:linear-gradient(135deg,#f0932b,#d9731a)">!</div><h4>Belum lengkap</h4></div>
+  <div class="kel">Mamboro Barat <span>2/6 ▾</span></div><div class="kel">Taipa <span>0/10 ▾</span></div></div>
+ <div class="glass tabbar"><div class="on"><span>⌂</span>Beranda</div><div><i></i>Laporan</div><div><i></i>Posyandu</div><div><i></i>Rekap</div><div><i></i>Atur</div></div>
+</div></div>
+</div>
+ <div style="width:380px;font-size:13px;line-height:1.7"><b>Perbedaannya:</b><br>• A: kartu menembus latar, warna ikut berubah saat digulir.<br>• B: kartu solid krem, foto kantor tipis di belakang. Teks lebih mudah dibaca di bawah matahari.<br>• Bentuk, ikon, kuning Kota Palu, dan urutan isi <b>sama persis</b>.<br><br><b>Saran saya: B untuk HP.</b> Untuk laptop boleh A atau B, sama-sama ringan karena layarnya kuat.</div>
+</div>
+<div class="lab">SKETSA 3 · Mode gelap (versi ringan)</div>
+<div class="grp"><div class="scr lap gelap"><div class="in">
+ <div class="glass side"><div class="logo"><img src="logo.png"><b>PANTAU LAPORAN POSYANDU<small>Kecamatan Palu Utara</small></b></div>
+  <div class="nav on"><span class="ic"></span>Beranda</div><div class="nav"><span class="ic"></span>Laporan</div><div class="nav"><span class="ic"></span>Data Posyandu</div><div class="nav"><span class="ic"></span>Rekapitulasi</div><div class="nav"><span class="ic"></span>Pengaturan</div></div>
+ <div class="main">
+  <div class="glass top"><div><h1>Beranda</h1><small>Rabu, 4 November 2026</small></div><div style="display:flex;gap:8px;align-items:center"><span class="pill">● Online</span><span class="pill k">Max Juniar Ratowo ▾</span></div></div>
+  <div class="glass card"><div class="ch"><div class="ci" style="background:linear-gradient(135deg,#34b36b,#1d8a4e)">✓</div><h4>Ringkasan Oktober 2026<small>Batas kader 8 November · Batas kelurahan 15 November</small></h4></div>
+   <div class="hasil"><div class="big">2<span style="font-size:20px;color:var(--m)"> / 38</span></div><div class="t"><b>laporan sudah masuk ke kecamatan</b><small>Dihitung masuk bila berkas fisik sudah diterima. Laporan digital menyusul.</small></div><div class="bar"><i></i></div><div class="pc">5%</div></div>
+   <div style="margin-top:8px;color:var(--m);font-size:12.5px">1 menunggu berkas fisik · 2 di antaranya hanya berkas fisik (belum lewat aplikasi)</div></div>
+  <div class="cols">
+   <div class="glass card"><div class="ch"><div class="ci" style="background:linear-gradient(135deg,#f0932b,#d9731a)">!</div><h4>Posyandu yang belum lengkap<small>Per kelurahan</small></h4></div>
+    <div class="kel">Kayumalue Ngapa <span>0/7 masuk ▾</span></div><div class="kel">Mamboro <span>0/9 masuk ▾</span></div><div class="kel">Mamboro Barat <span>2/6 masuk ▾</span></div><div class="kel">Taipa <span>0/10 masuk ▾</span></div></div>
+   <div class="glass card"><div class="ch"><div class="ci" style="background:linear-gradient(135deg,#5b8def,#2f5fe0)">▦</div><h4>Status per kelurahan<small>Oktober 2026</small></h4></div>
+    <table class="tb"><tr><th>Kelurahan</th><th>Balita</th><th>Lansia</th></tr><tr><td>Kayumalue Ngapa</td><td><span class="tag t1">Belum ada</span></td><td><span class="tag t1">Belum ada</span></td></tr><tr><td>Mamboro</td><td><span class="tag t1">Belum ada</span></td><td><span class="tag t1">Belum ada</span></td></tr><tr><td>Mamboro Barat</td><td><span class="tag t3">1 laporan</span></td><td><span class="tag t2">Menunggu</span></td></tr><tr><td>Taipa</td><td><span class="tag t3">1 laporan</span></td><td><span class="tag t1">Belum ada</span></td></tr></table></div>
+  </div>
+ </div></div></div>
+
+<div class="scr hp gelap"><div class="in">
+ <div class="hd"><img src="logo.png"><b>PANTAU LAPORAN POSYANDU<br><span style="font-weight:500">Kecamatan Palu Utara</span></b><span class="pill" style="padding:6px 10px">☰</span></div>
+ <div class="glass card"><div class="ch"><div class="ci" style="background:linear-gradient(135deg,#34b36b,#1d8a4e)">✓</div><h4>Ringkasan Oktober<small>Batas kader 8 Nov · kelurahan 15 Nov</small></h4><span style="margin-left:auto;font-size:18px;color:var(--m)">↻</span></div>
+  <div class="hasil"><div class="big">2<span style="font-size:18px;color:var(--m)"> / 38</span></div><div class="t"><b>laporan sudah masuk ke kecamatan</b></div><div class="pc">5%</div><div class="bar"><i></i></div></div>
+  <div style="margin-top:8px;color:var(--m);font-size:12px">1 menunggu berkas fisik · 2 hanya berkas fisik</div></div>
+ <div class="glass card"><div class="ch"><div class="ci" style="background:linear-gradient(135deg,#5b8def,#2f5fe0)">▦</div><h4>Status per kelurahan</h4></div>
+  <table class="tb"><tr><th>Kelurahan</th><th>Balita</th><th>Lansia</th></tr><tr><td>Mamboro Barat</td><td><span class="tag t3">1</span></td><td><span class="tag t2">Menunggu</span></td></tr><tr><td>Taipa</td><td><span class="tag t3">1</span></td><td><span class="tag t1">Belum</span></td></tr></table></div>
+ <div class="glass card"><div class="ch"><div class="ci" style="background:linear-gradient(135deg,#f0932b,#d9731a)">!</div><h4>Belum lengkap</h4></div>
+  <div class="kel">Mamboro Barat <span>2/6 ▾</span></div><div class="kel">Taipa <span>0/10 ▾</span></div></div>
+ <div class="glass tabbar"><div class="on"><span>⌂</span>Beranda</div><div><i></i>Laporan</div><div><i></i>Posyandu</div><div><i></i>Rekap</div><div><i></i>Atur</div></div>
+</div></div>
+</div>
+<div class="ket">Mode gelap: latar foto kantor digelapkan, kartu biru-malam setengah bening, teks terang. Kuning Kota Palu tetap di menu aktif dan bilah atas. Warna status disesuaikan agar terbaca di gelap (hijau muda, kuning muda, merah muda). Nama dan angka hanya contoh.</div></body></html>

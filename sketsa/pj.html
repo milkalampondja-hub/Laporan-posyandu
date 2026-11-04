@@ -1,0 +1,48 @@
+<!doctype html><html lang="id"><meta charset="utf-8"><style>
+:root{--bl:#1d4ed8;--bll:#e6f0ff;--g:#1d8a4e;--gl:#e3f6e8;--y:#8a6a00;--yl:#fff6d6;--r:#c62828;--rl:#fdeaea;--o:#b45309;--ol:#fff0df;--t:#23211c;--m:#6b7280;--l:#e5e7eb}
+*{box-sizing:border-box}body{margin:0;background:#e9e9e9;font:15px/1.45 system-ui,Segoe UI,Roboto,sans-serif;color:var(--t);padding:20px;width:1080px}
+.lab{display:inline-block;background:#222;color:#fff;font-size:12px;padding:3px 12px;border-radius:99px;margin:0 0 8px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.col{background:#fff;border:1px solid var(--l);border-radius:16px;padding:18px 20px;border-top:5px solid}
+.col.x{border-top-color:var(--r)}.col.v{border-top-color:var(--g)}
+.col h3{margin:0 0 4px;font-size:17px}.sub{color:var(--m);font-size:13px;margin-bottom:12px}
+.box{border:1.5px solid var(--l);border-radius:12px;padding:10px 14px;margin:8px 0;font-size:14px}
+.laporan{background:var(--bll);border-color:#bcd2ff}.excel{background:var(--ol);border-color:#f3cfa0}
+.ar{text-align:center;font-size:22px;color:var(--m);line-height:1}
+.putus{background:var(--rl);border:1.5px dashed var(--r);border-radius:12px;padding:10px 14px;margin:8px 0;color:var(--r);font-weight:700}
+.nyam{background:var(--gl);border:1.5px solid var(--g);border-radius:12px;padding:10px 14px;margin:8px 0;color:var(--g);font-weight:700}
+.hasil{margin-top:10px;font-size:14px}.hasil b{font-size:15px}
+.x .hasil b{color:var(--r)}.v .hasil b{color:var(--g)}
+s{color:var(--r)}.n{color:var(--g);font-weight:700}
+.tip{margin-top:16px;background:var(--yl);border:1px solid #f1dc8a;border-radius:12px;padding:12px 16px;font-size:13.5px;color:#5a4a00}
+</style><body>
+<div class="lab">SKETSA · Kenapa kolom "Nama lama" diperlukan (contoh: Melati 2 berganti nama jadi Melati Indah)</div>
+<div class="cols">
+
+<div class="col x"><h3>✗ TANPA kolom "Nama lama"</h3><div class="sub">Aplikasi hanya melihat nama</div>
+<div class="box laporan">📄 Laporan Oktober<br><b>atas nama "Melati 2"</b></div>
+<div class="ar">▼</div>
+<div class="box excel">📊 Excel baru, tertulis:<br><b>"Melati Indah"</b> &nbsp;<span style="color:var(--m)">(nama lama kosong)</span></div>
+<div class="ar">▼ aplikasi bingung</div>
+<div class="putus">✂ "Melati Indah" tidak dikenal → dianggap Posyandu BARU<br>✂ "Melati 2" hilang → DINONAKTIFKAN</div>
+<div class="hasil"><b>Akibat:</b><br>• Laporan Oktober kehilangan pasangan (muncul "nama belum cocok")<br>• Melati Indah terlihat belum pernah mengirim laporan<br>• Rekap bulan itu jadi berantakan</div></div>
+
+<div class="col v"><h3>✓ DENGAN kolom "Nama lama"</h3><div class="sub">Aplikasi diberi tahu ini orang yang sama</div>
+<div class="box laporan">📄 Laporan Oktober<br><b>atas nama "Melati 2"</b></div>
+<div class="ar">▼</div>
+<div class="box excel">📊 Excel baru, tertulis:<br><b>"Melati Indah"</b> &nbsp;|&nbsp; nama lama: <b>"Melati 2"</b></div>
+<div class="ar">▼ aplikasi paham</div>
+<div class="nyam">🔗 "Melati 2 berganti nama menjadi Melati Indah"<br>Posyandu yang sama, hanya namanya yang baru</div>
+<div class="hasil"><b>Akibat:</b><br>• Laporan Oktober ikut ke nama baru<br>• Tidak ada data ganda<br>• Rekap tetap rapi</div></div>
+</div>
+
+<div class="tip"><b>Kapan kolom itu diisi?</b> Hanya kalau <b>nama Posyandunya</b> yang diganti. Kalau hanya nama kader yang berubah, atau tidak ada yang berubah, kolom itu dikosongkan.<br>
+<b>Penjaga:</b> kalau ada nama yang hilang dan ada nama baru yang mirip tapi kolom itu kosong, aplikasi bertanya dulu: <i>"Apakah ini Posyandu yang sama?"</i> sebelum menyimpan.</div>
+
+<div style="height:22px"></div>
+<div class="lab">PILIHAN LEBIH SEDERHANA · tanpa kolom "Nama lama"</div>
+<div class="col" style="border-top-color:var(--bl)"><h3>Excel hanya untuk nama kader dan Posyandu baru</h3>
+<div class="sub">Ganti nama Posyandu dilakukan satu per satu lewat form ubah yang sudah ada</div>
+<div class="box">📊 <b>Excel (sekaligus):</b> ganti nama kader · ganti ketua · nomor HP · tambah Posyandu baru</div>
+<div class="box">✎ <b>Form ubah (satu per satu):</b> ganti nama Posyandu <span style="color:var(--m)">(jarang terjadi, aman, laporan lama ikut)</span></div></div>
+</body></html>

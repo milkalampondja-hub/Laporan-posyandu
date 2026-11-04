@@ -1,0 +1,55 @@
+<!doctype html><html lang="id"><meta charset="utf-8"><style>
+:root{--bl:#1d4ed8;--bll:#e6f0ff;--g:#1d8a4e;--gl:#e3f6e8;--y:#8a6a00;--yl:#fff6d6;--r:#c62828;--rl:#fdeaea;--t:#23211c;--m:#6b7280;--l:#e5e7eb;--a:#ffc800}
+*{box-sizing:border-box}body{margin:0;background:#e9e9e9;font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif;color:var(--t);padding:20px;width:1080px}
+.lab{display:inline-block;background:#222;color:#fff;font-size:12px;padding:3px 12px;border-radius:99px;margin:0 0 8px}
+.card{background:#fff;border:1px solid var(--l);border-radius:14px;padding:16px 20px;margin-bottom:12px}
+h4{margin:0 0 4px;font-size:16px}.sub{color:var(--m);font-size:12.5px}
+.btn{display:inline-block;border:1px solid var(--l);border-radius:10px;padding:7px 14px;font-weight:600;font-size:13px;color:var(--y);margin-right:6px}
+.btn.p{background:var(--a);border-color:var(--a);color:#3a2d00}.btn.hl{outline:3px solid var(--bl);outline-offset:2px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}.tile{background:var(--bll);border-radius:10px;padding:6px 10px}.tile:nth-child(even){background:var(--gl)}.tile b{font-size:18px;display:block}.tile span{font-size:11.5px;color:var(--m)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
+.pil{border:1.5px solid var(--l);border-radius:14px;padding:16px 18px;border-top:4px solid}
+.pil.a{border-top-color:var(--bl)}.pil.b{border-top-color:var(--g)}
+.pil .ic{font-size:26px}.pil h5{margin:6px 0 4px;font-size:16px}.pil p{margin:0 0 10px;color:var(--m);font-size:13px}
+.pil ul{margin:0 0 12px;padding-left:18px;color:#444;font-size:13px}
+.arrow{text-align:center;font-size:26px;color:var(--bl);margin:-4px 0 6px}
+.cap{font-weight:700;margin:14px 0 6px}
+.pos{border:1px solid var(--l);border-radius:12px;padding:8px 12px;margin-top:6px;display:flex;justify-content:space-between;font-size:13px}.pos span{color:var(--m)}
+.step{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#222;color:#fff;font-size:12px;font-weight:700;margin-right:6px}
+.st{display:inline-block;border-radius:10px;padding:5px 12px;margin-right:6px;font-size:12.5px;font-weight:700}.s1{background:var(--bll);color:var(--bl)}.s2{background:var(--gl);color:var(--g)}.s3{background:var(--rl);color:var(--r)}
+.pw{display:inline-block;border:1px solid var(--l);border-radius:10px;padding:6px 14px;color:var(--m);margin-right:8px}
+.dua{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.bd{border:2px solid var(--bl);background:#fbfdff}
+</style><body>
+
+<div class="lab">LANGKAH 1 · Halaman Data Posyandu (hanya tombolnya yang berubah)</div>
+<div class="card"><h4>Data Posyandu</h4><div class="sub">Sumber nama Posyandu untuk menu Laporan dan Rekap.</div>
+<div class="tiles"><div class="tile"><b>38</b><span>Posyandu aktif</span></div><div class="tile"><b>20</b><span>Balita</span></div><div class="tile"><b>18</b><span>Lansia</span></div><div class="tile"><b>76</b><span>Kader aktif</span></div></div>
+<span class="btn p hl">✎ Ubah data Posyandu</span><span class="btn">Ekspor Excel</span>
+<div class="sub" style="margin-top:8px">Sebelumnya: Tambah Posyandu · Impor Excel · Ekspor Excel. Mengetuk nama Posyandu di daftar tetap langsung membuka form ubah.</div></div>
+<div class="arrow">▼ ditekan</div>
+
+<div class="lab">LANGKAH 2 · Dua pilihan (kartu besar, tampil di bawah tombol)</div>
+<div class="card bd"><h4>Mau mengubah data dengan cara apa?</h4>
+<div class="two">
+<div class="pil a"><div class="ic">✎</div><h5>Satu per satu</h5><p>Untuk perubahan sedikit, misalnya satu kader pindah atau ada Posyandu baru.</p>
+<ul><li>Tambah Posyandu baru</li><li>Atau ketuk nama Posyandu di daftar untuk mengubah kader, nomor HP, status</li></ul><span class="btn p">Tambah Posyandu</span><span class="btn">Lihat daftar</span></div>
+<div class="pil b"><div class="ic">📊</div><h5>Sekaligus dari Excel</h5><p>Untuk SK baru: banyak nama kader berganti dalam sekali kerja.</p>
+<ul><li>Unduh templat berisi data sekarang</li><li>Ubah di Excel, unggah, periksa, lalu setujui dengan sandi</li></ul><span class="btn p">Mulai dari Excel</span></div>
+</div></div>
+<div class="arrow">▼ pilih "Sekaligus dari Excel"</div>
+
+<div class="lab">LANGKAH 3 · Pratinjau (muncul di tempat pilihan tadi, di atas daftar kelurahan)</div>
+<div class="card bd"><h4><span class="step">1</span>Unggah <span class="sub">· Posyandu-SK-2027.xlsx · 38 baris terbaca · belum tersimpan</span></h4>
+<div style="margin:8px 0"><span class="step">2</span><b>Periksa perbedaan</b></div>
+<span class="st s1">12 kader berubah</span><span class="st s2">2 Posyandu baru</span><span class="st s3">1 dinonaktifkan</span><span class="st" style="background:#f1f2f4;color:var(--m)">23 tetap</span>
+<div class="pos"><b>Melati 1 (Balita) · Taipa</b><span><s style="color:var(--r)">Siti Rahma</s> → <b style="color:var(--g)">Nurhayati</b></span></div>
+<div class="pos"><b>Mawar 3 (Lansia) · Mamboro</b><span style="color:var(--g)">Posyandu baru · ketua Hasna</span></div>
+<div style="margin:12px 0 6px"><span class="step">3</span><b>Setujui</b></div>
+<span class="pw">Sandi Anda ••••••</span><span class="btn p">Terapkan 15 perubahan</span><span class="btn">Batal</span></div>
+<div class="arrow">▼ setelah "Terapkan"</div>
+
+<div class="lab">LANGKAH 4 · Selesai</div>
+<div class="card"><b style="color:var(--g)">✓ 15 perubahan diterapkan.</b> Kartu pilihan menghilang, daftar di bawahnya langsung berisi data terbaru. Jejaknya tercatat di Pengaturan &gt; Aplikasi &gt; Catatan perubahan.</div>
+<p class="sub">Nama dan angka hanya contoh. Pilihan "Satu per satu" memakai formulir yang sudah ada sekarang; tidak ada fitur yang dihapus.</p>
+</body></html>

@@ -1,0 +1,40 @@
+<meta charset=utf-8><style>
+*{box-sizing:border-box}body{margin:0;background:#e9e4d6;font-family:Inter,system-ui,sans-serif;color:#241b00;display:flex;gap:24px;padding:24px;width:1500px}
+.col{width:720px}.t{font-weight:800;font-size:16px;margin-bottom:8px}
+.scr{position:relative;height:520px;border-radius:16px;overflow:hidden;display:flex;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.scr::before{content:"";position:absolute;inset:-30px;background:url(kantor.jpg) center/cover;filter:blur(20px) saturate(1.1)}
+.scr::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,248,225,.55),rgba(255,255,255,.35))}
+.scr>*{position:relative;z-index:1}
+.side{width:190px;padding:10px;background:rgba(255,255,255,.55);border-right:1px solid rgba(255,255,255,.7)}
+.brand{display:flex;gap:8px;align-items:center;padding:8px;border-radius:14px;font-size:11px;font-weight:800;line-height:1.2;margin-bottom:12px}
+.brand img{width:30px}.brand small{font-weight:500;display:block;font-size:10px}
+.nav div{padding:10px 12px;border-radius:12px;font-size:12px;font-weight:600;margin:3px 0;color:#2b3140}
+.main{flex:1;padding:12px}
+.top{height:44px;border-radius:14px;display:flex;align-items:center;padding:0 14px;font-weight:800;font-size:17px;margin-bottom:10px}
+.hero{height:96px;border-radius:18px;display:flex;align-items:center;padding:0 22px;font-weight:800;font-size:15px;margin-bottom:10px;position:relative;overflow:hidden}
+.hero small{display:block;font-weight:500;font-size:11px;margin-top:3px}
+.card{border-radius:18px;padding:12px 14px;font-size:12px;font-weight:700;margin-bottom:10px}
+.res{margin-top:8px;border-radius:12px;background:rgba(220,245,230,.85);padding:10px;color:#1d8a4e;font-size:15px;font-weight:800}
+/* SEKARANG */
+.skr .brand{background:#ffc800}.skr .nav .on{background:#ffc800;color:#241b00;font-weight:800;border-radius:999px}
+.skr .top{background:#ffc800}.skr .hero{background:linear-gradient(90deg,#ffe98a,#ffd21f)}
+.skr .card{background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.8)}
+/* USULAN */
+.usl .brand{background:linear-gradient(135deg,rgba(255,255,255,.62),rgba(255,236,150,.5));border:2px solid rgba(255,208,40,.85);box-shadow:0 4px 14px rgba(200,150,0,.25),inset 0 1px 0 rgba(255,255,255,.8),inset 0 0 0 4px rgba(255,214,31,.22);backdrop-filter:blur(10px)}
+
+.usl .nav .on{background:linear-gradient(135deg,rgba(255,214,31,.62),rgba(255,200,0,.38));border:1px solid rgba(255,226,110,.9);box-shadow:0 4px 12px rgba(200,150,0,.25),inset 0 1px 0 rgba(255,255,255,.7);font-weight:800;color:#241b00;border-radius:999px;backdrop-filter:blur(8px)}
+
+.usl .top{background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.8);backdrop-filter:blur(10px)}
+.usl .hero{background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.8)}
+.usl .hero::before{content:"";position:absolute;right:-30px;top:-30px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(255,200,0,.55),rgba(255,200,0,0) 70%)}
+.usl .card{background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.8)}
+.btn{display:inline-block;margin-top:8px;padding:6px 12px;border-radius:10px;background:#ffc800;font-size:11px;font-weight:800}
+.note{font-size:12px;margin-top:8px;line-height:1.5}
+</style>
+<div class=col><div class=t>Sekarang (kuning penuh)</div>
+<div class="scr skr"><div class=side><div class=brand><img src=logo.png><div>PANTAU LAPORAN POSYANDU<small>Kecamatan Palu Utara</small></div></div><div class=nav><div class=on>Beranda</div><div>Laporan</div><div>Data Posyandu</div><div>Rekapitulasi</div><div>Pengaturan</div></div></div>
+<div class=main><div class=top>Beranda</div><div class=hero><div>PANTAU LAPORAN POSYANDU<small>Meningkatkan pelayanan kesehatan masyarakat</small></div></div><div class=card>Ringkasan Oktober 2026<div class=res>2 dari 38 laporan sudah masuk</div><span class=btn>Unduh PDF</span></div></div></div></div>
+<div class=col><div class=t>Usulan (kaca, kuning hanya aksen)</div>
+<div class="scr usl"><div class=side><div class=brand><img src=logo.png><div>PANTAU LAPORAN POSYANDU<small>Kecamatan Palu Utara</small></div></div><div class=nav><div class=on>Beranda</div><div>Laporan</div><div>Data Posyandu</div><div>Rekapitulasi</div><div>Pengaturan</div></div></div>
+<div class=main><div class=top>Beranda</div><div class=hero><div style="position:relative">PANTAU LAPORAN POSYANDU<small>Meningkatkan pelayanan kesehatan masyarakat</small></div></div><div class=card>Ringkasan Oktober 2026<div class=res>2 dari 38 laporan sudah masuk</div><span class=btn>Unduh PDF</span></div></div></div>
+<div class=note>Kotak logo: kaca putih dengan bingkai tepi kaca kuning. Menu aktif: kapsul kaca kuning. Bilah atas dan spanduk: kaca putih dengan cahaya kuning lembut. Tombol aksi tetap kuning.</div></div>

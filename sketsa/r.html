@@ -1,0 +1,40 @@
+<!doctype html><html lang="id"><meta charset="utf-8"><style>
+:root{--y:#F5C518;--yd:#8a6a00;--yl:#FFF6D6;--bg:#F6F5F1;--c:#fff;--t:#23211c;--m:#7a766b;--l:#E8E5DC;--g:#1f8a5b;--r:#c0392b;--o:#b86e00}
+*{box-sizing:border-box}body{margin:0;background:#ddd;font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif;color:var(--t);padding:20px;width:1160px}
+.lab{display:inline-block;background:#222;color:#fff;font-size:12px;padding:3px 12px;border-radius:99px;margin:0 0 8px}
+.card{background:var(--c);border:1px solid var(--l);border-radius:14px;padding:18px 22px;margin-bottom:26px}
+.hd{display:flex;justify-content:space-between;align-items:flex-start}.hd h4{margin:0;font-size:16px}.sub{color:var(--m);font-size:12.5px;margin-top:2px}
+.btn{border:1px solid var(--l);border-radius:10px;padding:5px 12px;font-size:12.5px;font-weight:600;color:var(--yd)}
+.big{display:flex;align-items:baseline;gap:12px;margin:14px 0 6px}.big b{font-size:44px;line-height:1;color:var(--g)}.big span{font-size:18px;font-weight:700}.big em{font-style:normal;color:var(--m);font-size:15px}
+.pct{margin-left:auto;font-size:26px;font-weight:800}
+.bar{height:10px;background:var(--l);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;width:13%;background:var(--y)}
+.chips{display:flex;gap:10px;margin-top:14px}.chip{border-radius:99px;padding:5px 14px;font-weight:600;font-size:13px}.o{background:#fff0df;color:var(--o)}.r{background:#fbe7e4;color:var(--r)}
+.i{display:inline-block;width:16px;height:16px;border:1px solid var(--m);border-radius:50%;text-align:center;font-size:11px;line-height:14px;color:var(--m);margin-left:8px}
+.lk{margin-top:14px;font-weight:700;color:var(--yd)}
+.list{margin-top:10px;border-top:1px solid var(--l)}.list .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--l)}.list b{font-weight:700}.list small{color:var(--m)}
+/* sebelum */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px}.tile{border:1px solid var(--l);border-radius:12px;padding:10px 12px}.tile b{font-size:24px;display:block}.tile span{color:var(--m);font-size:12px}
+.old p{margin:8px 0 0;color:var(--m);font-size:12.5px}
+</style><body>
+<div class="lab">SEBELUM (yang Anda lingkar)</div>
+<div class="card old"><div class="hd"><h4>Ringkasan Oktober 2026</h4><span class="btn">Muat ulang data</span></div>
+<p>Batas kader mengumpulkan laporan: tanggal 8 November · Batas kelurahan mengantar laporan fisik: tanggal 15 November.</p>
+<div class="tiles"><div class="tile"><b>38</b><span>Posyandu terdaftar</span></div><div class="tile"><b style="color:var(--g)">5</b><span>Laporan masuk</span></div><div class="tile"><b style="color:var(--o)">7</b><span>Digital terkirim, fisik belum</span></div><div class="tile"><b>26</b><span>Belum kirim</span></div></div>
+<div class="bar" style="margin-top:12px"><i></i></div><p>Capaian laporan: 13%. Laporan dihitung masuk setelah laporan digital dikirim dan laporan fisik diterima kecamatan.</p></div>
+
+<div class="lab">SESUDAH · pilihan 1: angka saja</div>
+<div class="card"><div class="hd"><div><h4>Ringkasan Oktober 2026</h4><div class="sub">Batas kader 8 Nov · Batas kelurahan 15 Nov</div></div><span class="btn">Muat ulang data</span></div>
+<div class="big"><b>5</b><span>dari 38 laporan sudah masuk ke kecamatan</span><i class="i">i</i><div class="pct">13%</div></div>
+<div class="bar"><i></i></div>
+<div class="chips"><span class="chip o">7 menunggu berkas fisik</span><span class="chip r">26 belum dikirim kader</span></div></div>
+
+<div class="lab">SESUDAH · pilihan 2: angka + daftar nama (tombol dibuka)</div>
+<div class="card"><div class="hd"><div><h4>Ringkasan Oktober 2026</h4><div class="sub">Batas kader 8 Nov · Batas kelurahan 15 Nov</div></div><span class="btn">Muat ulang data</span></div>
+<div class="big"><b>5</b><span>dari 38 laporan sudah masuk ke kecamatan</span><i class="i">i</i><div class="pct">13%</div></div>
+<div class="bar"><i></i></div>
+<div class="chips"><span class="chip o">7 menunggu berkas fisik</span><span class="chip r">26 belum dikirim kader</span></div>
+<div class="lk">Sembunyikan yang sudah masuk (5) ⌃</div>
+<div class="list"><div class="row"><b>Kayumalue Ngapa</b><small>1 laporan</small></div><div class="row"><span>Kemuning (Balita)</span><small>fisik diterima 30/10/2026</small></div>
+<div class="row"><b>Mamboro</b><small>3 laporan</small></div><div class="row"><span>Asoka · Lentora · Mekar (Balita)</span><small>fisik diterima 30/10/2026</small></div>
+<div class="row"><b>Mamboro Barat</b><small>1 laporan</small></div><div class="row"><span>Ratora (Balita)</span><small>fisik diterima 31/10/2026</small></div></div></div>
+</body></html>

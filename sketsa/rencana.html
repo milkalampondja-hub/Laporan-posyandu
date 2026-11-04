@@ -1,0 +1,56 @@
+<!doctype html><html lang="id"><meta charset="utf-8"><style>
+:root{--ky:#FFC800;--kyd:#7a5c00;--ink:#14213d;--m:#5b6475;--g:#1d8a4e;--bl:#2f5fe0;--o:#d9731a;--r:#d33a3a;--l:#e5e7eb}
+*{box-sizing:border-box}body{margin:0;background:#e9e9e9;font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif;color:var(--ink);padding:20px;width:1180px}
+.lab{display:inline-block;background:#222;color:#fff;font-size:12px;padding:3px 12px;border-radius:99px;margin:0 0 10px}
+h2{margin:0 0 4px;font-size:22px}.sub{color:var(--m);margin-bottom:14px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.st{background:#fff;border:1px solid var(--l);border-radius:16px;padding:14px 16px;border-top:6px solid var(--ky);position:relative}
+.no{position:absolute;top:-16px;left:14px;width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800}
+.st h4{margin:10px 0 6px;font-size:15.5px}.st ul{margin:0;padding-left:18px;font-size:13px}.st li{margin-bottom:3px}
+.st .out{margin-top:8px;background:#fff7d1;border-radius:10px;padding:6px 10px;font-size:12.5px;color:var(--kyd);font-weight:700}
+.ar{display:none}
+.sec{margin-top:22px;display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+.bx{background:#fff;border:1px solid var(--l);border-radius:16px;padding:14px 18px}
+.bx h4{margin:0 0 8px;font-size:15px}
+.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.p{border:1px solid var(--l);border-radius:12px;padding:8px 10px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.p b{font-size:13px}.p span{font-size:11px;font-weight:800;border-radius:99px;padding:2px 8px;background:#dff3e7;color:var(--g);white-space:nowrap}
+.p.b span{background:#e6f0ff;color:var(--bl)}
+.ok li,.no2 li{margin-bottom:4px;font-size:13px}
+.ok{border-left:6px solid var(--g)}.no2{border-left:6px solid var(--r)}
+.risk{border-left:6px solid var(--o)}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:6px 8px;border-bottom:1px solid var(--l);text-align:left}th{color:var(--m);font-size:11.5px;text-transform:uppercase}
+.cek{display:inline-block;width:16px;height:16px;border:2px solid var(--g);border-radius:4px;margin-right:6px;vertical-align:-3px}
+</style><body>
+<div class="lab">SKETSA · Rencana kerja redesain gaya kaca untuk seluruh Pantau</div>
+<h2>Rencana kerja: gaya kaca (laptop) + ringan (HP), aksen kuning Kota Palu</h2>
+<div class="sub">Hanya tampilan. Tidak ada fitur, tombol, data, atau urutan isi yang berubah. Setiap tahap diuji dulu sebelum lanjut.</div>
+
+<div class="steps">
+<div class="st"><span class="no">1</span><h4>Dasar warna dan kartu</h4><ul><li>Latar foto kantor (buram di laptop, tipis di HP)</li><li>Kartu kaca di laptop, kartu krem solid di HP</li><li>Warna terang dan gelap</li><li>Kuning Kota Palu tetap aksen</li></ul><div class="out">Berkas: pantau-tema.css</div></div>
+<div class="st"><span class="no">2</span><h4>Rangka halaman</h4><ul><li>Menu samping kaca (laptop)</li><li>Bilah atas dan akun</li><li>Menu bawah HP jadi kapsul</li><li>Judul besar, banyak ruang kosong</li></ul><div class="out">Berkas: pantau-tema.css, pantau.html</div></div>
+<div class="st"><span class="no">3</span><h4>Isi kartu</h4><ul><li>Ikon berwarna di kotak bulat pada judul kartu</li><li>Kartu hasil Beranda diperbesar</li><li>Label status tetap hijau, kuning, merah</li><li>Tombol dan kolom isian disamakan gayanya</li></ul><div class="out">Berkas: pantau-ext.js, pantau-tema.css</div></div>
+<div class="st"><span class="no">4</span><h4>Uji dan kirim hasil</h4><ul><li>Laptop dan HP, terang dan gelap</li><li>Semua halaman dan semua dialog</li><li>Daftar tombol sebelum dan sesudah dicocokkan (tidak boleh ada yang hilang)</li><li>Tangkapan layar saya kirim ke Anda</li></ul><div class="out">Lalu commit dan unggah</div></div>
+</div>
+
+<div class="sec">
+<div class="bx"><h4>Halaman yang ikut berubah (semua)</h4>
+<div class="pg">
+<div class="p"><b>Beranda admin</b><span>laptop + HP</span></div><div class="p"><b>Beranda operator</b><span>laptop + HP</span></div><div class="p"><b>Laporan</b><span>laptop + HP</span></div>
+<div class="p"><b>Data Posyandu</b><span>laptop + HP</span></div><div class="p"><b>Rekapitulasi</b><span>laptop + HP</span></div><div class="p"><b>Pengaturan</b><span>laptop + HP</span></div>
+<div class="p b"><b>Halaman masuk (login)</b><span>laptop + HP</span></div><div class="p b"><b>Kotak dialog</b><span>semua</span></div><div class="p b"><b>Notifikasi, tabel, formulir</b><span>semua</span></div>
+</div>
+<div style="margin-top:10px;color:var(--m);font-size:12.5px">Tidak termasuk dulu: aplikasi kader (index.html) dan aplikasi Terima (terima.html). Itu halaman terpisah dan butuh foto dari Anda.</div></div>
+
+<div class="bx ok"><h4>Yang tidak berubah</h4><ul><li>Semua fitur, tombol, dan isi</li><li>Warna status: hijau masuk, kuning menunggu, merah belum</li><li>Sandi, data, dan Code.gs (tidak disentuh)</li><li>Kuning Kota Palu tetap warna utama</li></ul></div>
+</div>
+
+<div class="sec">
+<div class="bx risk"><h4>Yang saya jaga selama mengerjakan</h4><ul style="margin:0;padding-left:18px;font-size:13px"><li><b>Keterbacaan:</b> teks gelap tebal di atas kartu terang, kontras diperiksa di terang dan gelap</li><li><b>HP murah:</b> tanpa blur per kartu di HP, jadi gulir tetap ringan</li><li><b>Cache:</b> nomor versi berkas dinaikkan supaya HP Anda memuat tampilan baru</li><li><b>Mundur:</b> setiap tahap di-commit sendiri, jadi mudah dibatalkan kalau tidak cocok</li></ul></div>
+<div class="bx"><h4>Cara saya memeriksa</h4><table><tr><th>Pemeriksaan</th><th>Hasil yang diharapkan</th></tr>
+<tr><td><span class="cek"></span>Daftar tombol</td><td>Sama persis seperti sebelumnya</td></tr>
+<tr><td><span class="cek"></span>Galat di halaman</td><td>Tidak ada</td></tr>
+<tr><td><span class="cek"></span>Terang dan gelap</td><td>Semua teks terbaca</td></tr>
+<tr><td><span class="cek"></span>Laptop dan HP</td><td>Tidak ada yang terpotong</td></tr></table></div>
+</div>
+</body></html>

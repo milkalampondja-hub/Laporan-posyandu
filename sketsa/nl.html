@@ -1,0 +1,41 @@
+<!doctype html><html lang="id"><meta charset="utf-8"><style>
+:root{--bl:#1d4ed8;--bll:#e6f0ff;--g:#1d8a4e;--gl:#e3f6e8;--y:#8a6a00;--yl:#fff6d6;--r:#c62828;--rl:#fdeaea;--o:#b45309;--ol:#fff0df;--t:#23211c;--m:#6b7280;--l:#e5e7eb;--a:#ffc800}
+*{box-sizing:border-box}body{margin:0;background:#e9e9e9;font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif;color:var(--t);padding:20px;width:1080px}
+.lab{display:inline-block;background:#222;color:#fff;font-size:12px;padding:3px 12px;border-radius:99px;margin:0 0 8px}
+.card{background:#fff;border:1px solid var(--l);border-radius:14px;padding:16px 20px;margin-bottom:14px}
+h4{margin:0 0 4px;font-size:16px}.sub{color:var(--m);font-size:12.5px}
+.xl{border:1px solid #9ca3af;background:#fff;font-size:12.5px;border-collapse:collapse;width:100%;margin-top:8px}
+.xl th{background:#e5e7eb;border:1px solid #9ca3af;padding:5px 8px;text-align:left;font-weight:700;white-space:nowrap}
+.xl td{border:1px solid #cbd0d8;padding:5px 8px;white-space:nowrap}
+.xl th.nw,.xl td.nw{background:var(--ol);outline:2px solid var(--o);outline-offset:-2px}.xl th.nw{color:var(--o)}
+.xl td.ed{background:var(--gl)}
+.leg{margin-top:8px;font-size:12.5px;color:#444}.leg b{color:var(--o)}
+.stats{display:flex;gap:8px;margin:10px 0}.st{flex:1;border-radius:10px;padding:7px 12px}.st b{font-size:22px;display:block;line-height:1.1}.st span{font-size:12px}
+.s1{background:var(--bll);color:var(--bl)}.s2{background:var(--gl);color:var(--g)}.s3{background:var(--rl);color:var(--r)}.s4{background:#f1f2f4;color:var(--m)}.s5{background:var(--ol);color:var(--o)}
+table.p{width:100%;border-collapse:collapse;font-size:13px}table.p td{padding:8px;border-bottom:1px solid var(--l)}
+.tg{font-size:11.5px;font-weight:700;border-radius:99px;padding:2px 10px;white-space:nowrap}.tu{background:var(--bll);color:var(--bl)}.tb{background:var(--gl);color:var(--g)}.th{background:var(--rl);color:var(--r)}.tn{background:var(--ol);color:var(--o)}
+.lama{color:var(--r);text-decoration:line-through}.baru{color:var(--g);font-weight:700}
+.btn{display:inline-block;border:1px solid var(--l);border-radius:10px;padding:6px 14px;font-weight:600;font-size:13px;color:var(--y);margin-right:6px}.btn.p{background:var(--a);border-color:var(--a);color:#3a2d00}
+.pw{display:inline-block;border:1px solid var(--l);border-radius:10px;padding:6px 14px;color:var(--m);margin-right:8px}
+.warn{margin-top:10px;background:var(--yl);border:1px solid #f1dc8a;border-radius:10px;padding:8px 12px;font-size:12.5px;color:#5a4a00}
+</style><body>
+
+<div class="lab">BAGIAN 1 · Templat Excel (hasil unduhan) dengan kolom baru "Nama lama"</div>
+<div class="card"><h4>Posyandu-SK-2027.xlsx</h4><div class="sub">Kolom oranye = baru. Kosongkan kalau nama Posyandunya tidak berubah. Sel hijau = yang Anda ubah.</div>
+<table class="xl"><tr><th>Nama Posyandu</th><th class="nw">Nama lama (isi hanya jika ganti nama)</th><th>Kelurahan</th><th>Jenis</th><th>Ketua</th><th>Nomor HP</th><th>Status</th><th>Kader</th></tr>
+<tr><td>Melati 1</td><td class="nw"></td><td>Taipa</td><td>Balita</td><td>Nurhayati</td><td>0812…</td><td>Aktif</td><td class="ed">Nurhayati - Ketua; Wati</td></tr>
+<tr><td class="ed">Melati Indah</td><td class="nw ed">Melati 2</td><td>Taipa</td><td>Lansia</td><td>Rina</td><td>0821…</td><td>Aktif</td><td>Rina - Ketua</td></tr>
+<tr><td class="ed">Mawar 3</td><td class="nw"></td><td class="ed">Mamboro</td><td class="ed">Lansia</td><td class="ed">Hasna</td><td class="ed">0853…</td><td class="ed">Aktif</td><td class="ed">Hasna - Ketua</td></tr></table>
+<div class="leg">Baris 2: <b>Melati 2 diganti jadi "Melati Indah"</b> → aplikasi tahu ini Posyandu yang sama (laporan lama ikut). Baris 3: Posyandu baru (kolom nama lama kosong dan namanya belum ada).</div></div>
+
+<div class="lab">BAGIAN 2 · Pratinjau, ada kategori baru "Nama Posyandu berubah"</div>
+<div class="card" style="border:2px solid var(--bl)"><h4>Pratinjau impor <span class="sub">· Posyandu-SK-2027.xlsx · 38 baris terbaca · belum tersimpan</span></h4>
+<div class="stats"><div class="st s1"><b>12</b><span>kader berubah</span></div><div class="st s5"><b>1</b><span>nama Posyandu berubah</span></div><div class="st s2"><b>2</b><span>Posyandu baru</span></div><div class="st s3"><b>1</b><span>dinonaktifkan</span></div><div class="st s4"><b>22</b><span>tidak berubah</span></div></div>
+<table class="p"><tr><td><b>Melati 1</b> (Balita) · Taipa</td><td><span class="lama">Siti Rahma</span> → <span class="baru">Nurhayati</span></td><td><span class="tg tu">ganti kader</span></td></tr>
+<tr><td><b>Lansia · Taipa</b></td><td><span class="lama">Melati 2</span> → <span class="baru">Melati Indah</span></td><td><span class="tg tn">ganti nama Posyandu</span></td></tr>
+<tr><td><b>Mawar 3</b> (Lansia) · Mamboro</td><td><span class="baru">Posyandu baru</span> · ketua Hasna</td><td><span class="tg tb">baru</span></td></tr>
+<tr><td><b>Anggrek</b> (Balita) · Kayumalue Ngapa</td><td>Tidak ada di berkas · laporan lama tetap aman</td><td><span class="tg th">nonaktif</span></td></tr></table>
+<div class="warn"><b>Peringatan otomatis</b> (muncul bila ada nama Posyandu yang hilang dan ada nama baru yang mirip, tapi kolom "Nama lama" kosong): <i>"Anggrek tidak ada di berkas, dan ada 'Anggrek Merah' yang baru. Apakah ini Posyandu yang sama? Isi kolom Nama lama lalu unggah lagi, supaya laporan lama ikut."</i></div>
+<div style="margin-top:12px"><span class="pw">Sandi Anda ••••••</span><span class="btn p">Terapkan 16 perubahan</span><span class="btn">Batal</span></div></div>
+<p class="sub">Nama dan angka hanya contoh.</p>
+</body></html>

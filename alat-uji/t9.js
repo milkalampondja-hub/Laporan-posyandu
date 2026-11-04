@@ -1,0 +1,18 @@
+const fs=require('fs'),crypto=require('crypto');let src=fs.readFileSync('apps-script/Code.gs','utf8');
+const P={};const files={};
+global.PropertiesService={getScriptProperties:()=>({getProperty:k=>P[k]||null,setProperty:(k,v)=>P[k]=v})};
+global.Utilities={sleep(){},DigestAlgorithm:{SHA_256:1},Charset:{UTF_8:1},computeDigest:(a,t)=>[...crypto.createHash('sha256').update(t).digest()].map(x=>x>127?x-256:x),formatDate:()=>'x'};
+global.MimeType={PLAIN_TEXT:1};
+const mk=(n)=>({getBlob:()=>({getDataAsString:()=>files[n]}),setContent:c=>files[n]=c,setTrashed:()=>delete files[n]});
+global.DriveApp={getFoldersByName:()=>({hasNext:()=>true,next:()=>({getFilesByName:n=>({hasNext:()=>n in files,next:()=>mk(n)}),createFile:(n,t)=>{files[n]=t}})})};
+global.CacheService={getScriptCache:()=>({put(){}})};global.HtmlService={createHtmlOutput:s=>s};
+(0,eval)(src+";global.T={masuk,kelola,atur,daftarAdmin,jawab:(o)=>o}");
+T.masuk&&0;
+const r=(f)=>{try{return f()}catch(e){return 'ERR '+e.message}};
+console.log(r(()=>T.kelola({u:'admin',p:'GantiSandi2026',op:'tambah',nu:'Budi1',ns:'abcdef',nama:'Budi'})).length);
+console.log(JSON.stringify(T.daftarAdmin()),T.masuk('budi1','abcdef'),T.masuk('budi1','salah'),T.masuk('admin','GantiSandi2026'));
+console.log(r(()=>T.kelola({u:'budi1',p:'abcdef',op:'tambah',nu:'x12',ns:'abcdef'})));
+console.log(r(()=>T.kelola({u:'admin',p:'GantiSandi2026',op:'tambah',nu:'admin',ns:'abcdef'})));
+r(()=>T.atur({u:'budi1',p:'abcdef',sandiBaru:'baru999',nip:'123 45'}));
+console.log(T.masuk('budi1','baru999'),T.masuk('budi1','abcdef'),JSON.stringify(T.daftarAdmin()));
+r(()=>T.kelola({u:'admin',p:'GantiSandi2026',op:'hapus',nu:'budi1'}));console.log(T.daftarAdmin().length,Object.keys(files));
