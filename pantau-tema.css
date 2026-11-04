@@ -441,3 +441,23 @@ html .login .lfoot{color:var(--fg);opacity:.8}
 /* login gelap: label lebih terang agar jelas terbaca */
 :root[data-theme=dark] .login .lf label{color:#e6e3d2}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .login .lf label{color:#e6e3d2}}
+
+/* ---------- Kaca kuning (alternatif 3): menu samping kaca kuning, isi putih ---------- */
+:root{--ky-side:linear-gradient(180deg,rgba(255,214,31,.50),rgba(255,236,150,.30));--ky-line:rgba(255,214,31,.6);--ky-chip:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,236,150,.5));--ky-on:rgba(255,255,255,.80);--ky-top:linear-gradient(180deg,rgba(255,214,31,.55),rgba(255,236,150,.35));--ky-ban:linear-gradient(100deg,rgba(255,255,255,.72),rgba(255,255,255,.40))}
+:root[data-theme=dark]{--ky-side:linear-gradient(180deg,rgba(120,92,0,.55),rgba(40,32,4,.45));--ky-line:rgba(255,200,0,.28);--ky-chip:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,200,0,.14));--ky-on:rgba(255,255,255,.14);--ky-top:linear-gradient(180deg,rgba(120,92,0,.7),rgba(60,46,0,.5));--ky-ban:linear-gradient(100deg,rgba(255,255,255,.12),rgba(255,255,255,.04))}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--ky-side:linear-gradient(180deg,rgba(120,92,0,.55),rgba(40,32,4,.45));--ky-line:rgba(255,200,0,.28);--ky-chip:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,200,0,.14));--ky-on:rgba(255,255,255,.14);--ky-top:linear-gradient(180deg,rgba(120,92,0,.7),rgba(60,46,0,.5));--ky-ban:linear-gradient(100deg,rgba(255,255,255,.12),rgba(255,255,255,.04))}}
+
+html .side{background:var(--ky-side);border-right:1px solid var(--ky-line);-webkit-backdrop-filter:blur(16px) saturate(1.1);backdrop-filter:blur(16px) saturate(1.1)}
+html .brand{background:var(--ky-chip);border:1.5px solid var(--ky-line);color:var(--fg);box-shadow:0 4px 14px rgba(200,150,0,.18),inset 0 1px 0 rgba(255,255,255,.6);margin:10px 10px 6px}
+html .brand b{color:var(--fg)}html .brand small{color:var(--muted)}
+html .nav button.on{background:var(--ky-on);color:var(--fg);border:1px solid rgba(255,255,255,.9);box-shadow:0 2px 8px rgba(122,86,0,.18);font-weight:800}
+:root[data-theme=dark] html .nav button.on,:root[data-theme=dark] .nav button.on{border-color:rgba(255,255,255,.18)}
+html .nav button.on .ic{color:var(--accent-text)}
+html .banner{background:var(--ky-ban);border:1px solid var(--kc-line);box-shadow:var(--kc-sh)}
+html .banner::after{content:"";position:absolute;left:-30px;bottom:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(255,200,0,.40),rgba(255,200,0,0) 70%);pointer-events:none}
+html .banner h2{color:var(--fg)}html .banner p{color:var(--muted)}html .banner .bar1{background:var(--accent)}
+@media (max-width:899px){
+  html .top{background:var(--ky-top);color:var(--fg);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--ky-line)}
+  html .top .ibtn{background:var(--surface);border:1px solid var(--kc-line);color:var(--fg)}
+  html .top .lg,html .top .tt{color:var(--fg)}
+}
