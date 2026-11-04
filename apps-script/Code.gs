@@ -66,7 +66,7 @@ function doGet(e) {
     if (w2) {
       var c = bacaPengaturan(w2.u), bs = bacaPengaturan(PANTAU_USER);
       hasil = { ok: true, nama: c.nama, nip: c.nip, jabatan: c.jabatan, unit: c.unit, foto: c.foto,
-                banners: bs.banners, batas: bs.batas, sk: bs.sk, pengumuman: bs.pengumuman, wa: bs.wa, peran: w2.peran, kel: w2.kel || '' };
+                banners: bs.banners, batas: bs.batas, batasKel: bs.batasKel, sk: bs.sk, pengumuman: bs.pengumuman, wa: bs.wa, peran: w2.peran, kel: w2.kel || '' };
       if (w2.peran === 'utama') { hasil.admins = daftarAdmin(); hasil.ruang = bacaRuang(); hasil.penerima = infoPenerima(); }
     } else {
       hasil = gagalLogin();
@@ -93,6 +93,9 @@ function doGet(e) {
   else if (p.aksi === 'tcari') { hasil = terimaCari(p); }
   else if (p.aksi === 'trekap') { hasil = terimaRekap(p); }
   else if (p.aksi === 'tterima' || p.aksi === 'tbatal') { hasil = terimaGet(p); }
+  else if (p.aksi === 'tlembar') { hasil = terimaLembarCari(p); }
+  else if (p.aksi === 'tlterima') { hasil = terimaLembarGet(p); }
+  else if (p.aksi === 'lembarkel') { hasil = lembarKelurahan(p); }
   else if (p.aksi === 'pdf') {
     // Unduh PDF laporan (hanya setelah login). Operator hanya boleh laporan kelurahannya.
     var w5 = masuk(p.u, p.p);
@@ -286,6 +289,7 @@ function bacaPengaturan(u) {
     var bn = Array.isArray(o.banners) ? o.banners : (o.banner ? [o.banner] : []);
     c.banners = [String(bn[0] || ''), String(bn[1] || ''), String(bn[2] || '')];
     c.batas = parseInt(o.batas, 10) || 25;
+    c.batasKel = parseInt(o.batasKel, 10) || 0;
     c.sk = (o.sk && typeof o.sk === 'object') ? o.sk : {};
     c.pengumuman = String(o.pengumuman || '');
     c.pengumumanTgl = String(o.pengumumanTgl || '');
@@ -331,6 +335,12 @@ function atur(d) {
     if (!(bt >= 1 && bt <= 31)) throw new Error('Batas tanggal 1 sampai 31');
     c.batas = bt;
   }
+  if (d.batasKel !== undefined) {
+    if (w.peran !== 'utama') throw new Error('Hanya admin utama yang boleh mengubah batas waktu kelurahan');
+    var bk = parseInt(d.batasKel, 10);
+    if (!(bk >= 1 && bk <= 31)) throw new Error('Batas tanggal 1 sampai 31');
+    c.batasKel = bk;
+  }
   if (d.pengumuman !== undefined) {
     if (w.peran !== 'utama') throw new Error('Hanya admin utama yang boleh mengubah pengumuman');
     var pbaru = String(d.pengumuman).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
@@ -356,6 +366,7 @@ function atur(d) {
   if (d.foto !== undefined) cl.push('mengubah foto profil');
   if (d.bannerIdx !== undefined) cl.push('mengubah banner ' + (parseInt(d.bannerIdx, 10) + 1));
   if (d.batas !== undefined) cl.push('mengubah batas waktu menjadi tanggal ' + c.batas);
+  if (d.batasKel !== undefined) cl.push('mengubah batas waktu kelurahan mengantar laporan menjadi tanggal ' + c.batasKel);
   if (d.pengumuman !== undefined) cl.push(c.pengumuman ? 'mengubah pengumuman untuk kader' : 'menghapus pengumuman untuk kader');
   if (d.wa !== undefined) cl.push(c.wa ? 'mengubah nomor WhatsApp bantuan' : 'menghapus nomor WhatsApp bantuan');
   if (d.sandiBaru !== undefined) cl.push('mengganti kata sandi');
@@ -430,6 +441,8 @@ function doPost(e) {
       if (d.aksi === 'pos') { tag = 'a'; return simpanPos(d); }
       if (d.aksi === 'nomor') { tag = 'a'; return simpanNomor(d); }
       if (d.aksi === 'setor') { tag = 'a'; return catatSetor(d); }
+      if (d.aksi === 'lembar') { tag = 'a'; return buatLembar(d); }
+      if (d.aksi === 'bukalaporan') { tag = 'a'; return bukaLaporan(d); }
       if (d.aksi === 'terima') { tag = 'a'; return terimaKonfirmasi(d); }
       if (d.aksi === 'terimabatal') { tag = 'a'; return terimaBatal(d); }
       if (d.aksi === 'sk') { tag = 'a'; return simpanSk(d, cache); }
@@ -469,7 +482,8 @@ function nomorBaru(sh, v) {
 function catat(d, cache) {
   var ada = cache.get('info_' + d.id);
   if (ada) return simpanHasil(JSON.parse(ada), 'c');
-  var v = validasi(d), sh = lembar(), nb = nomorBaru(sh, v);
+  var v = validasi(d); cekKunciLaporan(v);
+  var sh = lembar(), nb = nomorBaru(sh, v);
   sh.appendRow([nb.nomor, new Date(), v.thn, v.bln, v.kel, v.pos, v.jenis, bersih(d.tanggalKegiatan, 120),
                 bersih(d.kader, 900), nb.versi, '', '', bersih(d.hasilText, 800), 'PDF menunggu', String(d.id || '')]);
   sentuhStamp();
@@ -493,6 +507,7 @@ function selesai(d, cache) {
   if (bytes[0] !== 37 || bytes[1] !== 80 || bytes[2] !== 68 || bytes[3] !== 70) throw new Error('Berkas bukan PDF');
 
   var sh = lembar(), infoTeks = cache.get('info_' + d.id), info = infoTeks ? JSON.parse(infoTeks) : null;
+  if (!info) cekKunciLaporan(v);
   var nb = info ? { nomor: info.nomor, versi: info.versi } : nomorBaru(sh, v);
   var folder = anak(anak(anak(anak(induk(), String(v.thn)), v.kodeBln + '-' + v.bln), v.kel), v.pos);
   var nama = nb.nomor + ' ' + v.jenis + ' ' + v.pos + ' ' + v.bln + ' ' + v.thn + (nb.versi > 1 ? ' v' + nb.versi : '') + '.pdf';
@@ -718,6 +733,182 @@ function catatSetor(d) {
   return simpanHasil({ ok: true, per: per, data: m }, 'a');
 }
 
+
+// ===================== Alur kelurahan: lembar pengantar dan kunci laporan =====================
+// Kelurahan membuat lembar pengantar (satu per kelurahan per bulan). Laporan yang ikut diantar dikunci agar kader tidak bisa
+// mengirim ulang sampai kelurahan membuka kembali. Kode lembar (huruf besar) dipindai di aplikasi Terima: semua laporan
+// pada lembar tercatat diterima sekaligus.
+var NAMA_LEMBAR = 'lembar-pengantar.json';
+var NAMA_KUNCI = 'kunci-laporan.json';
+function bacaKunciLap() { var o = bacaBerkasCepat(NAMA_KUNCI); return (o && o.K && typeof o.K === 'object') ? o.K : {}; }
+function tulisKunciLap(K) {
+  var teks = JSON.stringify({ K: K }), f = induk(), it = f.getFilesByName(NAMA_KUNCI);
+  if (it.hasNext()) it.next().setContent(teks); else f.createFile(NAMA_KUNCI, teks, MimeType.PLAIN_TEXT);
+  sentuhStamp();
+}
+function bacaLembarSemua() { var o = bacaBerkasCepat(NAMA_LEMBAR); return (o && o.L && typeof o.L === 'object') ? o.L : {}; }
+function tulisLembarSemua(L) {
+  var ks = Object.keys(L).sort(function (a, b) { return (L[a].ts || 0) - (L[b].ts || 0); });
+  while (ks.length > 120) delete L[ks.shift()];
+  var teks = JSON.stringify({ L: L }), f = induk(), it = f.getFilesByName(NAMA_LEMBAR);
+  if (it.hasNext()) it.next().setContent(teks); else f.createFile(NAMA_LEMBAR, teks, MimeType.PLAIN_TEXT);
+  sentuhStamp();
+}
+function kodeLembarBaru() {
+  var h = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = 'L';
+  for (var i = 0; i < 10; i++) s += h.charAt(Math.floor(Math.random() * h.length));
+  return s;
+}
+function adaKodeLembar(k) { return /^L[A-Z0-9]{10}$/.test(String(k || '')); }
+function kunciLap(per, kel, jenis, nama) { return per + '|' + kunciPos(kel, jenis, nama); }
+/** Laporan terbaru tiap Posyandu untuk satu bulan: { kunciPos: {nomor, kode, versi, pdf} }. */
+function laporanPeriode(per) {
+  var out = {}, sh = lembar(), n = sh.getLastRow();
+  if (n > 1) sh.getRange(2, 1, n - 1, HEADER.length).getValues().forEach(function (x) {
+    if (kodePeriode(x[2], x[3]) !== per) return;
+    var k = kunciPos(String(x[4]), String(x[6]), String(x[5])), v = parseInt(x[9], 10) || 1;
+    if (!out[k] || v >= out[k].versi) out[k] = { nomor: String(x[0]), kode: String(x[14] || ''), versi: v, pdf: String(x[13] || '') === 'PDF tersimpan' };
+  });
+  return out;
+}
+/** Dipanggil saat kader mengirim laporan: tolak bila laporan bulan itu sudah dicetak oleh kelurahan. */
+function cekKunciLaporan(v) {
+  var per = kodePeriode(v.thn, v.bln);
+  if (per && bacaKunciLap()[kunciLap(per, v.kel, v.jenis, v.pos)]) {
+    throw new Error('Laporan bulan ini sudah dicetak oleh pihak kelurahan, sehingga tidak bisa dikirim ulang. Hubungi pihak kelurahan untuk membuka kembali.');
+  }
+}
+function masukKelurahan(d) {
+  var w = masuk(d.u, d.p);
+  if (!w || (w.peran !== 'admin' && w.peran !== 'utama')) { Utilities.sleep(1200); throw new Error('Silakan masuk lagi'); }
+  var kel = w.peran === 'admin' ? w.kel : String(d.kel || '');
+  if (KELURAHAN.indexOf(kel) < 0) throw new Error('Kelurahan tidak dikenal');
+  return { w: w, kel: kel };
+}
+function periodeValid(per) { per = String(per || ''); if (!/^20\d\d-(0[1-9]|1[0-2])$/.test(per)) throw new Error('Bulan tidak valid'); return per; }
+function denganKunci(fn) {
+  var kunci = LockService.getScriptLock();
+  try { kunci.waitLock(20000); } catch (x) { throw new Error('Server sedang sibuk, coba lagi'); }
+  try { return fn(); } finally { try { kunci.releaseLock(); } catch (x) {} }
+}
+/** POST (kelurahan atau admin kecamatan): buat lembar pengantar satu bulan. Status tiap Posyandu ditetapkan saat ini. */
+function buatLembar(d) {
+  var m = masukKelurahan(d), w = m.w, kel = m.kel, per = periodeValid(d.per);
+  var tahan = {}; (Array.isArray(d.tahan) ? d.tahan : []).forEach(function (x) { tahan[String(x || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 12)] = true; });
+  return denganKunci(function () {
+    var sl = bacaSetorLengkap(), L = bacaLembarSemua(), K = bacaKunciLap(), lap = laporanPeriode(per);
+    var pos = bacaPos().filter(function (x) { return x.aktif !== false && x.kel === kel; })
+      .sort(function (a, b) { return a.jenis.localeCompare(b.jenis) || a.nama.localeCompare(b.nama); });
+    var items = pos.map(function (x) {
+      var r = lap[kunciPos(x.kel, x.jenis, x.nama)], st;
+      if ((sl.d[per] || {})[x.id]) st = 'diterima';
+      else if (!r) st = 'belum';
+      else if (!r.pdf) st = 'pdfbelum';
+      else if (tahan[x.id]) st = 'tahan';
+      else st = 'ikut';
+      return { pid: x.id, nama: x.nama, jenis: x.jenis, st: st, nomor: r ? r.nomor : '', kode: r ? r.kode : '', versi: r ? r.versi : 0 };
+    });
+    var ikut = items.filter(function (x) { return x.st === 'ikut'; });
+    if (!ikut.length) throw new Error('Belum ada laporan yang bisa diantar. Laporan harus sudah dikirim kader dan PDF-nya tersimpan.');
+    var zona = Session.getScriptTimeZone(), now = new Date(), kode = kodeLembarBaru();
+    // lembar lama untuk kelurahan dan bulan yang sama dinyatakan diganti; kuncinya dilepas lalu dipasang ulang sesuai lembar baru
+    Object.keys(L).forEach(function (k) {
+      var o = L[k]; if (o.kel !== kel || o.per !== per || o.ganti) return;
+      o.ganti = kode;
+      Object.keys(K).forEach(function (kk) { if (K[kk] === k) delete K[kk]; });
+    });
+    items.forEach(function (x) {
+      if (x.st === 'ikut' || x.st === 'diterima') { var q = pos.filter(function (y) { return y.id === x.pid; })[0]; K[kunciLap(per, q.kel, q.jenis, q.nama)] = kode; }
+    });
+    var oleh = namaOperator(w);
+    L[kode] = { kode: kode, kel: kel, per: per, bln: BULAN[parseInt(per.slice(5), 10) - 1], thn: per.slice(0, 4),
+                tgl: Utilities.formatDate(now, zona, 'yyyy-MM-dd'), jam: Utilities.formatDate(now, zona, 'HH:mm'), oleh: oleh, ts: now.getTime(),
+                items: items, ganti: '', diterima: null };
+    tulisLembarSemua(L); tulisKunciLap(K);
+    catatLog(w.u, 'membuat lembar pengantar ' + kel + ' ' + per + ' (' + ikut.length + ' laporan) [' + kode + ']');
+    return simpanHasil({ ok: true, lembar: L[kode] }, 'a');
+  });
+}
+/** POST: buka kembali satu laporan yang sudah dikunci, agar kader bisa mengirim ulang. */
+function bukaLaporan(d) {
+  var m = masukKelurahan(d), w = m.w, kel = m.kel, per = periodeValid(d.per);
+  var pid = String(d.pid || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 12), alasan = bersih(d.alasan, 120);
+  if (alasan.length < 3) throw new Error('Tulis alasan membuka kembali laporan');
+  return denganKunci(function () {
+    var x = bacaPos().filter(function (q) { return q.id === pid && q.kel === kel; })[0];
+    if (!x) throw new Error('Posyandu tidak ditemukan di kelurahan ini');
+    var sl = bacaSetorLengkap();
+    if ((sl.d[per] || {})[pid]) throw new Error('Laporan ini sudah diterima kecamatan. Batalkan dulu penerimaannya lewat Koreksi di aplikasi Terima.');
+    var K = bacaKunciLap(), kk = kunciLap(per, x.kel, x.jenis, x.nama);
+    if (!K[kk]) return simpanHasil({ ok: true, per: per, pid: pid }, 'a');
+    delete K[kk]; tulisKunciLap(K);
+    catatLog(w.u, 'membuka kembali laporan ' + x.jenis + ' ' + x.nama + ' (' + x.kel + ') ' + per + '. Alasan: ' + alasan);
+    return simpanHasil({ ok: true, per: per, pid: pid }, 'a');
+  });
+}
+/** Keterangan lembar beserta keadaan terbarunya (sudah diterima, dibuka kembali, diganti). */
+function lembarLengkap(o, sl, K) {
+  var pos = bacaPos(), byId = {}; pos.forEach(function (x) { byId[x.id] = x; });
+  var hasil = JSON.parse(JSON.stringify(o));
+  hasil.items.forEach(function (it) {
+    var q = byId[it.pid]; it.terima = statusTerima(o.per, it.pid, sl);
+    it.dibuka = !!(it.st === 'ikut' && q && K[kunciLap(o.per, q.kel, q.jenis, q.nama)] !== o.kode && !it.terima);
+  });
+  return hasil;
+}
+/** GET (kelurahan atau admin kecamatan): lembar satu kelurahan untuk satu bulan beserta laporan yang terkunci. */
+function lembarKelurahan(p) {
+  var m;
+  try { m = masukKelurahan(p); } catch (err) { return { ok: false, login: false, pesan: String(err.message || err) }; }
+  var per; try { per = periodeValid(p.per); } catch (err) { return { ok: false, pesan: String(err.message || err) }; }
+  var L = bacaLembarSemua(), K = bacaKunciLap(), sl = bacaSetorLengkap(), daftar = [], kunciPid = {};
+  Object.keys(L).forEach(function (k) { if (L[k].kel === m.kel && L[k].per === per) daftar.push(lembarLengkap(L[k], sl, K)); });
+  daftar.sort(function (a, b) { return b.ts - a.ts; });
+  bacaPos().forEach(function (x) { if (x.kel === m.kel) { var v = K[kunciLap(per, x.kel, x.jenis, x.nama)]; if (v) kunciPid[x.id] = v; } });
+  return { ok: true, per: per, kel: m.kel, lembar: daftar.slice(0, 5), kunci: kunciPid };
+}
+/** GET (aplikasi Terima): cari lembar pengantar dari kodenya. */
+function terimaLembarCari(p) {
+  var w = masukTerima(p.u, p.p);
+  if (!w) return gagalLogin();
+  if (!adaKodeLembar(p.k)) return { ok: true, ada: false };
+  var o = bacaLembarSemua()[String(p.k)];
+  if (!o) return { ok: true, ada: false };
+  return { ok: true, ada: true, lembar: lembarLengkap(o, bacaSetorLengkap(), bacaKunciLap()), oleh: namaOperator(w) };
+}
+/** GET (aplikasi Terima): konfirmasi penerimaan semua laporan pada lembar (dikurangi yang tidak dicentang petugas). */
+function terimaLembarGet(p) {
+  var w = masukTerima(p.u, p.p);
+  if (!w) return gagalLogin();
+  if (!adaKodeLembar(p.k)) return { ok: false, pesan: 'Kode lembar tidak dikenal' };
+  var ids = {}; String(p.ids || '').split(',').forEach(function (x) { x = x.replace(/[^A-Za-z0-9]/g, '').slice(0, 12); if (x) ids[x] = true; });
+  try {
+    return denganKunci(function () {
+      var L = bacaLembarSemua(), o = L[String(p.k)];
+      if (!o) throw new Error('Lembar tidak ditemukan');
+      if (o.ganti) throw new Error('Lembar ini sudah diganti dengan lembar yang lebih baru. Minta pihak kelurahan menyerahkan lembar yang terbaru.');
+      var sl = bacaSetorLengkap(), K = bacaKunciLap(), zona = Session.getScriptTimeZone(), now = new Date(), oleh = namaOperator(w);
+      var lap = laporanPeriode(o.per), pos = bacaPos(), byId = {}; pos.forEach(function (x) { byId[x.id] = x; });
+      var baru = 0, lewati = [];
+      sl.d[o.per] = sl.d[o.per] || {}; sl.t[o.per] = sl.t[o.per] || {};
+      o.items.forEach(function (it) {
+        if (it.st !== 'ikut' || !ids[it.pid] || sl.d[o.per][it.pid]) return;
+        var q = byId[it.pid], r = q ? lap[kunciPos(q.kel, q.jenis, q.nama)] : null;
+        if (!q || !r || r.nomor !== it.nomor) { lewati.push(it.nama + ': laporan berubah setelah lembar dibuat'); return; }
+        if (K[kunciLap(o.per, q.kel, q.jenis, q.nama)] !== o.kode) { lewati.push(it.nama + ': laporan sudah dibuka kembali'); return; }
+        sl.d[o.per][it.pid] = Utilities.formatDate(now, zona, 'yyyy-MM-dd');
+        sl.t[o.per][it.pid] = { nomor: it.nomor, kode: it.kode, oleh: oleh, jam: Utilities.formatDate(now, zona, 'HH:mm'), ts: now.getTime(), lembar: o.kode };
+        baru++;
+      });
+      if (baru) tulisSetor(sl.d, sl.t);
+      if (baru && !o.diterima) { o.diterima = { tgl: Utilities.formatDate(now, zona, 'yyyy-MM-dd'), jam: Utilities.formatDate(now, zona, 'HH:mm'), oleh: oleh, ts: now.getTime() }; tulisLembarSemua(L); }
+      if (baru) catatLog(w.u, 'menerima lembar pengantar ' + o.kel + ' ' + o.per + ': ' + baru + ' laporan [' + o.kode + ']');
+      return { ok: true, baru: baru, lewati: lewati, lembar: lembarLengkap(o, sl, K) };
+    });
+  } catch (err) {
+    return { ok: false, pesan: String(err.message || err) };
+  }
+}
 
 // ===================== Aplikasi Terima Posyandu (scan QR laporan fisik) =====================
 /** Masuk untuk aplikasi Terima: admin kecamatan atau akun penerima. Operator kelurahan ditolak. */
