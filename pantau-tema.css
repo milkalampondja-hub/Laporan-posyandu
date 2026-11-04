@@ -489,16 +489,15 @@ html .card::-webkit-scrollbar-thumb:hover{background:rgba(255,184,0,.95)}
 :root[data-theme=dark] .card::-webkit-scrollbar-thumb{background:rgba(255,216,77,.6)}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .card{scrollbar-color:rgba(255,216,77,.6) transparent}:root:not([data-theme=light]) .card::-webkit-scrollbar-thumb{background:rgba(255,216,77,.6)}}
 
-/* ---------- Judul kartu diam saat digulir (kapsul bening, daftar memudar di bawahnya) ---------- */
-:root{--st-bg:rgba(255,255,255,.50);--st-line:rgba(255,255,255,.7)}
-:root[data-theme=dark]{--st-bg:rgba(60,52,24,.55);--st-line:rgba(255,255,255,.14)}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--st-bg:rgba(60,52,24,.55);--st-line:rgba(255,255,255,.14)}}
+/* ---------- Judul kartu diam saat digulir (bilah rata kaca kuning, dasar pekat) ---------- */
+:root{--st-bg:linear-gradient(180deg,rgba(255,214,31,.55),rgba(255,236,150,.35)),#fff8dc;--st-line:rgba(255,214,31,.6)}
+:root[data-theme=dark]{--st-bg:linear-gradient(180deg,rgba(120,92,0,.7),rgba(60,46,0,.5)),#2a2308;--st-line:rgba(255,200,0,.28)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--st-bg:linear-gradient(180deg,rgba(120,92,0,.7),rgba(60,46,0,.5)),#2a2308;--st-line:rgba(255,200,0,.28)}}
 @media (min-width:1100px){
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) #sumB>.card:has(>.sthd),#app[data-view=b]:has(#sumB>.card:nth-child(3)) #secMx>.card:has(>.sthd){display:flex;flex-direction:column;overflow:hidden}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .sthd{flex:none;margin:0 0 10px;padding:10px 12px;border-radius:16px;background:var(--st-bg);border:1px solid var(--st-line);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+  #app[data-view=b]:has(#sumB>.card:nth-child(3)) #sumB>.card:has(>.sthd),#app[data-view=b]:has(#sumB>.card:nth-child(3)) #secMx>.card:has(>.sthd){display:flex;flex-direction:column;overflow:hidden;padding-top:0}
+  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .sthd{flex:none;margin:0 -16px 0;padding:14px 16px 10px;border-radius:0;background:var(--st-bg);border:0;border-bottom:1px solid var(--st-line);z-index:2}
   #app[data-view=b]:has(#sumB>.card:nth-child(3)) .sthd>h4{margin:0}
   #app[data-view=b]:has(#sumB>.card:nth-child(3)) .sthd>.lt{margin:4px 0 0}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .stbody{flex:1 1 auto;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:rgba(255,200,0,.75) transparent}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .stbody.skrol{-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 34px);mask-image:linear-gradient(180deg,transparent 0,#000 34px)}
+  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .stbody{flex:1 1 auto;min-height:0;overflow:auto;padding-top:10px;scrollbar-width:thin;scrollbar-color:rgba(255,200,0,.75) transparent}
   .stbody::-webkit-scrollbar{width:6px}.stbody::-webkit-scrollbar-track{background:transparent}.stbody::-webkit-scrollbar-thumb{background:rgba(255,200,0,.75);border-radius:6px}
 }
