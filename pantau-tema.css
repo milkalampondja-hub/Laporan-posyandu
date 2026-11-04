@@ -392,3 +392,17 @@ html .card,html .panel.big{background:var(--kc-bg);border:1px solid var(--kc-lin
   html .panel.big .card{-webkit-backdrop-filter:none;backdrop-filter:none;background:transparent;border:0;box-shadow:none}
 }
 html .card .card{background:transparent;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+
+/* ---------- Tahap 2: bingkai halaman ---------- */
+@media (min-width:900px){
+  html .side{background:var(--kc-side);-webkit-backdrop-filter:blur(16px) saturate(1.1);backdrop-filter:blur(16px) saturate(1.1);border-right:1px solid var(--kc-line)}
+  html .top{background:var(--kc-bg);color:var(--fg);-webkit-backdrop-filter:blur(16px) saturate(1.1);backdrop-filter:blur(16px) saturate(1.1);border-bottom:1px solid var(--kc-line);box-shadow:0 4px 18px rgba(40,30,0,.06)}
+  html .top .tt,html .top .pgt,html .top .dmeta{color:var(--fg)}
+  html .top .tt,html .top .pgt{font-weight:800;font-size:26px;letter-spacing:-.3px}
+  html .top .onl{color:var(--fg)}
+  html .top .ibtn{background:var(--surface);border:1px solid var(--kc-line);color:var(--fg)}
+}
+@media (max-width:899px){
+  html .bnav{left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom));width:auto;border:1px solid var(--kc-line);border-radius:28px;background:var(--kc-bg);box-shadow:0 8px 24px rgba(40,30,0,.16)}
+  html .sheet{padding-bottom:104px}
+}
