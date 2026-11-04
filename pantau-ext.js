@@ -1827,25 +1827,43 @@ window.pasangPenerima = function () {
   }
 };
 
-/* Judul kartu Beranda yang tetap diam saat kartu digulir (hanya tampilan: membungkus judul dan keterangan). */
+/* Judul kartu Beranda yang tetap diam saat kartu digulir: judul + keterangan dibungkus .sthd, sisanya .stbody (hanya tampilan). */
 (function () {
-  function bungkus(card) {
-    var h = card.firstElementChild;
-    if (!h || h.tagName !== 'H4' || (h.parentNode && h.parentNode.classList.contains('sthd'))) return;
-    var w = document.createElement('div'); w.className = 'sthd';
-    var nx = h.nextElementSibling;
-    card.insertBefore(w, h); w.appendChild(h);
-    if (nx && nx.classList.contains('lt')) w.appendChild(nx);
+  function rapikan(card) {
+    if (!card || !card.firstElementChild) return;
+    var h = card.firstElementChild, w, b, k;
+    if (h.classList && h.classList.contains('sthd')) { w = h; }
+    else if (h.tagName === 'H4') {
+      w = document.createElement('div'); w.className = 'sthd';
+      var nx = h.nextElementSibling;
+      card.insertBefore(w, h); w.appendChild(h);
+      if (nx && nx.classList.contains('lt')) w.appendChild(nx);
+    } else return;
+    b = card.querySelector(':scope>.stbody');
+    if (!b) {
+      b = document.createElement('div'); b.className = 'stbody'; card.appendChild(b);
+      b.addEventListener('scroll', function () { b.classList.toggle('skrol', b.scrollTop > 2); }, { passive: true });
+    }
+    k = w.nextElementSibling;
+    while (k) { var n = k.nextElementSibling; if (k !== b) b.appendChild(k); k = n; }
   }
-  function rapikan() {
+  function semua() {
     var a = document.querySelectorAll('#sumB>.card, #secMx>.card');
-    for (var i = 0; i < a.length; i++) bungkus(a[i]);
+    for (var i = 0; i < a.length; i++) rapikan(a[i]);
+  }
+  function awasi(el) {
+    if (!el || el._sthd) return; el._sthd = 1;
+    new MutationObserver(function () { semua(); }).observe(el, { childList: true });
   }
   function pasang() {
-    var t = [document.getElementById('sumB'), document.getElementById('secMx')], i;
     if (!window.MutationObserver) return;
-    for (i = 0; i < t.length; i++) if (t[i]) new MutationObserver(function () { rapikan(); }).observe(t[i], { childList: true });
-    rapikan();
+    var t = [document.getElementById('sumB'), document.getElementById('secMx')], i, c, j;
+    for (i = 0; i < t.length; i++) if (t[i]) awasi(t[i]);
+    semua();
+    c = document.querySelectorAll('#sumB>.card, #secMx>.card');
+    for (j = 0; j < c.length; j++) awasi(c[j]);
+    /* kartu baru hasil render ulang: pasang pengawas lagi */
+    setInterval(function () { semua(); var q = document.querySelectorAll('#sumB>.card, #secMx>.card'); for (var m = 0; m < q.length; m++) awasi(q[m]); }, 1500);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pasang); else pasang();
 })();
