@@ -478,3 +478,13 @@ html .banner h2{color:var(--fg)}html .banner p{color:var(--muted)}html .banner .
   #app[data-view=b]:has(#sumB>.card:nth-child(3)) #sumB>.card.span2 .hasil2 .bar{flex:1 1 100%;order:5;height:12px}
   #app[data-view=b]:has(#sumB>.card:nth-child(3)) #sumB>.card.span2 .hasil2 .tx b{white-space:nowrap;font-size:34px}
 }
+
+/* ---------- Batang gulir tipis, kaca kuning (kartu yang bisa digulir) ---------- */
+html .card,html .mainc,html .opdl,html .toolbar{scrollbar-width:thin;scrollbar-color:rgba(255,200,0,.75) transparent}
+html .card::-webkit-scrollbar{width:6px;height:6px}
+html .card::-webkit-scrollbar-track{background:transparent;margin:10px 0}
+html .card::-webkit-scrollbar-thumb{background:rgba(255,200,0,.75);border-radius:6px;border:0}
+html .card::-webkit-scrollbar-thumb:hover{background:rgba(255,184,0,.95)}
+:root[data-theme=dark] .card{scrollbar-color:rgba(255,216,77,.6) transparent}
+:root[data-theme=dark] .card::-webkit-scrollbar-thumb{background:rgba(255,216,77,.6)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .card{scrollbar-color:rgba(255,216,77,.6) transparent}:root:not([data-theme=light]) .card::-webkit-scrollbar-thumb{background:rgba(255,216,77,.6)}}
