@@ -419,3 +419,22 @@ html .hasil2 b,html .hasil2 .hasil2n{font-size:clamp(26px,3.2vw,38px)}
 html .btn{border-radius:14px}
 html input[type=text],html input[type=password],html input[type=search],html input[type=number],html input[type=date],html select,html textarea{border-radius:12px;border:1px solid var(--kc-line);background:var(--surface)}
 html .btn:not(.primary):not(.line):not(.kc){box-shadow:0 1px 3px rgba(40,30,0,.10)}
+
+/* ---------- Gaya kaca: halaman masuk ---------- */
+html .login{background:#fff8e1}
+html .login::before{inset:-40px;opacity:1;mix-blend-mode:normal;-webkit-mask-image:none;mask-image:none;filter:blur(18px) saturate(1.1);background:url(kantor.jpg) center/cover no-repeat}
+html .login::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(255,214,31,.62),rgba(255,248,225,.5))}
+html .login .lf{background:var(--kc-bg);border:1px solid var(--kc-line);border-radius:22px;box-shadow:0 10px 30px rgba(40,30,0,.15);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+html .login .lf input{background:var(--surface);border:1px solid var(--kc-line);border-radius:12px}
+html .login .lf .btn{border-radius:14px}
+html .login .lfoot{color:var(--fg);opacity:.8}
+@media (max-width:899px){
+  html .login::before{inset:0;filter:none;opacity:.3}
+  html .login::after{background:linear-gradient(180deg,#ffd21f 0,#ffd21f 38%,rgba(255,252,243,.93) 38.1%)}
+  html .login .lf{background:var(--kc-bg);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 4px 14px rgba(60,45,0,.12)}
+}
+:root[data-theme=dark] .login::after{background:linear-gradient(180deg,rgba(40,32,0,.75),rgba(10,9,5,.88))}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .login::after{background:linear-gradient(180deg,rgba(40,32,0,.75),rgba(10,9,5,.88))}}
+@media (prefers-color-scheme:dark) and (max-width:899px){:root:not([data-theme=light]) .login::after{background:linear-gradient(180deg,#5a4600 0,#5a4600 38%,rgba(16,15,9,.95) 38.1%)}}
+:root[data-theme=dark] .login{color:#f2f0e6}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .login{color:#f2f0e6}}
