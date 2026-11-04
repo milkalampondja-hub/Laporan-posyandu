@@ -281,7 +281,10 @@ function fisikOK(r, pr) { return !!(r.d && (SETOR[perKey(pr)] || {})[r.p.id]); }
 function lengkap(r, pr) { return isOp() ? !!r.d : fisikOK(r, pr); }
 function pillKec(r, pr) {
   var pl = pillSt(r);
-  if (!isOp() && r.d && !fisikOK(r, pr)) { pl.textContent = 'Digital masuk, fisik belum diterima'; pl.style.background = 'var(--accent-soft)'; pl.style.color = 'var(--accent-text)'; }
+  if (!isOp() && !fisikOK(r, pr)) {
+    if (r.d) { pl.textContent = 'Menunggu berkas fisik'; pl.style.background = 'var(--p-blue)'; pl.style.color = 'var(--ink-blue)'; }
+    else if ((SETOR[perKey(pr)] || {})[r.p.id]) { pl.textContent = 'Menunggu laporan digital'; pl.style.background = 'var(--accent-soft)'; pl.style.color = 'var(--accent-text)'; }
+  }
   return pl;
 }
 function renderBeranda() {
@@ -295,28 +298,17 @@ function renderBeranda() {
   var SS = SETOR[perKey(pr)], MM = SS || {}, tot = h.rows.length;
   var lg = h.rows.filter(function (x) { return fisikOK(x, pr); }), pc2 = persen(lg.length, tot);
   var dig = h.masuk.length, fis = h.rows.filter(function (x) { return MM[x.p.id]; }).length;
-  function kartuK(cls, ikon, judul, n, ket, sisa) {
-    var k = el('div', 'kk ' + cls), t = el('div', 'kkt'), ic = el('span', 'kki'); ic.innerHTML = '<svg class="ic"><use href="#i-' + ikon + '"/></svg>';
-    t.appendChild(ic); t.appendChild(el('span', null, judul)); k.appendChild(t);
-    var nn = el('div', 'kkn'); nn.appendChild(el('b', null, n)); nn.appendChild(el('small', null, ' dari ' + tot)); k.appendChild(nn);
-    var d = el('div', 'kkd'); d.appendChild(document.createTextNode(ket + ' \u00b7 ')); d.appendChild(el('em', null, sisa + ' belum')); k.appendChild(d);
-    var br = el('div', 'bar'); br.appendChild(document.createElement('i')).style.width = persen(typeof n === 'number' ? n : 0, tot) + '%'; k.appendChild(br);
-    return k;
-  }
-  var dua = el('div', 'rk2');
-  dua.appendChild(kartuK('kk-b', 'cloud', 'Laporan digital', dig, 'sudah dikirim kader', tot - dig));
-  dua.appendChild(kartuK('kk-g', 'clip', 'Berkas fisik', SS ? fis : '\u2026', 'sudah diterima kecamatan', SS ? tot - fis : '\u2026'));
-  c.appendChild(dua);
   var hs = el('div', 'hasil2'), ck = el('span', 'ck', '\u2713'); hs.appendChild(ck);
   var tx = el('div', 'tx'), l1 = el('div');
   l1.appendChild(el('b', null, (SS ? lg.length : '\u2026') + ' dari ' + tot)); l1.appendChild(document.createTextNode(' laporan sudah masuk ke kecamatan'));
   tx.appendChild(l1); tx.appendChild(el('small', null, 'Dihitung masuk bila laporan digital dan berkas fisik sudah ada.')); hs.appendChild(tx);
   var hb = el('div', 'bar'); hb.appendChild(document.createElement('i')).style.width = (SS ? pc2 : 0) + '%'; hs.appendChild(hb);
   hs.appendChild(el('div', 'pc', SS ? pc2 + '%' : '\u2026')); c.appendChild(hs);
+  if (SS) c.appendChild(el('div', 'hasil2k', (dig - lg.length) + ' menunggu berkas fisik \u00b7 ' + (fis - lg.length) + ' menunggu laporan digital'));
   if (h.asing.length) c.appendChild(el('div', 'warn2', h.asing.length + ' laporan memakai nama Posyandu yang belum cocok dengan Data Posyandu, sehingga tidak dihitung. Periksa ejaan di menu Data Posyandu.'));
   if (!POS.length) c.appendChild(el('div', 'warn2', 'Memakai daftar Posyandu dari SK. ' + (utama() ? 'Buka menu Data Posyandu lalu tekan "Simpan daftar dari SK" agar bisa diubah.' : '')));
   box.appendChild(c);
-  var c2 = el('div', 'card'); c2.appendChild(el('h4', null, 'Posyandu yang belum mengumpulkan laporan'));
+  var c2 = el('div', 'card'); c2.appendChild(el('h4', null, 'Posyandu yang belum lengkap'));
   var blm = h.rows.filter(function (x) { return !fisikOK(x, pr); });
   if (!SS) c2.appendChild(el('div', 'lt', 'Memuat status penerimaan laporan fisik\u2026'));
   else if (!blm.length) c2.appendChild(el('div', 'ok2', 'Semua Posyandu sudah mengumpulkan laporan ' + pr.bl + ' ' + pr.th + '.'));
