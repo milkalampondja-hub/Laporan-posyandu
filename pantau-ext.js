@@ -291,16 +291,28 @@ function renderBeranda() {
   if (isOp()) { berandaOp(box); return; }
   var c = el('div', 'card span2'), hr = el('div', 'rkhd'); hr.appendChild(el('h4', null, 'Ringkasan ' + pr.bl + ' ' + pr.th));
   hr.appendChild(btn('Muat ulang data', 'sm plain', function () { if (typeof muat === 'function') muat(); })); c.appendChild(hr);
-  c.appendChild(el('div', 'lt', 'Batas kader mengumpulkan laporan: tanggal ' + teksBatas(pr.th, pr.bl) + ' \u00b7 Batas kelurahan mengantar laporan fisik: tanggal ' + teksBatasKel(pr.th, pr.bl) + '.'));
-  var g = el('div', 'grid4');
-  var SS = SETOR[perKey(pr)], lg = h.rows.filter(function (x) { return fisikOK(x, pr); }), pc2 = persen(lg.length, h.rows.length);
-  g.appendChild(tileStat('', h.rows.length, 'Posyandu terdaftar'));
-  g.appendChild(tileStat('ok', SS ? lg.length : '\u2026', 'Laporan masuk'));
-  g.appendChild(tileStat('warn', SS ? h.masuk.length - lg.length : '\u2026', 'Digital terkirim, fisik belum'));
-  g.appendChild(tileStat('', h.rows.length - h.masuk.length, 'Belum kirim'));
-  c.appendChild(g);
-  var br = el('div', 'bar'); br.appendChild(document.createElement('i')).style.width = (SS ? pc2 : 0) + '%'; c.appendChild(br);
-  if (SS) c.appendChild(el('div', 'lt', 'Capaian laporan: ' + pc2 + '%. Laporan dihitung masuk setelah laporan digital dikirim dan laporan fisik diterima kecamatan.'));
+  c.appendChild(el('div', 'lt', 'Batas kader mengirim: ' + teksBatas(pr.th, pr.bl) + ' \u00b7 Batas kelurahan mengantar berkas fisik: ' + teksBatasKel(pr.th, pr.bl)));
+  var SS = SETOR[perKey(pr)], MM = SS || {}, tot = h.rows.length;
+  var lg = h.rows.filter(function (x) { return fisikOK(x, pr); }), pc2 = persen(lg.length, tot);
+  var dig = h.masuk.length, fis = h.rows.filter(function (x) { return MM[x.p.id]; }).length;
+  function kartuK(cls, ikon, judul, n, ket, sisa) {
+    var k = el('div', 'kk ' + cls), t = el('div', 'kkt'), ic = el('span', 'kki'); ic.innerHTML = '<svg class="ic"><use href="#i-' + ikon + '"/></svg>';
+    t.appendChild(ic); t.appendChild(el('span', null, judul)); k.appendChild(t);
+    var nn = el('div', 'kkn'); nn.appendChild(el('b', null, n)); nn.appendChild(el('small', null, ' dari ' + tot)); k.appendChild(nn);
+    var d = el('div', 'kkd'); d.appendChild(document.createTextNode(ket + ' \u00b7 ')); d.appendChild(el('em', null, sisa + ' belum')); k.appendChild(d);
+    var br = el('div', 'bar'); br.appendChild(document.createElement('i')).style.width = persen(typeof n === 'number' ? n : 0, tot) + '%'; k.appendChild(br);
+    return k;
+  }
+  var dua = el('div', 'rk2');
+  dua.appendChild(kartuK('kk-b', 'cloud', 'Laporan digital', dig, 'sudah dikirim kader', tot - dig));
+  dua.appendChild(kartuK('kk-g', 'clip', 'Berkas fisik', SS ? fis : '\u2026', 'sudah diterima kecamatan', SS ? tot - fis : '\u2026'));
+  c.appendChild(dua);
+  var hs = el('div', 'hasil2'), ck = el('span', 'ck', '\u2713'); hs.appendChild(ck);
+  var tx = el('div', 'tx'), l1 = el('div');
+  l1.appendChild(el('b', null, (SS ? lg.length : '\u2026') + ' dari ' + tot)); l1.appendChild(document.createTextNode(' laporan sudah masuk ke kecamatan'));
+  tx.appendChild(l1); tx.appendChild(el('small', null, 'Dihitung masuk bila laporan digital dan berkas fisik sudah ada.')); hs.appendChild(tx);
+  var hb = el('div', 'bar'); hb.appendChild(document.createElement('i')).style.width = (SS ? pc2 : 0) + '%'; hs.appendChild(hb);
+  hs.appendChild(el('div', 'pc', SS ? pc2 + '%' : '\u2026')); c.appendChild(hs);
   if (h.asing.length) c.appendChild(el('div', 'warn2', h.asing.length + ' laporan memakai nama Posyandu yang belum cocok dengan Data Posyandu, sehingga tidak dihitung. Periksa ejaan di menu Data Posyandu.'));
   if (!POS.length) c.appendChild(el('div', 'warn2', 'Memakai daftar Posyandu dari SK. ' + (utama() ? 'Buka menu Data Posyandu lalu tekan "Simpan daftar dari SK" agar bisa diubah.' : '')));
   box.appendChild(c);
