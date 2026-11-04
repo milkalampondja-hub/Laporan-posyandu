@@ -356,3 +356,39 @@ html .inon{display:flex;align-items:flex-start;gap:10px;margin-top:12px;font-siz
 html .opc .fold{display:flex;justify-content:space-between;align-items:center;gap:10px}html .opc .fold .ar{color:var(--muted);font-size:20px}
 html .opc .opb{margin-top:6px}
 @media (max-width:760px){html .opc .item .btn.kc{min-height:34px;padding:4px 10px;font-size:12.5px}html .opc .item label{flex:1 1 100% !important;min-height:40px !important}html .opc .item .pill{margin-left:34px}}
+
+/* =========================================================================
+   GAYA KACA (4 Nov 2026): latar foto kantor, kartu kaca di laptop, kartu krem solid di HP.
+   HANYA tampilan. Tidak ada fitur, tombol, atau logika yang berubah.
+   Untuk kembali ke tampilan sebelumnya: hapus blok dari komentar ini sampai akhir berkas.
+   ========================================================================= */
+:root{--kc-bg:#fffdf7;--kc-line:#efe6cf;--kc-sh:0 4px 14px rgba(60,45,0,.08);--kc-ov:linear-gradient(180deg,rgba(255,248,232,.90),rgba(255,252,243,.95));--kc-side:#fffdf7}
+@media (min-width:900px){
+:root{--kc-bg:rgba(255,255,255,.62);--kc-line:rgba(255,255,255,.78);--kc-sh:0 8px 24px rgba(40,30,0,.10);--kc-ov:linear-gradient(180deg,rgba(255,248,225,.55),rgba(255,255,255,.35));--kc-side:rgba(255,255,255,.62)}
+}
+:root[data-theme=dark]{--kc-bg:#1d1c13;--kc-line:#34321f;--kc-sh:0 4px 14px rgba(0,0,0,.35);--kc-ov:linear-gradient(180deg,rgba(14,13,8,.92),rgba(10,9,5,.96));--kc-side:#1d1c13}
+@media (min-width:900px){
+:root[data-theme=dark]{--kc-bg:rgba(34,32,20,.62);--kc-line:rgba(255,255,255,.12);--kc-sh:0 8px 24px rgba(0,0,0,.38);--kc-ov:linear-gradient(180deg,rgba(12,11,6,.78),rgba(8,7,4,.86));--kc-side:rgba(34,32,20,.62)}
+}
+@media (prefers-color-scheme:dark){
+:root:not([data-theme=light]){--kc-bg:#1d1c13;--kc-line:#34321f;--kc-sh:0 4px 14px rgba(0,0,0,.35);--kc-ov:linear-gradient(180deg,rgba(14,13,8,.92),rgba(10,9,5,.96));--kc-side:#1d1c13}
+}
+@media (prefers-color-scheme:dark) and (min-width:900px){
+:root:not([data-theme=light]){--kc-bg:rgba(34,32,20,.62);--kc-line:rgba(255,255,255,.12);--kc-sh:0 8px 24px rgba(0,0,0,.38);--kc-ov:linear-gradient(180deg,rgba(12,11,6,.78),rgba(8,7,4,.86));--kc-side:rgba(34,32,20,.62)}
+}
+
+/* ---------- latar foto kantor di belakang seluruh aplikasi ---------- */
+html #app{position:relative;isolation:isolate;background:transparent}
+html #app::before{content:"";position:fixed;inset:0;z-index:-2;background:url(kantor.jpg) center/cover no-repeat}
+html #app::after{content:"";position:fixed;inset:0;z-index:-1;background:var(--kc-ov)}
+@media (min-width:900px){html #app::before{inset:-40px;filter:blur(22px) saturate(1.1)}}
+html .main-col,html .sheet,html .mainc{background:transparent}
+html footer.dsk,html footer.dsk a{color:var(--muted)}
+
+/* ---------- kartu ---------- */
+html .card,html .panel.big{background:var(--kc-bg);border:1px solid var(--kc-line);box-shadow:var(--kc-sh);border-radius:20px}
+@media (min-width:900px){
+  html .card,html .panel.big{border-radius:22px;-webkit-backdrop-filter:blur(12px) saturate(1.1);backdrop-filter:blur(12px) saturate(1.1)}
+  html .panel.big .card{-webkit-backdrop-filter:none;backdrop-filter:none;background:transparent;border:0;box-shadow:none}
+}
+html .card .card{background:transparent;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
