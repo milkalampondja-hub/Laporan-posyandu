@@ -916,6 +916,7 @@ async function kirimArsip(){
     antreHapus(arsipId).catch(function(){});setTimeout(kirimAntrean,1500);
   }catch(e){
     var why=String(e&&e.message||e);
+    if(/sudah dicetak oleh pihak kelurahan/.test(why)&&!arsipInfo){box.className="status err2";box.innerHTML='<b>Laporan tidak bisa dikirim ulang.</b><br>'+esc(why)+'<br><small>PDF di HP tetap aman dan bisa Anda simpan atau bagikan.</small>';return}
     if(arsipInfo){box.className="status err2";box.innerHTML='Data laporan sudah tercatat ('+esc(arsipInfo.nomor)+'), tetapi file PDF belum terkirim ke arsip.<br><small>Penyebab: '+esc(why)+'</small><br><button type="button" class="btn sm" id="retry-arsip">Kirim ulang PDF</button>'}
     else{box.className="status err2";box.innerHTML='Belum tersimpan di arsip. PDF di HP tetap aman.<br><small>Penyebab: '+esc(why)+'</small><br><button type="button" class="btn sm" id="retry-arsip">Coba kirim lagi</button>'}
     antreSimpanGagal(data);
@@ -969,7 +970,7 @@ async function kirimAntrean(){
         var j=await selesaikan(dt);if(!j.ok)throw new Error(j.pesan||"gagal");
         await antreHapus(it.id);
         ANTRE.pesan="Laporan "+nm+" berhasil dikirim ke arsip ("+it.info.nomor+").";ANTRE.kls="ok2";
-      }catch(e){ANTRE.pesan="Laporan "+nm+" belum terkirim ke arsip, akan dicoba lagi nanti.";ANTRE.kls="err2";break}
+      }catch(e){if(/sudah dicetak oleh pihak kelurahan/.test(String(e&&e.message||e))){await antreHapus(it.id);ANTRE.pesan="Laporan "+nm+" tidak bisa dikirim ulang karena sudah dicetak oleh pihak kelurahan. Hubungi pihak kelurahan.";ANTRE.kls="err2";continue}ANTRE.pesan="Laporan "+nm+" belum terkirim ke arsip, akan dicoba lagi nanti.";ANTRE.kls="err2";break}
     }
   }finally{antreJalan=false;var sisa=[];try{sisa=await antreSemua()}catch(e){}ANTRE.n=sisa.length;tampilAntre()}
 }

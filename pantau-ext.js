@@ -271,6 +271,14 @@ function tutupModal() { var m = $('modalExt'); if (m) m.remove(); }
 
 /* ---------- Beranda ---------- */
 function tileStat(cls, n, lbl) { var d = el('div', 'stat ' + cls); d.appendChild(el('b', null, n)); d.appendChild(el('span', null, lbl)); return d; }
+/* Di Pantau kecamatan, laporan baru dihitung masuk bila laporan digital sudah dikirim DAN laporan fisik sudah diterima. */
+function fisikOK(r, pr) { return !!(r.d && (SETOR[perKey(pr)] || {})[r.p.id]); }
+function lengkap(r, pr) { return isOp() ? !!r.d : fisikOK(r, pr); }
+function pillKec(r, pr) {
+  var pl = pillSt(r);
+  if (!isOp() && r.d && !fisikOK(r, pr)) { pl.textContent = 'Digital masuk, fisik belum diterima'; pl.style.background = 'var(--accent-soft)'; pl.style.color = 'var(--accent-text)'; }
+  return pl;
+}
 function renderBeranda() {
   var box = $('sumB'); if (!box) return; box.textContent = '';
   var pr = periodeBeranda(), h = hitung(pr.th, pr.bl), pc = persen(h.masuk.length, h.rows.length);
@@ -279,18 +287,23 @@ function renderBeranda() {
   c.appendChild(el('div', 'lt', 'Batas pengumpulan laporan ' + pr.bl + ': tanggal ' + teksBatas(pr.th, pr.bl)));
   var g = el('div', 'grid4');
   g.appendChild(tileStat('', h.rows.length, 'Total Posyandu terdaftar'));
-  g.appendChild(tileStat('ok', h.masuk.length, 'Laporan sudah masuk'));
-  g.appendChild(tileStat('warn', h.belum.length, 'Laporan belum masuk'));
-  g.appendChild(tileStat('', pc + '%', 'Capaian laporan'));
+  var SS = SETOR[perKey(pr)], lg = h.rows.filter(function (x) { return fisikOK(x, pr); }), pc2 = persen(lg.length, h.rows.length);
+  g.appendChild(tileStat('ok', SS ? lg.length : '…', 'Laporan sudah masuk'));
+  g.appendChild(tileStat('warn', SS ? h.rows.length - lg.length : '…', 'Laporan belum masuk'));
+  g.appendChild(tileStat('', SS ? pc2 + '%' : '…', 'Capaian laporan'));
   c.appendChild(g);
-  var br = el('div', 'bar'); br.appendChild(document.createElement('i')).style.width = pc + '%'; c.appendChild(br);
+  var br = el('div', 'bar'); br.appendChild(document.createElement('i')).style.width = (SS ? pc2 : 0) + '%'; c.appendChild(br);
+  if (SS) c.appendChild(el('div', 'lt', 'Laporan dihitung masuk setelah laporan digital dikirim dan laporan fisik diterima kecamatan. Laporan digital sudah dikirim: ' + h.masuk.length + ' · menunggu laporan fisik: ' + (h.masuk.length - lg.length) + '.'));
+  c.appendChild(el('div', 'lt', 'Batas kelurahan mengantar laporan fisik: tanggal ' + teksBatasKel(pr.th, pr.bl) + '.'));
   if (h.asing.length) c.appendChild(el('div', 'warn2', h.asing.length + ' laporan memakai nama Posyandu yang belum cocok dengan Data Posyandu, sehingga tidak dihitung. Periksa ejaan di menu Data Posyandu.'));
   if (!POS.length) c.appendChild(el('div', 'warn2', 'Memakai daftar Posyandu dari SK. ' + (utama() ? 'Buka menu Data Posyandu lalu tekan "Simpan daftar dari SK" agar bisa diubah.' : '')));
   box.appendChild(c);
   var c2 = el('div', 'card'); c2.appendChild(el('h4', null, 'Posyandu yang belum mengumpulkan laporan'));
-  if (!h.belum.length) c2.appendChild(el('div', 'ok2', 'Semua Posyandu sudah mengumpulkan laporan ' + pr.bl + ' ' + pr.th + '.'));
-  KEL.forEach(function (k) {
-    var l = h.belum.filter(function (r) { return r.p.kel === k; }); if (!l.length) return;
+  var blm = h.rows.filter(function (x) { return !fisikOK(x, pr); });
+  if (!SS) c2.appendChild(el('div', 'lt', 'Memuat status penerimaan laporan fisik…'));
+  else if (!blm.length) c2.appendChild(el('div', 'ok2', 'Semua Posyandu sudah mengumpulkan laporan ' + pr.bl + ' ' + pr.th + '.'));
+  if (SS) KEL.forEach(function (k) {
+    var l = blm.filter(function (r) { return r.p.kel === k; }); if (!l.length) return;
     var dt = document.createElement('details'), sm = document.createElement('summary'); dt.open = !!BELUM_OPEN[k]; dt.addEventListener('toggle', function () { BELUM_OPEN[k] = dt.open; });
     sm.className = 'kh'; sm.style.cssText = 'cursor:pointer;list-style:none'; sm.textContent = k + ' (' + l.length + ' belum)';
     dt.appendChild(sm); l.forEach(function (r) { dt.appendChild(barisPos(r, pr)); }); c2.appendChild(dt);
@@ -311,7 +324,7 @@ function muatSetor(pr, paksa) {
   if (!paksa && SETOR_T[k] && Date.now() - SETOR_T[k] < 60000) return;
   SETOR_T[k] = Date.now();
   jsonp({ aksi: 'setoran', u: CRED.u, p: CRED.p, per: k }, 20000).then(function (r) {
-    if (r && r.ok && !SETOR_BUSY) { SETOR[k] = r.data || {}; SETOR_VIA[k] = r.via || {}; renderBeranda(); if ($('app').getAttribute('data-view') === 'k') renderKelHal(); }
+    if (r && r.ok && !SETOR_BUSY) { SETOR[k] = r.data || {}; SETOR_VIA[k] = r.via || {}; renderBeranda(); renderKelAll(); }
   }).catch(function () { SETOR_T[k] = 0; });
 }
 /* Catat atau batalkan penyerahan. Tampilan diperbarui lebih dulu, lalu dikirim ke server; bila gagal, kembali ke data server. */
@@ -617,7 +630,7 @@ function tombolPdf(d) { return btn('Unduh PDF', 'sm kc plain', function (ev) { u
 function barisPos(r, pr) {
   var p = r.p, row = el('div', 'prow'), top = el('div', 'rt'), nm = el('div', 'nm');
   nm.appendChild(el('b', null, p.nama)); nm.appendChild(el('small', null, p.jenis.replace('Posyandu ', '') + (r.d ? ' \u00b7 dibuat ' + (r.d.tk || '').slice(0, 10) : '') + ((SETOR[perKey(pr)] || {})[p.id] ? ' \u00b7 sudah diserahkan ke kecamatan ' + tglId(SETOR[perKey(pr)][p.id]) + (((SETOR_VIA[perKey(pr)] || {})[p.id]) ? ' (dipindai QR oleh ' + SETOR_VIA[perKey(pr)][p.id].oleh + ')' : '') : '')));
-  var pl = pillSt(r); if (!r.d) pl.classList.add('kedip'); top.appendChild(nm); top.appendChild(pl); row.appendChild(top);
+  var pl = pillKec(r, pr); if (!r.d) pl.classList.add('kedip'); top.appendChild(nm); top.appendChild(pl); row.appendChild(top);
   var ct = el('div', 'ct'), n = nomorWA(p.hp);
   if (p.hp) ct.appendChild(el('span', null, (p.hpJenis === 'perwakilan' ? 'Perwakilan' : 'Ketua') + (namaKontak(p) ? ' ' + namaKontak(p) : '') + ' \u00b7 ' + p.hp));
   else ct.appendChild(el('span', null, 'Nomor HP belum diisi'));
@@ -639,7 +652,7 @@ function periodeOpList() {
 function berandaOp(box) {
   if (PENGUMUMAN) box.appendChild(el('div', 'pengum', PENGUMUMAN));
   var ps = periodeOpList();
-  ps.forEach(function (pr) { muatSetor(pr); var h = hitung(pr.th, pr.bl); kartuOp(box, h, pr, persen(h.masuk.length, h.rows.length), ps.length > 1); });
+  ps.forEach(function (pr) { muatSetor(pr); var h = hitung(pr.th, pr.bl); kartuOp(box, h, pr, persen(h.masuk.length, h.rows.length), ps.length > 1); kartuAntar(box, h, pr); });
   kaderPengganti(box);
 }
 function kartuOp(box, h, pr, pc, dua) {
@@ -1082,6 +1095,15 @@ function pasangSetelan() {
     st.textContent = 'Menyimpan…'; st.className = 'st';
     kirimAtur({ batas: v }).then(function () { BATAS = v; st.textContent = 'Tersimpan.'; st.className = 'st ok'; renderBeranda(); renderRekap(); }).catch(function (e) { st.textContent = e.message; st.className = 'st bad'; });
   })); ca.appendChild(st);
+  ca.appendChild(el('div', 'kh', 'Batas waktu kelurahan mengantar laporan'));
+  var wk = el('div', 'fld'); wk.appendChild(el('label', null, 'Batas kelurahan mengantar laporan fisik ke kecamatan (tanggal tiap bulan)'));
+  var bk = document.createElement('input'); bk.type = 'number'; bk.min = 1; bk.max = 31; bk.value = batasKelHari(); bk.inputMode = 'numeric'; wk.appendChild(bk); ca.appendChild(wk);
+  ca.appendChild(el('p', 'hint', 'Dipakai sebagai batas bagi kelurahan setelah batas kader. Contoh: laporan Oktober, kader sampai 8 November, kelurahan sampai 15 November.'));
+  var stk = el('div', 'st'); ca.appendChild(btn('Simpan batas kelurahan', 'wide', function () {
+    var v = parseInt(bk.value, 10); if (!(v >= 1 && v <= 31)) { stk.textContent = 'Isi tanggal 1 sampai 31'; stk.className = 'st bad'; return; }
+    stk.textContent = 'Menyimpan…'; stk.className = 'st';
+    kirimAtur({ batasKel: v }).then(function () { BATAS_KEL = v; stk.textContent = 'Tersimpan.'; stk.className = 'st ok'; renderBeranda(); }).catch(function (e) { stk.textContent = e.message; stk.className = 'st bad'; });
+  })); ca.appendChild(stk);
   ca.appendChild(el('div', 'kh', 'Pengumuman untuk kader'));
   var pw = el('div', 'fld'), pa = document.createElement('textarea'); pa.maxLength = 300; pa.rows = 3; pa.value = PENGUMUMAN; pa.placeholder = 'Contoh: Laporan bulan ini paling lambat tanggal 25.';
   pa.style.cssText = 'width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;font-size:16px;font-family:inherit;background:var(--surface);resize:vertical';
@@ -1130,10 +1152,243 @@ function pasangSetelan() {
   ca.appendChild(el('p', 'hint', 'Cadangan berisi data Posyandu dan nama kader. Laporan yang sudah masuk tersimpan terpisah di Google Sheets dan Drive.'));
 }
 
+
+/* ---------- Alur kelurahan: lembar pengantar + PDF gabungan ---------- */
+/* Pejabat tiap kelurahan (sama dengan data di aplikasi kader). */
+var LURAH = {
+ "Kayumalue Ngapa": { jabatan: "Lurah Kayumalue Ngapa", nama: "MADAWARNI, S.Pt", nip: "197711162011012001" },
+ "Kayumalue Pajeko": { jabatan: "Lurah Kayumalue Pajeko", nama: "SANTI, SE", nip: "197609272010012003" },
+ "Mamboro": { jabatan: "Lurah Mamboro", nama: "Moh. Gusfan, S.H", nip: "197310252014071001" },
+ "Mamboro Barat": { jabatan: "Plh. Lurah Mamboro Barat", nama: "ARI HENDRO PRIYONO, S.Tr.IP", nip: "199803172021081002" },
+ "Taipa": { jabatan: "Lurah Taipa", nama: "MUHAMMAD IQBAL, S.Sos", nip: "197002101992031007" }
+};
+
+/* Pembuat QR Code kecil (sama dengan aplikasi kader), dipakai untuk kode di lembar pengantar. */
+function qrBuat(teks, paksaMask) {
+  var DATA = [0, 16, 28, 44, 64, 86, 108], ECN = [0, 10, 16, 26, 18, 24, 16], BLK = [0, 1, 1, 1, 2, 2, 4];
+  var ALIGN = [0, [], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34]];
+  var b = unescape(encodeURIComponent(String(teks))), by = [], i, j, v;
+  for (i = 0; i < b.length; i++) by.push(b.charCodeAt(i));
+  for (v = 1; v <= 6; v++) if (by.length <= DATA[v] - 2) break;
+  if (v > 6) throw new Error('Teks QR terlalu panjang');
+  var nd = DATA[v], bits = [];
+  function put(val, len) { for (var k = len - 1; k >= 0; k--) bits.push((val >> k) & 1); }
+  put(4, 4); put(by.length, 8); by.forEach(function (x) { put(x, 8); });
+  for (i = 0; i < 4 && bits.length < nd * 8; i++) bits.push(0);
+  while (bits.length % 8) bits.push(0);
+  var cw = []; for (i = 0; i < bits.length; i += 8) { var x = 0; for (j = 0; j < 8; j++) x = x * 2 + bits[i + j]; cw.push(x); }
+  for (i = 0; cw.length < nd; i++) cw.push(i % 2 ? 0x11 : 0xEC);
+  // Galois field
+  var EXP = [], LOG = []; x = 1;
+  for (i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 256) x ^= 0x11d; }
+  function mul(a, c) { return (a && c) ? EXP[(LOG[a] + LOG[c]) % 255] : 0; }
+  function gen(n) { var g = [1]; for (var k = 0; k < n; k++) { var ng = new Array(g.length + 1).fill(0); for (var q = 0; q < g.length; q++) { ng[q] ^= g[q]; ng[q + 1] ^= mul(g[q], EXP[k]); } g = ng; } return g; }
+  function ec(d, n) { var g = gen(n), r = new Array(n).fill(0); d.forEach(function (c) { var f = c ^ r[0]; r.shift(); r.push(0); for (var q = 0; q < n; q++) r[q] ^= mul(g[q + 1], f); }); return r; }
+  var nb = BLK[v], per = Math.floor(nd / nb), blocks = [], ecs = [], pos = 0;
+  for (i = 0; i < nb; i++) { var d = cw.slice(pos, pos + per); pos += per; blocks.push(d); ecs.push(ec(d, ECN[v])); }
+  var fin = [];
+  for (i = 0; i < per; i++) blocks.forEach(function (d) { fin.push(d[i]); });
+  for (i = 0; i < ECN[v]; i++) ecs.forEach(function (e) { fin.push(e[i]); });
+  var n = 17 + 4 * v, M = [], F = [];
+  for (i = 0; i < n; i++) { M.push(new Array(n).fill(0)); F.push(new Array(n).fill(false)); }
+  function set(r, c, val) { M[r][c] = val ? 1 : 0; F[r][c] = true; }
+  function finder(r, c) { for (var a = -1; a <= 7; a++) for (var d2 = -1; d2 <= 7; d2++) { var rr = r + a, cc = c + d2; if (rr < 0 || cc < 0 || rr >= n || cc >= n) continue; var dark = (a >= 0 && a <= 6 && (d2 === 0 || d2 === 6)) || (d2 >= 0 && d2 <= 6 && (a === 0 || a === 6)) || (a >= 2 && a <= 4 && d2 >= 2 && d2 <= 4); set(rr, cc, dark); } }
+  finder(0, 0); finder(0, n - 7); finder(n - 7, 0);
+  for (i = 8; i < n - 8; i++) { set(6, i, i % 2 === 0); set(i, 6, i % 2 === 0); }
+  var al = ALIGN[v];
+  al.forEach(function (r) { al.forEach(function (c) { if (F[r][c]) return; for (var a = -2; a <= 2; a++) for (var d2 = -2; d2 <= 2; d2++) set(r + a, c + d2, Math.max(Math.abs(a), Math.abs(d2)) !== 1); }); });
+  for (i = 0; i < 9; i++) { if (!F[8][i]) set(8, i, 0); if (!F[i][8]) set(i, 8, 0); }
+  for (i = 0; i < 8; i++) { if (!F[8][n - 1 - i]) set(8, n - 1 - i, 0); if (!F[n - 1 - i][8]) set(n - 1 - i, 8, 0); }
+  set(n - 8, 8, 1);
+  var dataBits = []; fin.forEach(function (c) { for (var k = 7; k >= 0; k--) dataBits.push((c >> k) & 1); });
+  var cells = [], up = true, bi = 0;
+  for (var col = n - 1; col > 0; col -= 2) {
+    if (col === 6) col--;
+    for (var t = 0; t < n; t++) { var r = up ? n - 1 - t : t; for (var dc = 0; dc < 2; dc++) { var c = col - dc; if (!F[r][c]) cells.push([r, c, bi < dataBits.length ? dataBits[bi] : 0]), bi++; } }
+    up = !up;
+  }
+  var MASK = [function (r, c) { return (r + c) % 2 === 0; }, function (r) { return r % 2 === 0; }, function (r, c) { return c % 3 === 0; }, function (r, c) { return (r + c) % 3 === 0; },
+    function (r, c) { return (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0; }, function (r, c) { return (r * c) % 2 + (r * c) % 3 === 0; },
+    function (r, c) { return ((r * c) % 2 + (r * c) % 3) % 2 === 0; }, function (r, c) { return ((r + c) % 2 + (r * c) % 3) % 2 === 0; }];
+  function fmt(mask) { var d3 = mask, rem = d3; for (var k = 0; k < 10; k++) rem = (rem << 1) ^ ((rem >> 9) * 0x537); return ((d3 << 10) | (rem & 0x3ff)) ^ 0x5412; }
+  function build(mask) {
+    var Q = M.map(function (r) { return r.slice(); });
+    cells.forEach(function (q) { Q[q[0]][q[1]] = q[2] ^ (MASK[mask](q[0], q[1]) ? 1 : 0); });
+    var f = fmt(mask), bit = function (k) { return (f >> k) & 1; };
+    for (var k = 0; k < 15; k++) {
+      var b1 = bit(k);
+      if (k < 6) Q[k][8] = b1; else if (k < 8) Q[k + 1][8] = b1; else Q[n - 15 + k][8] = b1;
+      if (k < 8) Q[8][n - 1 - k] = b1; else if (k < 9) Q[8][15 - k] = b1; else Q[8][15 - k - 1] = b1;
+    }
+    return Q;
+  }
+  function pen(Q) {
+    var p = 0, a, c, run, k;
+    for (a = 0; a < n; a++) { for (var dir = 0; dir < 2; dir++) { run = 1; for (c = 1; c < n; c++) { var cur = dir ? Q[c][a] : Q[a][c], pr = dir ? Q[c - 1][a] : Q[a][c - 1]; if (cur === pr) { run++; if (run === 5) p += 3; else if (run > 5) p++; } else run = 1; } } }
+    for (a = 0; a < n - 1; a++) for (c = 0; c < n - 1; c++) if (Q[a][c] === Q[a + 1][c] && Q[a][c] === Q[a][c + 1] && Q[a][c] === Q[a + 1][c + 1]) p += 3;
+    var pat = [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0], pat2 = pat.slice().reverse();
+    for (a = 0; a < n; a++) for (c = 0; c <= n - 11; c++) for (var d4 = 0; d4 < 2; d4++) { var m1 = true, m2 = true; for (k = 0; k < 11; k++) { var val = d4 ? Q[c + k][a] : Q[a][c + k]; if (val !== pat[k]) m1 = false; if (val !== pat2[k]) m2 = false; } if (m1) p += 40; if (m2) p += 40; }
+    var dark = 0; Q.forEach(function (r) { r.forEach(function (x) { dark += x; }); });
+    p += Math.floor(Math.abs(dark * 100 / (n * n) - 50) / 5) * 10;
+    return p;
+  }
+  var best = null, bp = 1e9;
+  for (var mk = 0; mk < 8; mk++) { if (paksaMask !== undefined && mk !== paksaMask) continue; var Q = build(mk), pp = pen(Q); if (pp < bp) { bp = pp; best = Q; } }
+  return { n: n, v: v, m: best };
+}
+
+var BATAS_KEL = 0, LEMB = {}, LEMB_T = {}, LEMB_BUSY = 0;
+function batasKelHari() { return BATAS_KEL || Math.min(31, BATAS + 7); }
+function teksBatasKel(th, bl) {
+  var m = BULAN.indexOf(bl), ny = +th + (m === 11 ? 1 : 0), nm = (m + 1) % 12, last = new Date(ny, nm + 1, 0).getDate(), d = Math.min(batasKelHari(), last);
+  return d + ' ' + BULAN[nm] + (ny !== +th ? ' ' + ny : '');
+}
+function muatLembarKel(pr, paksa) {
+  var k = perKey(pr); if (!CRED) return;
+  if (!paksa && LEMB_T[k] && Date.now() - LEMB_T[k] < 30000) return;
+  LEMB_T[k] = Date.now();
+  jsonp({ aksi: 'lembarkel', u: CRED.u, p: CRED.p, per: k, kel: KELSAYA }, 20000).then(function (r) {
+    if (r && r.ok && !LEMB_BUSY) { LEMB[k] = { lembar: r.lembar || [], kunci: r.kunci || {} }; renderBeranda(); }
+  }).catch(function () { LEMB_T[k] = 0; });
+}
+var PDFLIB_P = null;
+function muatPdfLib() {
+  if (window.PDFLib) return Promise.resolve(window.PDFLib);
+  if (PDFLIB_P) return PDFLIB_P;
+  PDFLIB_P = new Promise(function (res, rej) {
+    var s = document.createElement('script'); s.src = 'pdf-lib.min.js?v=1171';
+    s.onload = function () { window.PDFLib ? res(window.PDFLib) : (PDFLIB_P = null, rej(new Error('Alat PDF tidak termuat'))); };
+    s.onerror = function () { PDFLIB_P = null; rej(new Error('Alat penyusun PDF belum bisa dimuat. Periksa internet lalu coba lagi.')); };
+    document.head.appendChild(s);
+  });
+  return PDFLIB_P;
+}
+function teksWin(t) { return String(t == null ? '' : t).replace(/[^\x20-\x7E\xA0-\xFF]/g, '?'); }
+function tglIdLembar(iso) { var m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(iso || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; }
+function ketItem(it) {
+  if (it.st === 'ikut') return 'Diantar';
+  if (it.st === 'diterima') return 'Sudah diterima kecamatan' + (it.terima && it.terima.tgl ? ' ' + tglIdLembar(it.terima.tgl) : '');
+  if (it.st === 'tahan') return 'Tidak diantar kali ini';
+  if (it.st === 'pdfbelum') return 'PDF laporan belum tersimpan';
+  return 'Belum mengirim laporan ke kelurahan';
+}
+/* Satu halaman lembar pengantar (tanda terima). Hanya tanda tangan penerima dan tanggal diterima yang dikosongkan. */
+function gambarLembar(doc, F, lm, label) {
+  var pg = doc.addPage([595.28, 841.89]), W = 595.28, M = 56, rgb = PDFLib.rgb, abu = rgb(.42, .45, .47), gelap = rgb(.1, .14, .12);
+  var reg = F.reg, bold = F.bold, ln = function (x1, y1, x2, y2, t, c) { pg.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness: t || .6, color: c || rgb(.78, .8, .79) }); };
+  var tx = function (t, x, y, s, f, c) { pg.drawText(teksWin(t), { x: x, y: y, size: s || 11, font: f || reg, color: c || gelap }); };
+  var tengah = function (t, y, s, f, c) { var fo = f || reg; tx(t, (W - fo.widthOfTextAtSize(teksWin(t), s)) / 2, y, s, fo, c); };
+  var kananT = function (t, xr, y, s, f, c) { var fo = f || reg; tx(t, xr - fo.widthOfTextAtSize(teksWin(t), s), y, s, fo, c); };
+  ln(M, 800, W - M, 800); kananT(label, W - M, 808, 8, bold, abu);
+  tengah('TANDA TERIMA LAPORAN POSYANDU', 756, 17, bold); tengah('BUKTI PENYERAHAN DOKUMEN', 738, 9, reg, abu);
+  var o = lm.items, ikut = o.filter(function (x) { return x.st === 'ikut'; }).length;
+  tx('Telah diterima Laporan Posyandu dari Kelurahan ' + lm.kel, M, 698, 11);
+  tx('untuk Kantor Kecamatan Palu Utara, Kota Palu.', M, 682, 11);
+  tx('DETAIL DOKUMEN', M, 648, 10, bold, rgb(.12, .25, .2));
+  function baris(l, v, y) { tx(l, M + 28, y, 11, bold); tx(':', M + 190, y, 11); tx(v, M + 202, y, 11); ln(M + 198, y - 6, W - M - 90, y - 6, .5, rgb(.85, .87, .86)); }
+  baris('Laporan Posyandu Bulan', lm.bln + ' ' + lm.thn, 624); baris('Jumlah Laporan', ikut + ' laporan', 600);
+  // daftar laporan
+  var y0 = 566, tinggi = Math.max(13, Math.min(19, Math.floor(250 / Math.max(1, o.length)))), x1 = M, x2 = M + 28, x3 = M + 180, x4 = M + 262, ke = W - M;
+  pg.drawRectangle({ x: M, y: y0 - 3, width: ke - M, height: 16, color: rgb(.93, .95, .94) });
+  tx('No', x1 + 4, y0 + 1, 8.5, bold); tx('Posyandu', x2, y0 + 1, 8.5, bold); tx('Jenis', x3, y0 + 1, 8.5, bold); tx('Keterangan', x4, y0 + 1, 8.5, bold);
+  var y = y0 - tinggi;
+  o.forEach(function (it, i) {
+    tx(String(i + 1), x1 + 4, y + 1, 9); tx(it.nama, x2, y + 1, 9); tx(it.jenis.replace('Posyandu ', ''), x3, y + 1, 9);
+    if (it.st === 'ikut' || it.st === 'diterima') { var g = rgb(.1, .55, .28); pg.drawLine({ start: { x: x4, y: y + 4 }, end: { x: x4 + 3, y: y + 1 }, thickness: 1.5, color: g }); pg.drawLine({ start: { x: x4 + 3, y: y + 1 }, end: { x: x4 + 9, y: y + 9 }, thickness: 1.5, color: g }); }
+    else { var m = rgb(.75, .2, .15); pg.drawLine({ start: { x: x4, y: y + 1 }, end: { x: x4 + 8, y: y + 9 }, thickness: 1.5, color: m }); pg.drawLine({ start: { x: x4, y: y + 9 }, end: { x: x4 + 8, y: y + 1 }, thickness: 1.5, color: m }); }
+    tx(ketItem(it), x4 + 15, y + 1, 9);
+    ln(M, y - 4, ke, y - 4, .4, rgb(.88, .9, .89)); y -= tinggi;
+  });
+  y -= 6;
+  tx('Diterima tanggal: ........ / ........ / ' + lm.tgl.slice(0, 4), M, y, 11, reg); tx('', M, y, 1);
+  var ys = y - 38, xk = M + 40, xr = W - M - 190, lu = LURAH[lm.kel] || { jabatan: 'Lurah ' + lm.kel, nama: '........................', nip: '........................' };
+  var pusat = function (t, xc, yy, s, f) { var fo = f || reg; tx(t, xc - fo.widthOfTextAtSize(teksWin(t), s) / 2, yy, s, fo); };
+  pusat('Yang Menyerahkan,', xk + 75, ys, 11, bold); pusat(lu.jabatan, xk + 75, ys - 14, 10);
+  pusat('Yang Menerima,', xr + 75, ys, 11, bold); pusat('Pihak Kecamatan', xr + 75, ys - 14, 10);
+  var yn = ys - 84;
+  pusat('( ' + lu.nama + ' )', xk + 75, yn, 10.5); pusat('NIP. ' + lu.nip, xk + 75, yn - 14, 10);
+  pusat('( ................................ )', xr + 75, yn, 10.5);
+  // kode QR kecil di kanan bawah
+  var url = new URL('terima.html', location.href).href.replace(/[?#].*$/, '') + '?k=' + lm.kode, q = qrBuat(url), S = 2.1, Z = 2, N = (q.n + 2 * Z) * S, qx = W - M - N, qy = 66;
+  for (var r = 0; r < q.n; r++) for (var c = 0; c < q.n; c++) if (q.m[r][c]) pg.drawRectangle({ x: qx + (c + Z) * S, y: qy + (q.n - 1 - r + Z) * S, width: S + .15, height: S + .15, color: rgb(0, 0, 0) });
+  kananT('Pindai di aplikasi Terima', W - M, qy - 8, 6.5, reg, abu);
+  ln(M, 50, W - M, 50); tengah('Tanda Terima Laporan Posyandu  \u00b7  Kode ' + lm.kode + '  \u00b7  dibuat ' + tglIdLembar(lm.tgl) + ' ' + lm.jam, 38, 7.5, reg, abu);
+  return pg;
+}
+function ambilPdfBytes(nomor) {
+  return jsonp({ aksi: 'pdf', u: CRED.u, p: CRED.p, n: nomor }, 90000).then(function (r) {
+    if (!r || !r.ok) throw new Error((r && r.pesan) || 'PDF laporan tidak bisa diambil');
+    var bin = atob(r.b64), arr = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i); return arr;
+  });
+}
+/* Susun satu PDF: lembar pengantar (2 salinan) lalu semua laporan yang ikut diantar. */
+async function susunPdfGabungan(lm, info) {
+  var P = await muatPdfLib(), doc = await P.PDFDocument.create();
+  var F = { reg: await doc.embedFont(P.StandardFonts.Helvetica), bold: await doc.embedFont(P.StandardFonts.HelveticaBold) };
+  gambarLembar(doc, F, lm, 'UNTUK KECAMATAN'); gambarLembar(doc, F, lm, 'ARSIP KELURAHAN');
+  var ikut = lm.items.filter(function (x) { return x.st === 'ikut'; });
+  for (var i = 0; i < ikut.length; i++) {
+    info('Mengambil laporan ' + (i + 1) + ' dari ' + ikut.length + '…');
+    var by = await ambilPdfBytes(ikut[i].nomor), src = await P.PDFDocument.load(by, { ignoreEncryption: true }), hal = await doc.copyPages(src, src.getPageIndices());
+    hal.forEach(function (h) { doc.addPage(h); });
+  }
+  info('Menyusun PDF…');
+  var bytes = await doc.save();
+  return new Blob([bytes], { type: 'application/pdf' });
+}
+async function unduhGabungan(lm, info) {
+  var blob = await susunPdfGabungan(lm, info);
+  unduhBerkas(blob, 'Antar Laporan ' + lm.kel + ' ' + lm.bln + ' ' + lm.thn + '.pdf');
+}
+function kartuAntar(box, h, pr) {
+  muatLembarKel(pr); var k = perKey(pr), D = LEMB[k], S = SETOR[k] || {}, c = el('div', 'card antar');
+  c.appendChild(el('h4', null, 'Antar laporan ke kecamatan' + (periodeOpList().length > 1 ? ' · ' + pr.bl : '')));
+  c.appendChild(el('div', 'lt', 'Batas mengantar laporan fisik ke kecamatan: tanggal ' + teksBatasKel(pr.th, pr.bl) + '.'));
+  c.appendChild(el('p', 'hint', 'Centang laporan yang akan diantar. Setelah lembar dibuat, laporan yang ikut tidak bisa dikirim ulang oleh kader kecuali Anda membukanya kembali.'));
+  var cek = {}, rows = h.rows.slice().sort(function (a, b) { return a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); }), siap = 0;
+  rows.forEach(function (r) {
+    var diterima = S[r.p.id], ada = !!(r.d && r.d.pdf), terkunci = !!(D && D.kunci[r.p.id]), it = el('div', 'item'), lb = document.createElement('label');
+    it.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 12px;flex-wrap:wrap'; lb.style.cssText = 'display:flex;align-items:center;gap:10px;flex:1;min-width:200px;min-height:44px;cursor:pointer';
+    var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = ada && !diterima; cb.disabled = !ada || !!diterima; cb.style.cssText = 'width:22px;height:22px;flex:none'; cek[r.p.id] = cb; if (cb.checked) siap++;
+    lb.appendChild(cb); var tb = el('div'); tb.appendChild(el('b', null, r.p.nama + ' · ' + r.p.jenis.replace('Posyandu ', '')));
+    var ket = diterima ? 'Sudah diterima kecamatan ' + tglId(diterima) : !r.d ? 'Belum mengirim laporan ke kelurahan' : !r.d.pdf ? 'PDF laporan belum tersimpan' : terkunci ? 'Siap diantar · terkunci (sudah dicetak)' : 'Siap diantar';
+    var sm = el('div', null, ket); sm.style.cssText = 'font-size:13px;color:var(--muted)'; tb.appendChild(sm); lb.appendChild(tb); it.appendChild(lb);
+    if (terkunci && !diterima) it.appendChild(btn('Buka kembali', 'sm kc plain', function () {
+      var a = prompt('Alasan membuka kembali laporan ' + r.p.nama + ' (kader akan bisa mengirim ulang):'); if (a == null) return; a = a.trim(); if (a.length < 3) { toast('Tulis alasan singkat.'); return; }
+      LEMB_BUSY++; kirimAtur({ aksi: 'bukalaporan', per: k, pid: r.p.id, alasan: a }).then(function () { LEMB_BUSY--; toast('Laporan dibuka kembali. Kader bisa mengirim ulang.'); muatLembarKel(pr, true); })
+        .catch(function (e) { LEMB_BUSY--; toast(e.message || 'Gagal membuka kembali'); });
+    }));
+    c.appendChild(it);
+  });
+  var st = el('div', 'st'); st.style.margin = '8px 0';
+  var tb = btn('Buat lembar pengantar dan unduh PDF', 'wide', function (ev) {
+    var b = ev.currentTarget || ev.target, tahan = rows.filter(function (r) { return !cek[r.p.id].checked && !cek[r.p.id].disabled; }).map(function (r) { return r.p.id; });
+    var ikut = rows.filter(function (r) { return cek[r.p.id].checked; }).length; if (!ikut) { st.textContent = 'Centang minimal satu laporan.'; st.className = 'st bad'; return; }
+    if (!confirm('Buat lembar pengantar untuk ' + ikut + ' laporan?\n\nSetelah dibuat, laporan ini terkunci dan kader tidak bisa mengirim ulang sampai Anda membukanya kembali.')) return;
+    var awal = b.textContent; b.disabled = true; st.className = 'st'; st.textContent = 'Membuat lembar pengantar…'; LEMB_BUSY++;
+    kirimAtur({ aksi: 'lembar', per: k, tahan: tahan }).then(function (r) {
+      if (!r || !r.lembar) throw new Error('Lembar tidak terbentuk'); return unduhGabungan(r.lembar, function (t) { st.textContent = t; });
+    }).then(function () { st.textContent = 'PDF diunduh. Cetak, tanda tangani, lalu antar ke kecamatan.'; st.className = 'st ok'; })
+      .catch(function (e) { st.textContent = (e.message || 'Gagal') + ' Jika lembar sudah terbentuk, tekan "Unduh ulang lembar terakhir".'; st.className = 'st bad'; })
+      .then(function () { LEMB_BUSY--; b.disabled = false; b.textContent = awal; muatLembarKel(pr, true); muatSetor(pr, true); });
+  });
+  tb.disabled = !siap && !rows.some(function (r) { return !cek[r.p.id].disabled; }); c.appendChild(tb);
+  var akt = D && D.lembar.filter(function (x) { return !x.ganti; })[0];
+  if (akt) {
+    var terima = akt.items.filter(function (x) { return x.terima; }).length, ikutN = akt.items.filter(function (x) { return x.st === 'ikut' || x.st === 'diterima'; }).length;
+    c.appendChild(el('div', 'lt', 'Lembar terakhir: dibuat ' + tglId(akt.tgl) + ' ' + akt.jam + ' · ' + terima + ' dari ' + ikutN + ' laporan sudah diterima kecamatan.'));
+    c.appendChild(btn('Unduh ulang lembar terakhir', 'sm plain', function (ev) {
+      var b = ev.currentTarget || ev.target, awal = b.textContent; b.disabled = true;
+      unduhGabungan(akt, function (t) { b.textContent = t; }).then(function () { toast('PDF diunduh.'); }).catch(function (e) { toast(e.message || 'Gagal'); }).then(function () { b.disabled = false; b.textContent = awal; });
+    }));
+  }
+  c.appendChild(st); box.appendChild(c);
+}
+
 /* ---------- kait ke aplikasi utama ---------- */
 window.terimaProfil = function (r) {
   BANNERS = (r.banners || ['', '', '']).slice(0, 3); while (BANNERS.length < 3) BANNERS.push('');
-  if (r.batas) BATAS = r.batas; if (r.sk) SK = r.sk; if (r.pengumuman !== undefined) PENGUMUMAN = r.pengumuman || ''; if (r.wa !== undefined) WABANTU = r.wa || '';
+  if (r.batas) BATAS = r.batas; if (r.batasKel !== undefined) BATAS_KEL = r.batasKel || 0; if (r.sk) SK = r.sk; if (r.pengumuman !== undefined) PENGUMUMAN = r.pengumuman || ''; if (r.wa !== undefined) WABANTU = r.wa || '';
   if (r.ruang !== undefined) RUANG = r.ruang;
   /* Sekali saja: filter bawaan ikut bulan laporan yang sedang dikumpulkan, bila belum diubah pengguna. */
   if (!window.__filterAwal) {
@@ -1169,7 +1424,7 @@ function renderPohon() {
   box.appendChild(el('h5', 'ph5', 'KELURAHAN'));
   KEL.forEach(function (kel) {
     var l = h.rows.filter(function (r) { return r.p.kel === kel; }); if (!l.length) return; ada = true;
-    var m = l.filter(function (r) { return r.d; }).length, buka = !!POHON_BUKA[kel];
+    var m = l.filter(function (r) { return lengkap(r, pr); }).length, buka = !!POHON_BUKA[kel];
     var b = el('button', 'kn' + (buka ? ' open' : '') + (KSEL.kel === kel && !KSEL.pos && $('app').getAttribute('data-view') === 'k' ? ' on' : ''));
     b.type = 'button'; b.appendChild(el('span', 'kt', kel)); b.appendChild(el('i', null, m + ' / ' + l.length)); b.appendChild(el('span', 'kc2', ''));
     b.addEventListener('click', function () {
@@ -1179,7 +1434,7 @@ function renderPohon() {
     box.appendChild(b);
     if (buka) l.slice().sort(function (a, c) { return a.p.jenis.localeCompare(c.p.jenis) || a.p.nama.localeCompare(c.p.nama); }).forEach(function (r) {
       var pb = el('button', 'pn' + (KSEL.pos === r.p.id ? ' on' : '')); pb.type = 'button';
-      pb.appendChild(el('span', 'dt ' + (r.d ? 'g' : 'r'), '')); pb.appendChild(el('span', 'pt', r.p.nama)); pb.appendChild(el('i', null, r.p.jenis.replace('Posyandu ', '')));
+      pb.appendChild(el('span', 'dt ' + (lengkap(r, pr) ? 'g' : 'r'), '')); pb.appendChild(el('span', 'pt', r.p.nama)); pb.appendChild(el('i', null, r.p.jenis.replace('Posyandu ', '')));
       pb.addEventListener('click', function () { pilihKel(kel, r.p.id); });
       box.appendChild(pb);
     });
@@ -1199,7 +1454,7 @@ function renderKelHal() {
   var pr = periodeBeranda(), h = hitung(pr.th, pr.bl); muatSetor(pr);
   var rows = h.rows.filter(function (r) { return r.p.kel === KSEL.kel; }).sort(function (a, b) { return a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); });
   if (KSEL.pos) { renderPosHal(box, h, pr, rows); return; }
-  var m = rows.filter(function (r) { return r.d; }).length, pc = persen(m, rows.length), S = SETOR[perKey(pr)] || {};
+  var m = rows.filter(function (r) { return lengkap(r, pr); }).length, pc = persen(m, rows.length), S = SETOR[perKey(pr)] || {};
   box.appendChild(jejak(KSEL.kel, ''));
   var hd = el('h2', 'kh2', 'Kelurahan ' + KSEL.kel); box.appendChild(hd);
   box.appendChild(el('div', 'lt kh2s', rows.length + ' Posyandu · ' + pr.bl + ' ' + pr.th));
@@ -1209,8 +1464,8 @@ function renderKelHal() {
   ['Posyandu', 'Jenis', 'Status', 'Diserahkan ke kecamatan', ''].forEach(function (t) { th.appendChild(el('th', null, t)); }); tb.appendChild(th);
   if (!rows.length) c.appendChild(el('div', 'empty', 'Belum ada Posyandu terdaftar di kelurahan ini.'));
   rows.forEach(function (r) {
-    var tr = el('tr'), n = el('td'); n.appendChild(el('span', 'dt ' + (r.d ? 'g' : 'r'), '')); n.appendChild(el('b', null, r.p.nama)); tr.appendChild(n);
-    tr.appendChild(el('td', null, r.p.jenis.replace('Posyandu ', ''))); var st = el('td'); st.appendChild(pillSt(r)); tr.appendChild(st);
+    var tr = el('tr'), n = el('td'); n.appendChild(el('span', 'dt ' + (lengkap(r, pr) ? 'g' : 'r'), '')); n.appendChild(el('b', null, r.p.nama)); tr.appendChild(n);
+    tr.appendChild(el('td', null, r.p.jenis.replace('Posyandu ', ''))); var st = el('td'); st.appendChild(pillKec(r, pr)); tr.appendChild(st);
     tr.appendChild(el('td', null, S[r.p.id] ? tglId(S[r.p.id]) : '-'));
     var bt = el('td'); bt.appendChild(btn('Buka', 'sm', function () { pilihKel(KSEL.kel, r.p.id); })); tr.appendChild(bt); tb.appendChild(tr);
   });
@@ -1225,7 +1480,7 @@ function renderPosHal(box, h, pr, rows) {
   if (!r) { KSEL.pos = ''; renderKelHal(); return; }
   var p = r.p, bal = p.jenis === J_B(), v = angkaLap(r.d) || {}, fm = function (x) { return (x === '' || x == null) ? '-' : x; };
   box.appendChild(jejak(KSEL.kel, p.nama));
-  var hd = el('h2', 'kh2', 'Posyandu ' + p.nama + ' '); var pl = pillSt(r); pl.style.verticalAlign = 'middle'; hd.appendChild(pl); box.appendChild(hd);
+  var hd = el('h2', 'kh2', 'Posyandu ' + p.nama + ' '); var pl = pillKec(r, pr); pl.style.verticalAlign = 'middle'; hd.appendChild(pl); box.appendChild(hd);
   box.appendChild(el('div', 'lt kh2s', p.jenis.replace('Posyandu ', '') + ' · Kelurahan ' + p.kel + ' · ' + pr.bl + ' ' + pr.th));
   var S = bal ? v['Sasaran Bayi Balita (S)'] : v['Sasaran lansia'], D = bal ? v['Kunjungan (D)'] : v['Kunjungan lansia'];
   var cap = (S !== '' && S != null && D !== '' && D != null && +S) ? Math.round(D * 100 / S) : null;
@@ -1241,7 +1496,7 @@ function renderPosHal(box, h, pr, rows) {
     var idx = now.th * 12 + now.m - i; if (awal != null && idx < awal) break;
     var q = { th: String(Math.floor(idx / 12)), bl: BULAN[idx % 12] }, hh = hitung(q.th, q.bl), rr = hh.rows.filter(function (x) { return x.p.id === p.id; })[0]; if (!rr) continue;
     if (i) muatSetor(q);
-    var tr = el('tr'); tr.appendChild(el('td', null, q.bl + ' ' + q.th)); var st = el('td'); st.appendChild(pillSt(rr)); tr.appendChild(st);
+    var tr = el('tr'); tr.appendChild(el('td', null, q.bl + ' ' + q.th)); var st = el('td'); st.appendChild(pillKec(rr, q)); tr.appendChild(st);
     var sv = (SETOR[perKey(q)] || {})[p.id]; tr.appendChild(el('td', null, sv ? tglId(sv) : '-'));
     var bt = el('td'); if (rr.d && rr.d.pdf) bt.appendChild(tombolPdf(rr.d)); tr.appendChild(bt); tb.appendChild(tr);
   }
@@ -1250,7 +1505,7 @@ function renderPosHal(box, h, pr, rows) {
 }
 function renderKelAll() { renderPohon(); if ($('app').getAttribute('data-view') === 'k') renderKelHal(); }
 window.tampilBaru = function () { renderBeranda(); renderRekap(); renderData(); renderKelAll(); };
-window.setelahKeluar = function () { TAUTAN_TRM = ''; SETOR_VIA = {}; SETOR = {}; SETOR_T = {}; SETOR_BUSY = 0; SETOR_OPEN = {}; BELUM_OPEN = {}; KSEL = { kel: '', pos: '' }; POHON_BUKA = {}; terapKel(''); RUANG = null; CAD = null; POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
+window.setelahKeluar = function () { TAUTAN_TRM = ''; SETOR_VIA = {}; SETOR = {}; SETOR_T = {}; SETOR_BUSY = 0; SETOR_OPEN = {}; BELUM_OPEN = {}; KSEL = { kel: '', pos: '' }; POHON_BUKA = {}; LEMB = {}; LEMB_T = {}; LEMB_BUSY = 0; terapKel(''); RUANG = null; CAD = null; POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
 document.addEventListener('DOMContentLoaded', function () { bangunBanner(); });
 if (document.readyState !== 'loading') bangunBanner();
 })();

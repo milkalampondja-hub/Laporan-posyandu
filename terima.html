@@ -77,6 +77,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .kv{background:var(--bg);border-radius:14px;padding:4px 14px;margin-bottom:14px}.kv div{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--ln);font-size:15px}.kv div:last-child{border-bottom:0}.kv span{flex:0 0 96px;color:var(--mu)}.kv b{font-weight:600;flex:1;word-break:break-word}
 .note{border-radius:14px;padding:12px 14px;font-size:14.5px;margin-bottom:14px}.note.ok{background:var(--gs);color:#0a5a28}.note.w{background:var(--warns);color:var(--warn)}.note.b{background:var(--bads);color:var(--bad)}
 .acts{display:grid;gap:10px}
+.lmbox{border:1px solid var(--ln);border-radius:14px;margin-bottom:14px;overflow:hidden}.lmrow{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--ln);cursor:pointer;min-height:52px}.lmrow:last-child{border-bottom:0}.lmrow input{width:22px;height:22px;flex:none}.lmk{font-size:13px;color:var(--mu)}.lmk.x{color:var(--bad)}
 #cam{position:fixed;inset:0;background:#000;z-index:60;display:flex;flex-direction:column}
 #cam video{flex:1;width:100%;object-fit:cover;min-height:0}
 #cam .frame{position:absolute;left:50%;top:42%;width:min(68vw,320px);aspect-ratio:1;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:24px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}
@@ -340,6 +341,63 @@ function lembarLaporan(lap,hasil){
   }
   d.appendChild(a);sheet(d);
 }
+/* ---------- lembar pengantar dari kelurahan: satu kode untuk semua laporan di dalamnya ---------- */
+function ketLembar(it){
+  if(it.st==='ikut'){return it.terima?'Sudah diterima '+tglId(it.terima.tgl):(it.dibuka?'Dibuka kembali oleh kelurahan, tidak diterima dari lembar ini':'Diantar')}
+  if(it.st==='diterima')return 'Sudah diterima'+(it.terima?' '+tglId(it.terima.tgl):'');
+  if(it.st==='tahan')return 'Tidak diantar kali ini';
+  if(it.st==='pdfbelum')return 'PDF laporan belum tersimpan';
+  return 'Belum mengirim laporan ke kelurahan';
+}
+function bukaLembar(k){
+  var d=el('div');d.appendChild(el('h3',null,'Memeriksa lembar pengantar…'));d.appendChild(el('div','sub','Mohon tunggu sebentar.'));sheet(d);
+  api('tlembar',{k:k}).then(function(r){
+    if(!r||r.ok!==true)throw new Error((r&&r.pesan)||'Gagal memeriksa lembar');
+    if(!r.ada){var n=el('div');n.appendChild(el('h3',null,'Lembar tidak ditemukan'));n.appendChild(el('div','note b','Kode lembar ini tidak dikenal oleh sistem.'));var a=el('div','acts');a.appendChild(tombol('Tutup','line',tutupSheet));n.appendChild(a);sheet(n);return}
+    tampilLembar(r.lembar,k,'cek');
+  }).catch(function(e){var n=el('div');n.appendChild(el('h3',null,'Belum berhasil'));n.appendChild(el('div','note b',e.message||'Gagal memeriksa lembar'));var a=el('div','acts');a.appendChild(tombol('Tutup','line',tutupSheet));n.appendChild(a);sheet(n)});
+}
+function tampilLembar(lm,k,hasil,info){
+  var d=el('div'),a=el('div','acts'),cek={};
+  d.appendChild(el('h3',null,hasil==='baru'?'Lembar pengantar diterima':'Lembar pengantar'));
+  d.appendChild(el('div','sub',hasil==='baru'?'Penerimaan sudah tersimpan di database.':'Cocokkan dengan laporan fisik yang diantar, lalu konfirmasi.'));
+  d.appendChild(kv([['Kelurahan',lm.kel],['Bulan laporan',lm.bln+' '+lm.thn],['Dibuat',tglId(lm.tgl)+' '+lm.jam],['Dibuat oleh',lm.oleh||'-']]));
+  if(lm.ganti)d.appendChild(el('div','note b','Lembar ini sudah diganti dengan lembar yang lebih baru. Minta pihak kelurahan menyerahkan lembar yang terbaru.'));
+  var box=el('div','lmbox'),siap=0;
+  lm.items.forEach(function(it){
+    var row=el('label','lmrow'),cb=document.createElement('input');cb.type='checkbox';
+    var bisa=it.st==='ikut'&&!it.terima&&!it.dibuka&&!lm.ganti;
+    cb.checked=bisa||!!it.terima;cb.disabled=!bisa;cek[it.pid]=cb;if(bisa)siap++;
+    var t=el('div');t.appendChild(el('b',null,it.nama+' · '+it.jenis.replace('Posyandu ','')));var s2=el('div','lmk'+((it.st==='ikut'||it.st==='diterima')&&!it.dibuka?'':' x'),ketLembar(it));t.appendChild(s2);
+    row.appendChild(cb);row.appendChild(t);box.appendChild(row);
+  });
+  d.appendChild(box);
+  if(info&&info.lewati&&info.lewati.length)d.appendChild(el('div','note w','Tidak dicatat: '+info.lewati.join('; ')+'.'));
+  if(hasil==='baru'){
+    var tg=lm.items.filter(function(x){return x.terima})[0];
+    d.appendChild(el('div','note ok',(info&&info.baru?info.baru+' laporan tercatat diterima':'Laporan pada lembar ini sudah tercatat')+(tg?' pada '+tglId(tg.terima.tgl)+(tg.terima.jam?' pukul '+tg.terima.jam:''):'')+'. Isi tanggal diterima dan tanda tangan di lembar pengantar.'));
+    a.appendChild(tombol('Scan berikutnya','',function(){tutupSheet();bukaKamera()}));
+    a.appendChild(tombol('Tutup','line',tutupSheet));
+  }else if(siap){
+    var tb=tombol('KONFIRMASI DITERIMA ('+siap+' laporan)','',function(b){
+      var ids=Object.keys(cek).filter(function(x){return cek[x].checked&&!cek[x].disabled});
+      if(!ids.length){toast('Centang minimal satu laporan');return}
+      muatTombol(b,'Menyimpan…');
+      api('tlterima',{k:k,ids:ids.join(',')}).then(function(r){
+        if(!r||r.ok!==true)throw new Error((r&&r.pesan)||'Gagal menyimpan');
+        REK={};muatRekap(PER);tampilLembar(r.lembar,k,'baru',r);
+      }).catch(function(e){b.disabled=false;b.textContent='KONFIRMASI DITERIMA ('+siap+' laporan)';d.insertBefore(el('div','note b',e.message||'Gagal menyimpan'),a)});
+    });
+    a.appendChild(tb);
+    var upd=function(){var n=Object.keys(cek).filter(function(x){return cek[x].checked&&!cek[x].disabled}).length;if(!tb.disabled)tb.textContent='KONFIRMASI DITERIMA ('+n+' laporan)'};
+    Object.keys(cek).forEach(function(x){cek[x].addEventListener('change',upd)});
+    a.appendChild(tombol('Batal','line',tutupSheet));
+  }else{
+    if(!lm.ganti)d.appendChild(el('div','note ok','Semua laporan pada lembar ini sudah tercatat diterima.'));
+    a.appendChild(tombol('Tutup','line',tutupSheet));
+  }
+  d.appendChild(a);sheet(d);
+}
 function bukaBaris(x,per){
   var d=el('div');d.appendChild(el('h3',null,x.nama));d.appendChild(el('div','sub',x.kel+' · '+x.jenis.replace('Posyandu ','')+' · '+perNama(per)));
   var a=el('div','acts');
@@ -359,6 +417,7 @@ function koreksi(per,pid,nama){
   a.appendChild(tombol('Kembali','line',tutupSheet));d.appendChild(a);sheet(d);
 }
 function bukaKode(k){
+  if(/^L[A-Z0-9]{10}$/.test(k)){bukaLembar(k);return}
   var d=el('div');d.appendChild(el('h3',null,'Memeriksa laporan…'));d.appendChild(el('div','sub','Mohon tunggu sebentar.'));sheet(d);
   api('tcari',{k:k}).then(function(r){
     if(!r||r.ok!==true)throw new Error((r&&r.pesan)||'Gagal memeriksa laporan');
