@@ -330,7 +330,7 @@ function renderBeranda() {
 function pasangRuang() { var b = $('boxRuang'); if (!b) return; b.textContent = ''; if (utama()) kartuRuang(b); }
 function pasangPeng() { var b = $('pengBox'); if (!b) return; b.textContent = ''; kaderPengganti(b); }
 /* ---------- Penyerahan laporan ke kecamatan ---------- */
-var SETOR = {}, SETOR_T = {}, SETOR_BUSY = 0, SETOR_OPEN = {}, BELUM_OPEN = {}, SETOR_VIA = {};
+var SETOR = {}, SETOR_T = {}, SETOR_BUSY = 0, SETOR_OPEN = {}, BELUM_OPEN = {}, SETOR_VIA = {}, SETOR_MENUNGGU = false;
 function perKey(pr) { var m = BULAN.indexOf(pr.bl) + 1; return pr.th + '-' + (m < 10 ? '0' : '') + m; }
 function hariIni() { var d = new Date(), z = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
 function tglId(iso) { var m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(iso || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; }
@@ -357,10 +357,13 @@ function kartuSetor(box, h, pr) {
   var k = perKey(pr), M = SETOR[k] || {}, c = el('div', 'card'), tot = h.rows.length, n = h.rows.filter(function (r) { return M[r.p.id]; }).length;
   c.appendChild(el('h4', null, 'Penyerahan laporan ke kecamatan - ' + pr.bl + ' ' + pr.th));
   c.appendChild(el('div', 'lt', 'Centang Posyandu yang laporannya sudah disahkan kelurahan dan diserahkan ke kecamatan.'));
-  c.appendChild(el('div', 'hm ' + (tot && n === tot ? 'ok' : 'warn'), n + ' dari ' + tot + ' Posyandu sudah menyerahkan laporan'));
-  var tb = el('div', 'toolbar'); tb.appendChild(btn('Unduh PDF: belum menyerahkan', 'sm', function (ev) { unduhPoster(h, pr, 'pdf', ev.currentTarget); })); tb.appendChild(document.createTextNode(' ')); tb.appendChild(btn('Unduh gambar (untuk WhatsApp)', 'sm plain', function (ev) { unduhPoster(h, pr, 'png', ev.currentTarget); })); c.appendChild(tb);
+  var lkp = h.rows.filter(function (r) { return M[r.p.id] && r.d; }).length, mnt = n - lkp;
+  c.appendChild(el('div', 'hm ' + (tot && lkp === tot ? 'ok' : 'warn'), n + ' dari ' + tot + ' fisik diterima \u00b7 ' + lkp + ' sudah lengkap dengan digital'));
+  var tb = el('div', 'toolbar'); tb.appendChild(btn('Unduh PDF: belum menyerahkan', 'sm', function (ev) { unduhPoster(h, pr, 'pdf', ev.currentTarget); })); tb.appendChild(document.createTextNode(' ')); tb.appendChild(btn('Unduh gambar (untuk WhatsApp)', 'sm plain', function (ev) { unduhPoster(h, pr, 'png', ev.currentTarget); }));
+  if (mnt > 0 || SETOR_MENUNGGU) { tb.appendChild(document.createTextNode(' ')); tb.appendChild(btn(SETOR_MENUNGGU ? 'Tampilkan semua' : 'Hanya yang menunggu digital (' + mnt + ')', 'sm plain', function () { SETOR_MENUNGGU = !SETOR_MENUNGGU; renderBeranda(); })); }
+  c.appendChild(tb);
   KEL.forEach(function (kel) {
-    var l = h.rows.filter(function (r) { return r.p.kel === kel; }).sort(function (a, b) { return a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); });
+    var l = h.rows.filter(function (r) { return r.p.kel === kel && (!SETOR_MENUNGGU || (M[r.p.id] && !r.d)); }).sort(function (a, b) { return a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); });
     if (!l.length) return;
     var sudah = l.filter(function (r) { return M[r.p.id]; }).length, belum = l.filter(function (r) { return !M[r.p.id]; });
     var dt = document.createElement('details'), sm = document.createElement('summary'); dt.open = (kel in SETOR_OPEN) ? SETOR_OPEN[kel] : false;
@@ -374,7 +377,8 @@ function kartuSetor(box, h, pr) {
       var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!tg; cb.style.cssText = 'width:22px;height:22px;flex:none;accent-color:var(--ok)';
       cb.addEventListener('change', function () { simpanSetor(pr, [r.p.id], cb.checked ? hariIni() : ''); });
       var t = el('div'); t.appendChild(el('div', 'a', r.p.nama + ' (' + r.p.jenis.replace('Posyandu ', '') + ')'));
-      t.appendChild(el('div', 'b', r.d ? 'Sudah dibuat di aplikasi' : 'Belum dibuat di aplikasi'));
+      var kt = el('div', 'b', r.d ? 'Sudah dibuat di aplikasi' : (tg ? 'Fisik diterima, menunggu laporan digital' : 'Belum dibuat di aplikasi'));
+      if (tg && !r.d) { kt.style.color = 'var(--warn)'; kt.style.fontWeight = '700'; } t.appendChild(kt);
       lb.appendChild(cb); lb.appendChild(t); it.appendChild(lb);
       if (tg) {
         var di = document.createElement('input'); di.type = 'date'; di.value = tg; di.max = hariIni(); di.setAttribute('aria-label', 'Tanggal diserahkan ' + r.p.nama);
