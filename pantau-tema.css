@@ -696,3 +696,4 @@ html .opb .item{display:flex!important;flex-wrap:wrap;align-items:center!importa
 html .opb .item>label{flex:1 1 100%!important;min-width:0!important;min-height:0!important}
 html .opb .item>.btn:last-of-type{margin-left:auto}
 @media (min-width:900px){html .opb{align-items:stretch}html .opb>.item{height:100%}}
+@media (min-width:900px){html #app.isop .fc .filters{grid-template-columns:repeat(3,1fr) 1.6fr}html #app.isop .fc .filters>#fkw{display:none}}
