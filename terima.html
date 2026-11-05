@@ -89,6 +89,23 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .spin{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (min-width:820px){.wrap{padding:0 24px}}
+/* tampilan baru: kartu bergaris warna */
+.list{background:transparent;border-radius:0;overflow:visible}
+.list .row{background:var(--card);border:0;border-left:5px solid #c9d2cd;border-radius:14px;margin-bottom:8px;box-shadow:0 1px 2px rgba(20,33,26,.05)}
+.row.g{border-left-color:#2e9b57}.row.y{border-left-color:#e0a800}.row.r{border-left-color:#d33}
+.chip.ok{background:#d9f3e1;color:#1e7a40}.chip.y{background:#fff1bf;color:#8a6500}.chip.r{background:#fbd9d9;color:#a11}
+.wkt{flex:none;text-align:right;font-size:12.5px;color:var(--mu);line-height:1.3}.wkt b{display:block;font-size:14px;color:#1e7a40;font-weight:700}
+.pl{font-size:14px;color:var(--mu);margin:10px 2px 0}.pl b{color:var(--tx)}
+.filt .fld select{font-size:14.5px;padding:0 10px}
+.lmsum{background:var(--gs);border-radius:14px;padding:12px 14px;margin:0 0 12px;font-size:14px;line-height:1.5;color:#14532d}.lmsum b{display:block;font-size:16px;color:#0a5b28}
+.pa{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin:0 2px 8px;color:var(--mu)}.pa a{color:var(--g);font-weight:700;text-decoration:none}
+.sheet .lmbox{border:0;border-radius:0;overflow:visible;display:grid;gap:8px;margin-bottom:14px}
+.sheet .lmrow{background:#fff;border:1px solid #cfe6d6;border-left:5px solid #2e9b57;border-radius:14px;padding:10px 12px}
+.sheet .lmrow.nx{border-left-color:#c9d2cd;border-color:var(--ln)}
+.sheet .lmrow input{accent-color:var(--g);width:24px;height:24px;flex:none}
+.sheet .acts{position:sticky;bottom:calc(-22px - env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(255,255,255,0),#fff 18%);padding-top:12px;padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))}
+.okmark{width:72px;height:72px;border-radius:50%;background:#d9f3e1;color:var(--g);font-size:44px;line-height:72px;text-align:center;margin:4px auto 10px}
+.sheet .okc{text-align:center}
 </style>
 </head>
 <body>
@@ -126,7 +143,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
         <div class="ok"><b id="sS">0</b><small>Sudah diterima</small></div>
         <div><b id="sB">0</b><small>Belum diterima</small></div>
       </div>
-      <div class="bar"><i id="bar" style="width:0"></i></div>
+      <div class="pl" id="plab"></div><div class="bar"><i id="bar" style="width:0"></i></div>
       <button class="btn scan" id="scan" type="button"><svg class="ic"><use href="#i-scan"/></svg>SCAN QR LAPORAN</button>
       <h2>Riwayat penerimaan</h2>
       <div class="list" id="riw"></div>
@@ -155,7 +172,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
   <video id="vid" playsinline muted></video>
   <div class="frame"></div>
   <div class="bar2"><button id="camX" type="button">Tutup</button><button id="camF" type="button">Dari foto</button></div>
-  <div class="msg" id="camMsg">Arahkan kamera ke QR LAPORAN di halaman terakhir</div>
+  <div class="msg" id="camMsg">Arahkan kamera ke QR di laporan atau lembar pengantar</div>
 </div>
 <input type="file" id="foto" accept="image/*" class="hidden">
 
@@ -168,6 +185,7 @@ function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!==und
 function tunda(ms){return new Promise(function(r){setTimeout(r,ms)})}
 function toast(t){var o=el('div','toast',t);document.body.appendChild(o);setTimeout(function(){o.remove()},2600)}
 function perNama(k){var m=/^(\d{4})-(\d\d)$/.exec(k||'');return m?BULAN[+m[2]-1]+' '+m[1]:'-'}
+function tglPendek(s){var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(s||'');return m?(+m[3])+' '+BULAN[+m[2]-1].slice(0,3):(s||'')}
 function tglId(s){var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(s||'');return m?(+m[3])+' '+BULAN[+m[2]-1]+' '+m[1]:(s||'')}
 function simpanCred(){try{localStorage.setItem(KUNCI_LS,JSON.stringify(CRED))}catch(e){}}
 function hapusCred(){try{localStorage.removeItem(KUNCI_LS)}catch(e){}}
@@ -212,7 +230,7 @@ function keluar(msg){
 function mulai(){
   $('login').classList.add('hidden');$('app').classList.remove('hidden');window.scrollTo(0,0);
   if(rekapTersimpan()){tampilBeranda();isiFilter();tampilRekap()}
-  setTimeout(function(){if(!('BarcodeDetector' in window))muatJsQR().catch(function(){})},1200);
+  setTimeout(function(){if(!('BarcodeDetector' in window))muatJsQR().catch(function(){})},300);
   muatRekap('').then(function(){
     var k=new URLSearchParams(location.search).get('k');
     if(k){history.replaceState(null,'',location.pathname);bukaKode(k)}
@@ -256,18 +274,26 @@ function muatRekap(per){
     tampilBeranda();isiFilter();tampilRekap();return r;
   }).catch(function(e){toast(e.message||'Data belum bisa dimuat')});
 }
+function tandai(per,arr){
+  var r=REK[per];if(!r)return;
+  arr.forEach(function(a){
+    r.list.forEach(function(x){if(x.pid===a.pid)x.terima=a.terima});
+    if(!r.riwayat.some(function(y){return y.pos===a.pos&&y.kel===a.kel&&y.jenis===a.jenis&&y.per===per}))r.riwayat.unshift({pos:a.pos,kel:a.kel,jenis:a.jenis,per:per,tgl:a.terima.tgl,jam:a.terima.jam,oleh:a.terima.oleh});
+  });
+  try{tampilBeranda();tampilRekap()}catch(e){}
+}
 function ringkas(r){var t=r.list.length,s=r.list.filter(function(x){return x.terima}).length;return{t:t,s:s,b:t-s}}
 function tampilBeranda(){
   var r=REK[PER];if(!r)return;var g=ringkas(r);
   $('perB').innerHTML='Laporan bulan <b></b>';$('perB').querySelector('b').textContent=perNama(r.per);
-  $('sT').textContent=g.t;$('sS').textContent=g.s;$('sB').textContent=g.b;$('bar').style.width=(g.t?Math.round(g.s*100/g.t):0)+'%';
+  $('sT').textContent=g.t;$('sS').textContent=g.s;$('sB').textContent=g.b;$('bar').style.width=(g.t?Math.round(g.s*100/g.t):0)+'%';$('plab').innerHTML='<b></b>';$('plab').firstChild.textContent=g.s+' dari '+g.t+' laporan sudah diterima ('+(g.t?Math.round(g.s*100/g.t):0)+'%)';
   var box=$('riw');box.textContent='';
   if(!r.riwayat.length){box.appendChild(el('div','empty','Belum ada laporan yang diterima lewat scan.'));return}
   r.riwayat.forEach(function(x){
-    var b=el('div','row'),m=el('div','m');m.appendChild(el('b',null,x.pos));
-    m.appendChild(el('small',null,x.kel+' · '+x.jenis.replace('Posyandu ','')+' · '+perNama(x.per)));
-    m.appendChild(el('small',null,'Diterima '+tglId(x.tgl)+(x.jam?' pukul '+x.jam:'')+(x.oleh?' oleh '+x.oleh:'')));
-    b.appendChild(m);b.appendChild(el('span','chip ok','Sudah diterima'));box.appendChild(b);
+    var b=el('div','row g'),m=el('div','m');m.appendChild(el('b',null,x.pos));
+    m.appendChild(el('small',null,x.kel+' · '+x.jenis.replace('Posyandu ','')+(x.per&&x.per!==r.per?' · '+perNama(x.per):'')));
+    if(x.oleh)m.appendChild(el('small',null,'Diterima oleh '+x.oleh));
+    b.appendChild(m);var w=el('div','wkt');w.appendChild(el('b',null,x.jam||''));w.appendChild(document.createTextNode(tglPendek(x.tgl)));b.appendChild(w);box.appendChild(b);
   });
 }
 
@@ -293,10 +319,10 @@ function tampilRekap(){
   $('cnt').textContent=l.length?(s+' dari '+l.length+' laporan sudah diterima'):'Tidak ada data';
   if(!l.length)box.appendChild(el('div','empty','Tidak ada Posyandu yang cocok dengan filter.'));
   l.forEach(function(x){
-    var b=el('button','row'),m=el('div','m');b.type='button';m.appendChild(el('b',null,x.nama));
+    var b=el('button','row '+(x.terima?'g':x.dibuat?'y':'r')),m=el('div','m');b.type='button';m.appendChild(el('b',null,x.nama));
     m.appendChild(el('small',null,x.kel+' · '+x.jenis.replace('Posyandu ','')));
     m.appendChild(el('small',null,x.terima?('Diterima '+tglId(x.terima.tgl)+(x.terima.jam?' pukul '+x.terima.jam:'')+(x.terima.oleh?' oleh '+x.terima.oleh:'')+(x.terima.via==='manual'?' (dicatat manual)':'')):(x.dibuat?'Laporan digital sudah dibuat':'Laporan digital belum dibuat')));
-    b.appendChild(m);b.appendChild(el('span','chip '+(x.terima?'ok':'no'),x.terima?'Sudah diterima':'Belum diterima'));
+    b.appendChild(m);b.appendChild(el('span','chip '+(x.terima?'ok':x.dibuat?'y':'r'),x.terima?'Sudah diterima':'Belum diterima'));
     b.addEventListener('click',function(){bukaBaris(x,per)});box.appendChild(b);
   });
 }
@@ -317,6 +343,7 @@ function muatTombol(b,t){b.disabled=true;b.textContent='';var s=el('span','spin'
 function infoTerima(t){return 'Sudah tercatat diterima pada '+tglId(t.tgl)+(t.jam?' pukul '+t.jam:'')+(t.oleh?' oleh '+t.oleh:'')+(t.via==='manual'?' (dicatat manual oleh admin kecamatan)':'')+'.'}
 function lembarLaporan(lap,hasil){
   var d=el('div'),ada=!!lap.terima;
+  if(hasil==='baru'){d.appendChild(el('div','okmark','\u2713'));d.className='okc'}
   d.appendChild(el('h3',null,hasil==='baru'?'Laporan berhasil diterima':'Detail laporan'));
   d.appendChild(el('div','sub',hasil==='baru'?'Penerimaan sudah tersimpan di database.':'Periksa dokumen fisik, lalu konfirmasi.'));
   d.appendChild(kv([['Posyandu',lap.pos],['Nama kader',lap.kader||'-'],['Kelurahan',lap.kel],['Jenis',lap.jenis.replace('Posyandu ','')],['Bulan laporan',lap.bln+' '+lap.thn],['Nomor',lap.nomor+(lap.versi>1?' (versi '+lap.versi+')':'')]]));
@@ -332,7 +359,7 @@ function lembarLaporan(lap,hasil){
     if(lap.pid)a.appendChild(tombol('KONFIRMASI DITERIMA','',function(b){
       muatTombol(b,'Menyimpan…');
       tulis('tterima','terima',{k:lap.kode},function(r){return !!r.lap}).then(function(r){
-        REK={};muatRekap(PER);
+        if(r.lap&&r.lap.terima)tandai(r.lap.per||PER,[{pid:r.lap.pid,pos:r.lap.pos,kel:r.lap.kel,jenis:r.lap.jenis,terima:r.lap.terima}]);muatRekap(PER);
         if(r.sudah){lembarLaporan(r.lap,'sudah');toast('Laporan ini sudah pernah diterima')}
         else lembarLaporan(r.lap,'baru');
       }).catch(function(e){b.disabled=false;b.textContent='KONFIRMASI DITERIMA';d.insertBefore(el('div','note b',e.message||'Gagal menyimpan'),a)});
@@ -359,14 +386,15 @@ function bukaLembar(k){
 }
 function tampilLembar(lm,k,hasil,info){
   var d=el('div'),a=el('div','acts'),cek={};
+  if(hasil==='baru'){d.appendChild(el('div','okmark','\u2713'));d.className='okc'}
   d.appendChild(el('h3',null,hasil==='baru'?'Lembar pengantar diterima':'Lembar pengantar'));
   d.appendChild(el('div','sub',hasil==='baru'?'Penerimaan sudah tersimpan di database.':'Cocokkan dengan laporan fisik yang diantar, lalu konfirmasi.'));
-  d.appendChild(kv([['Kelurahan',lm.kel],['Bulan laporan',lm.bln+' '+lm.thn],['Dibuat',tglId(lm.tgl)+' '+lm.jam],['Dibuat oleh',lm.oleh||'-']]));
+  var sm=el('div','lmsum');sm.appendChild(el('b',null,lm.kel+' · '+lm.bln+' '+lm.thn));sm.appendChild(document.createTextNode(lm.items.length+' laporan diantar, dibuat '+tglId(lm.tgl)+' pukul '+lm.jam+' oleh '+(lm.oleh||'-')));d.appendChild(sm);
   if(lm.ganti)d.appendChild(el('div','note b','Lembar ini sudah diganti dengan lembar yang lebih baru. Minta pihak kelurahan menyerahkan lembar yang terbaru.'));
   var box=el('div','lmbox'),siap=0;
   lm.items.forEach(function(it){
     var row=el('label','lmrow'),cb=document.createElement('input');cb.type='checkbox';
-    var bisa=it.st==='ikut'&&!it.terima&&!it.dibuka&&!lm.ganti;
+    var bisa=it.st==='ikut'&&!it.terima&&!it.dibuka&&!lm.ganti;if(!bisa&&!it.terima)row.className+=' nx';
     cb.checked=bisa||!!it.terima;cb.disabled=!bisa;cek[it.pid]=cb;if(bisa)siap++;
     var t=el('div');t.appendChild(el('b',null,it.nama+' · '+it.jenis.replace('Posyandu ','')));var s2=el('div','lmk'+((it.st==='ikut'||it.st==='diterima')&&!it.dibuka?'':' x'),ketLembar(it));t.appendChild(s2);
     row.appendChild(cb);row.appendChild(t);box.appendChild(row);
@@ -385,12 +413,15 @@ function tampilLembar(lm,k,hasil,info){
       muatTombol(b,'Menyimpan…');
       api('tlterima',{k:k,ids:ids.join(',')}).then(function(r){
         if(!r||r.ok!==true)throw new Error((r&&r.pesan)||'Gagal menyimpan');
-        REK={};muatRekap(PER);tampilLembar(r.lembar,k,'baru',r);
+        (function(){var lm=r.lembar,pr=lm.thn+'-'+('0'+(BULAN.indexOf(lm.bln)+1)).slice(-2);tandai(REK[pr]?pr:PER,lm.items.filter(function(it){return it.terima}).map(function(it){return{pid:it.pid,pos:it.nama,kel:lm.kel,jenis:it.jenis,terima:it.terima}}))})();muatRekap(PER);tampilLembar(r.lembar,k,'baru',r);
       }).catch(function(e){b.disabled=false;b.textContent='KONFIRMASI DITERIMA ('+siap+' laporan)';d.insertBefore(el('div','note b',e.message||'Gagal menyimpan'),a)});
     });
     a.appendChild(tb);
     var upd=function(){var n=Object.keys(cek).filter(function(x){return cek[x].checked&&!cek[x].disabled}).length;if(!tb.disabled)tb.textContent='KONFIRMASI DITERIMA ('+n+' laporan)'};
     Object.keys(cek).forEach(function(x){cek[x].addEventListener('change',upd)});
+    var pa=el('div','pa');pa.appendChild(el('span',null,'Centang yang benar-benar diserahkan'));var tg=el('a',null,'Hapus semua');tg.href='#';
+    tg.addEventListener('click',function(ev){ev.preventDefault();var ids=Object.keys(cek).filter(function(x){return !cek[x].disabled}),semua=ids.every(function(x){return cek[x].checked});ids.forEach(function(x){cek[x].checked=!semua});tg.textContent=semua?'Pilih semua':'Hapus semua';upd()});
+    pa.appendChild(tg);d.insertBefore(pa,box);
     a.appendChild(tombol('Batal','line',tutupSheet));
   }else{
     if(!lm.ganti)d.appendChild(el('div','note ok','Semua laporan pada lembar ini sudah tercatat diterima.'));
@@ -452,6 +483,7 @@ function tutupKamera(){
 }
 async function bukaKamera(){
   tutupSheet();$('cam').classList.remove('hidden');pesanKamera('Menyalakan kamera…');CAMJALAN=true;
+  if(CRED)try{api('trekap',{per:PER||''}).catch(function(){})}catch(e){}
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){pesanKamera('Kamera tidak tersedia di browser ini. Pakai tombol "Dari foto" di kanan atas.');return}
   try{
     STREAM=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}},audio:false});
@@ -460,7 +492,7 @@ async function bukaKamera(){
   }
   if(!CAMJALAN){STREAM.getTracks().forEach(function(t){t.stop()});STREAM=null;return}
   var v=$('vid');v.srcObject=STREAM;try{await v.play()}catch(e){}
-  pesanKamera('Arahkan kamera ke QR LAPORAN di halaman terakhir');
+  pesanKamera('Arahkan kamera ke QR di laporan atau lembar pengantar');
   try{if('BarcodeDetector' in window)DETEK=new BarcodeDetector({formats:['qr_code']})}catch(e){DETEK=null}
   if(!DETEK){try{await muatJsQR()}catch(e){pesanKamera(e.message,['Coba lagi',bukaKamera]);return}}
   var cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
@@ -470,11 +502,11 @@ async function bukaKamera(){
       if(v.readyState>=2&&v.videoWidth){
         var teks='';
         if(DETEK){var r=await DETEK.detect(v);if(r&&r.length)teks=r[0].rawValue}
-        else{var w=Math.min(720,v.videoWidth),h=Math.round(v.videoHeight*w/v.videoWidth);cv.width=w;cv.height=h;cx.drawImage(v,0,0,w,h);var id=cx.getImageData(0,0,w,h),q=window.jsQR(id.data,w,h,{inversionAttempts:'dontInvert'});if(q)teks=q.data}
+        else{var w=Math.min(640,v.videoWidth),h=Math.round(v.videoHeight*w/v.videoWidth);cv.width=w;cv.height=h;cx.drawImage(v,0,0,w,h);var id=cx.getImageData(0,0,w,h),q=window.jsQR(id.data,w,h,{inversionAttempts:'dontInvert'});if(q)teks=q.data}
         if(teks){var k=ambilKode(teks);if(k){tutupKamera();if(navigator.vibrate)try{navigator.vibrate(60)}catch(e){}bukaKode(k);return}pesanKamera('QR ini bukan QR laporan Posyandu. Coba QR yang lain.')}
       }
     }catch(e){}
-    LOOP=setTimeout(putar,180);
+    LOOP=setTimeout(putar,90);
   })();
 }
 $('scan').addEventListener('click',bukaKamera);
