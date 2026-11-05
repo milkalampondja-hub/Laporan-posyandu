@@ -610,3 +610,38 @@ html #dpBox .stat.sa,html #dpBox .stat.sb,html #dpBox .stat.sl,html #dpBox .stat
 :root[data-theme=dark] .lact .btn:not(.line):not(.plain),:root[data-theme=dark] #dpBox .lact .btn:not(.line):not(.plain){color:#2b2200}
 :root[data-theme=dark] .lact .btn.line,:root[data-theme=dark] #dpBox .lact .btn.line{color:#ffd84a;background:transparent}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .lact .btn:not(.line):not(.plain){color:#2b2200}:root:not([data-theme=light]) .lact .btn.line{color:#ffd84a;background:transparent}}
+/* ---- Rekapitulasi ---- */
+html #rkBox .card>h4:first-child::before{display:none}
+html #rkBox .card>h4:first-child{display:block}
+html #rkBox .lhd{margin-bottom:0}
+html #rkBox .rkctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+html #rkBox .rkctl .fl2{display:flex;gap:8px;margin:0}
+html #rkBox .rkctl .fl2 select{width:auto;min-width:130px}
+html #rkBox .rkctl .toolbar{margin:0}
+html #rkBox .tabbar{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;margin:2px 0 12px;border:0;border-radius:14px;background:rgba(255,255,255,.55);overflow:visible}
+html #rkBox .tabbar button{padding:9px 4px;border:0;border-radius:10px;text-align:center;white-space:normal;line-height:1.2}
+html #rkBox .tabbar button.on{background:var(--accent);color:#2b2200}
+:root[data-theme=dark] #rkBox .tabbar{background:rgba(255,255,255,.08)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #rkBox .tabbar{background:rgba(255,255,255,.08)}}
+html #rkBox .rknote{background:#fff6cf;border:1px solid #f3dd7a;border-radius:14px;padding:10px 14px;margin:0 0 12px;color:#5b4a00;font-size:13px;line-height:1.45}
+:root[data-theme=dark] #rkBox .rknote{background:#3a2f0a;border-color:#6b560f;color:#f3e6b0}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #rkBox .rknote{background:#3a2f0a;border-color:#6b560f;color:#f3e6b0}}
+html #rkBox .pcp{display:inline-block;min-width:44px;border-radius:99px;padding:2px 8px;font-weight:800;font-size:12.5px}
+html #rkBox .pcp.p0{background:#fde1e1;color:#b3261e}
+html #rkBox .pcp.p1{background:#fff0b8;color:#8a6a00}
+html #rkBox .pcp.p2{background:#dff5e6;color:#17803d}
+:root[data-theme=dark] #rkBox .pcp.p0{background:#4a2020;color:#ffb4ab}:root[data-theme=dark] #rkBox .pcp.p1{background:#4a3c0c;color:#ffd84a}:root[data-theme=dark] #rkBox .pcp.p2{background:#1c3326;color:#7fe0a0}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #rkBox .pcp.p0{background:#4a2020;color:#ffb4ab}:root:not([data-theme=light]) #rkBox .pcp.p1{background:#4a3c0c;color:#ffd84a}:root:not([data-theme=light]) #rkBox .pcp.p2{background:#1c3326;color:#7fe0a0}}
+@media (min-width:761px){html #rkBox .dtbl td:first-child{white-space:nowrap}}
+html #rkBox .dtbl tr.jm td{font-weight:800;border-top:2px solid var(--st-line)}
+html #rkBox .cmp{height:150px}
+html #rkBox .cmp i{max-width:30px;min-height:4px}
+@media (min-width:1000px){
+  html #rkIsi[data-rtab=ring]:has(>.rknote){display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  html #rkIsi[data-rtab=ring]:has(>.rknote)>.card{margin:0}
+  html #rkIsi[data-rtab=ring]:has(>.rknote)>.rknote{grid-column:1/-1;margin:0}
+  html #rkIsi[data-rtab=ring]:has(>.rknote)>.card:nth-child(2){grid-row:span 2}
+  html #rkIsi[data-rtab=ring]:has(>.rknote)>.card:nth-child(7){grid-column:1/-1}
+}
+@media (max-width:760px){html #rkBox .rkctl{width:100%}html #rkBox .rkctl .fl2{width:100%}html #rkBox .rkctl .fl2 select{flex:1;width:auto;min-width:0}html #rkBox .rkctl .toolbar{width:100%}html #rkBox .rkctl .toolbar .btn{flex:1}html #rkBox .dtbl{font-size:13px}}
+@media (max-width:760px){html #rkBox .tabbar button{font-size:13px;padding:9px 2px}html #rkBox .dtbl th,html #rkBox .dtbl td{padding:8px 2px}}

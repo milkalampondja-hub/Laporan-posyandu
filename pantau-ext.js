@@ -774,8 +774,8 @@ function penggantiSementara() {
 var rkDibuat = false;
 function rkSiap() {
   var box = $('rkBox'); if (!box || rkDibuat) return; rkDibuat = true;
-  box.innerHTML = '<div class="card"><h4>Periode rekap</h4><div class="fl2"><select id="rb"></select><select id="rt"></select></div>' +
-    '<div class="toolbar"><button class="btn sm" id="rkp" type="button">Cetak rekap (PDF)</button> <button class="btn sm plain" id="rkx" type="button">Unduh rekap (Excel)</button></div></div>' +
+  box.innerHTML = '<div class="card"><div class="lhd"><div class="lht"><h4>Periode rekap</h4><small>Pilih bulan dan tahun, lalu cetak atau unduh</small></div><div class="rkctl"><div class="fl2"><select id="rb" aria-label="Bulan"></select><select id="rt" aria-label="Tahun"></select></div>' +
+    '<div class="toolbar lact"><button class="btn sm" id="rkp" type="button">Cetak rekap (PDF)</button> <button class="btn sm line" id="rkx" type="button">Unduh rekap (Excel)</button></div></div></div></div>' +
     '<div class="tabbar" id="tabR" data-for="rkIsi" data-attr="data-rtab"><button type="button" class="on" data-t="ring">Ringkasan</button><button type="button" data-t="pos">Per Posyandu</button><button type="button" data-t="ang">Angka kegiatan</button></div><div id="rkIsi" data-rtab="ring"></div>';
   var now = new Date();
   var pa = periodeAktif(now);
@@ -788,7 +788,10 @@ function rkSiap() {
 function barRow(lbl, a, b) { var pc = persen(a, b), r = el('div', 'barrow'), l = el('div', 'l'); l.appendChild(el('span', null, lbl)); l.appendChild(el('b', null, a + ' dari ' + b + ' · ' + pc + '%')); r.appendChild(l); var bar = el('div', 'bar'); bar.appendChild(document.createElement('i')).style.width = pc + '%'; r.appendChild(bar); return r; }
 function tabel(heads, rows, pcCol) {
   var t = el('table', 'dtbl'), hd = el('tr'); heads.forEach(function (x) { hd.appendChild(el('th', null, x)); }); t.appendChild(hd);
-  rows.forEach(function (r) { var tr = el('tr'); r.forEach(function (v, i) { tr.appendChild(el('td', i === pcCol ? 'pc' : null, v)); }); t.appendChild(tr); });
+  rows.forEach(function (r) { var tr = el('tr'); r.forEach(function (v, i) {
+    if (i === pcCol && /^\d+%$/.test(v)) { var n = parseInt(v, 10), td = el('td', 'pc'); td.appendChild(el('span', 'pcp ' + (n === 0 ? 'p0' : n >= 100 ? 'p2' : 'p1'), v)); tr.appendChild(td); }
+    else tr.appendChild(el('td', i === pcCol ? 'pc' : null, v));
+  }); t.appendChild(tr); });
   var sc = el('div', 'scroll'); t.style.minWidth = '0'; sc.appendChild(t); return sc;
 }
 function rkData() {
@@ -804,7 +807,7 @@ function renderRekap() {
   if (!ADA) { isi.appendChild(el('div', 'empty', 'Data belum dimuat.')); return; }
   var R = rkData(), h = R.h, now = new Date(), prR = { bl: R.bl, th: R.th };
   if (!isOp()) muatSetor(prR);
-  var nt = el('div', 'lt'); nt.setAttribute('data-tab', 'ring');
+  var nt = el('div', 'lt rknote'); nt.setAttribute('data-tab', 'ring');
   if (!isOp()) { nt.textContent = 'Angka Balita, Lansia, dan Total di halaman ini adalah laporan digital yang sudah terkirim. Laporan yang resmi dihitung masuk (digital + fisik diterima kecamatan) tampil di Beranda dan di kolom "Fisik diterima" pada tabel per kelurahan.'; isi.appendChild(nt); }
   // 1 per bulan
   var c1 = el('div', 'card'); c1.appendChild(el('h4', null, 'Rekap laporan per bulan - ' + R.th));
@@ -832,7 +835,7 @@ function renderRekap() {
     return [k, a.masuk + '/' + a.total, b.masuk + '/' + b.total, (a.masuk + b.masuk) + '/' + (a.total + b.total), persen(a.masuk + b.masuk, a.total + b.total) + '%', fk === null ? '\u2026' : fk + '/' + (a.total + b.total)];
   });
   rowsK.push(['JUMLAH', gt.b[0] + '/' + gt.b[1], gt.l[0] + '/' + gt.l[1], (gt.b[0] + gt.l[0]) + '/' + (gt.b[1] + gt.l[1]), persen(gt.b[0] + gt.l[0], gt.b[1] + gt.l[1]) + '%', SETOR[perKey(prR)] ? fisT + '/' + h.rows.length : '\u2026']);
-  c2.appendChild(tabel(['Kelurahan', 'Balita', 'Lansia', 'Total', '%', 'Fisik diterima'], rowsK, 4)); if (!op1) isi.appendChild(c2);
+  c2.appendChild(tabel(['Kelurahan', 'Balita', 'Lansia', 'Total', '%', 'Fisik diterima'], rowsK, 4)); (function () { var tr = c2.querySelectorAll('tr'); if (tr.length) tr[tr.length - 1].classList.add('jm'); })(); if (!op1) isi.appendChild(c2);
   // 3 persentase
   var c3 = el('div', 'card'); c3.appendChild(el('h4', null, 'Persentase laporan masuk'));
   c3.appendChild(barRow('Keseluruhan', h.masuk.length, h.rows.length));
