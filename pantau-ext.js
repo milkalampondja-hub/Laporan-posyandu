@@ -1930,57 +1930,63 @@ window.pasangPm = function () {
   var app = $('cardApp'); if (!app) return;
   var c = $('cardPm'), c2 = $('cardTes');
   if (!c) { c = el('div', 'card'); c.id = 'cardPm'; c.setAttribute('data-tab', 'app'); app.parentNode.insertBefore(c, app); }
-  if (!c2) { c2 = el('div', 'card'); c2.id = 'cardTes'; c2.setAttribute('data-tab', 'app'); app.parentNode.insertBefore(c2, c); }
+  if (c2) c2.style.display = 'none';
   var utama = PERAN === 'utama', tesOn = !!(window.TES_ON && TES_ON());
-  if (!utama) { c.style.display = 'none'; c2.style.display = 'none'; return; }
+  if (!utama) { c.style.display = 'none'; return; }
+  c.style.display = '';
   var sampai = +window.PM_SAMPAI || 0, aktif = sampai > Date.now();
-  c.textContent = ''; c.appendChild(el('h4', null, 'Pemeliharaan aplikasi'));
-  c.appendChild(el('p', 'hint', 'Saat menyala, kader dan petugas tidak bisa masuk atau mengirim; mereka melihat popup "sedang dalam pemeliharaan". Admin kecamatan tetap bisa masuk. Perangkat penguji (ketuk nomor versi 5 kali, masukkan kode) memakai data tes yang terpisah, sehingga data asli tidak berubah.'));
+  c.textContent = ''; c.appendChild(el('h4', null, 'Mode tes dan pemeliharaan'));
+  c.appendChild(el('p', 'hint', 'Saat menyala, semua kader dan petugas melihat "Aplikasi sedang dalam pemeliharaan" dan tidak bisa masuk atau mengirim. Admin kecamatan tetap bisa bekerja seperti biasa. Untuk mencoba aplikasi tanpa mengubah data asli, ketuk nomor versi 5 kali di aplikasi yang diuji dan masukkan kode: aplikasi itu memakai data tes yang terpisah.'));
   var st = el('p', 'st'); c.appendChild(st);
-  if (aktif) {
-    c.appendChild(el('p', 'hint', 'Pemeliharaan MENYALA. Selesai otomatis pukul ' + pmJam(sampai) + '.'));
-    var bm = el('button', 'btn sm', 'Matikan pemeliharaan'); bm.type = 'button';
-    bm.addEventListener('click', function () {
-      bm.disabled = true; st.textContent = 'Menyimpan…'; st.className = 'st';
-      kirimAtur({ aksi: 'pemeliharaan', jam: 0 }).then(function () { window.PM_SAMPAI = 0; toast('Pemeliharaan dimatikan.'); pasangPm(); }).catch(function (e) { bm.disabled = false; st.textContent = e.message; st.className = 'st bad'; });
-    });
-    c.appendChild(bm);
-  } else {
-    c.appendChild(el('label', null, 'Lamanya')); c.lastChild.style.cssText = 'font-weight:700;display:block;margin:8px 0 4px';
-    var row = el('div'); row.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap';
-    var info = el('p', 'hint');
-    function ket() { info.textContent = 'Selesai otomatis pukul ' + pmJam(Date.now() + PM_JAM * 3600000) + '. Jam ini tampil di popup kader dan petugas.'; }
+  function nyalakan(j, tombol) {
+    if (!confirm('Kader dan petugas tidak bisa mengirim atau masuk selama ' + j + ' jam. Lanjutkan?')) return;
+    tombol.disabled = true; st.textContent = 'Menyimpan…'; st.className = 'st';
+    kirimAtur({ aksi: 'pemeliharaan', jam: j }).then(function (r) { window.PM_SAMPAI = r.pemeliharaan || 0; toast('Mode tes dan pemeliharaan menyala.'); pasangPm(); }).catch(function (e) { tombol.disabled = false; st.textContent = e.message; st.className = 'st bad'; });
+  }
+  function baris(label, aksiJam) {
+    c.appendChild(el('p', 'hint', label)); c.lastChild.style.margin = '12px 0 6px';
+    var row = el('div'); row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px';
     [1, 3, 6].forEach(function (j) {
-      var b = el('button', 'btn sm' + (j === PM_JAM ? '' : ' plain'), j + ' jam'); b.type = 'button';
-      b.addEventListener('click', function () { PM_JAM = j; pasangPm(); });
+      var b = el('button', 'btn sm plain', j + ' jam'); b.type = 'button';
+      b.addEventListener('click', function () { nyalakan(j, b); });
       row.appendChild(b);
     });
-    c.appendChild(row); ket(); c.appendChild(info);
-    var bn = el('button', 'btn sm', 'Nyalakan pemeliharaan'); bn.type = 'button'; bn.style.cssText = 'background:#b3261e;color:#fff';
-    bn.addEventListener('click', function () {
-      if (!confirm('Kader dan petugas tidak bisa mengirim atau masuk selama ' + PM_JAM + ' jam. Lanjutkan?')) return;
-      bn.disabled = true; st.textContent = 'Menyimpan…'; st.className = 'st';
-      kirimAtur({ aksi: 'pemeliharaan', jam: PM_JAM }).then(function (r) { window.PM_SAMPAI = r.pemeliharaan || 0; toast('Pemeliharaan dinyalakan.'); pasangPm(); }).catch(function (e) { bn.disabled = false; st.textContent = e.message; st.className = 'st bad'; });
-    });
-    c.appendChild(bn);
-    c.appendChild(el('p', 'hint', 'Disarankan malam hari saat sepi laporan.'));
+    c.appendChild(row);
   }
-  /* kartu Mode tes: hanya tampil bila mode tes menyala di perangkat ini */
-  c2.textContent = '';
-  if (!tesOn) { c2.style.display = 'none'; return; }
-  c2.appendChild(el('h4', null, 'Mode tes'));
-  c2.appendChild(el('p', 'hint', 'Mode tes menyala di perangkat ini untuk Pantau, Terima, dan aplikasi kader yang dibuka di browser yang sama. Data asli tidak berubah. Mati otomatis setelah 3 jam.'));
-  var ti = window.TES_INFO; if (ti) c2.appendChild(el('p', 'hint', 'Data tes saat ini: ' + ti.lap + ' laporan, ' + ti.terima + ' penerimaan.'));
-  var st2 = el('p', 'st'); c2.appendChild(st2);
-  var r2 = el('div'); r2.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
-  var bk = el('button', 'btn sm', 'Kosongkan data tes'); bk.type = 'button';
-  bk.addEventListener('click', function () {
-    if (!confirm('Semua laporan dan penerimaan tes dihapus. Data asli tidak tersentuh. Lanjutkan?')) return;
-    bk.disabled = true; st2.textContent = 'Mengosongkan…'; st2.className = 'st';
-    kirimAtur({ aksi: 'kosongkantes' }).then(function (r) { window.TES_INFO = r.tes || null; toast('Data tes dikosongkan.'); location.reload(); }).catch(function (e) { bk.disabled = false; st2.textContent = e.message; st2.className = 'st bad'; });
-  });
-  var bo = el('button', 'btn sm plain', 'Matikan mode tes'); bo.type = 'button'; bo.addEventListener('click', function () { TES_MATI(); });
-  r2.appendChild(bk); r2.appendChild(bo); c2.appendChild(r2);
+  if (aktif) {
+    var box = el('div'); box.style.cssText = 'background:#fde8e6;border-radius:14px;padding:12px 14px;margin:10px 0';
+    var t1 = el('b', null, 'Menyala'); t1.style.color = '#b3261e'; box.appendChild(t1);
+    var t2 = el('div', null, 'Selesai otomatis pukul ' + pmJam(sampai)); t2.style.cssText = 'font-size:12.5px;opacity:.85'; box.appendChild(t2);
+    c.appendChild(box);
+    var r1 = el('div'); r1.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
+    var bm = el('button', 'btn sm', 'Matikan'); bm.type = 'button';
+    bm.addEventListener('click', function () {
+      bm.disabled = true; st.textContent = 'Menyimpan…'; st.className = 'st';
+      kirimAtur({ aksi: 'pemeliharaan', jam: 0 }).then(function () { window.PM_SAMPAI = 0; toast('Mode tes dan pemeliharaan dimatikan.'); setTimeout(function () { location.reload(); }, 400); }).catch(function (e) { bm.disabled = false; st.textContent = e.message; st.className = 'st bad'; });
+    });
+    var bt = el('button', 'btn sm plain', 'Tambah 1 jam'); bt.type = 'button';
+    bt.addEventListener('click', function () {
+      bt.disabled = true; st.textContent = 'Menyimpan…'; st.className = 'st';
+      kirimAtur({ aksi: 'pemeliharaan', tambah: 1 }).then(function (r) { window.PM_SAMPAI = r.pemeliharaan || 0; toast('Ditambah 1 jam.'); pasangPm(); }).catch(function (e) { bt.disabled = false; st.textContent = e.message; st.className = 'st bad'; });
+    });
+    r1.appendChild(bm); r1.appendChild(bt); c.appendChild(r1);
+    baris('Atau nyalakan ulang untuk:');
+    if (tesOn) {
+      var ti = window.TES_INFO; if (ti) { c.appendChild(el('p', 'hint', 'Data tes saat ini: ' + ti.lap + ' laporan, ' + ti.terima + ' penerimaan.')); c.lastChild.style.marginTop = '12px'; }
+      var bk = el('button', 'btn sm plain', 'Kosongkan data tes'); bk.type = 'button';
+      bk.addEventListener('click', function () {
+        if (!confirm('Semua laporan dan penerimaan tes dihapus. Data asli tidak tersentuh. Lanjutkan?')) return;
+        bk.disabled = true; st.textContent = 'Mengosongkan…'; st.className = 'st';
+        kirimAtur({ aksi: 'kosongkantes' }).then(function (r) { window.TES_INFO = r.tes || null; toast('Data tes dikosongkan.'); location.reload(); }).catch(function (e) { bk.disabled = false; st.textContent = e.message; st.className = 'st bad'; });
+      });
+      c.appendChild(bk);
+    } else {
+      c.appendChild(el('p', 'hint', 'Pantau di perangkat ini belum memakai data tes. Ketuk nomor versi di bawah halaman 5 kali dan masukkan kode bila ingin mencoba Pantau dengan data tes.')); c.lastChild.style.marginTop = '12px';
+    }
+  } else {
+    baris('Nyalakan untuk:');
+    c.appendChild(el('p', 'hint', 'Disarankan malam hari saat sepi laporan. Jam selesai tampil di popup kader dan petugas.'));
+  }
 };
 
 /* Judul kartu Beranda yang tetap diam saat kartu digulir: judul + keterangan dibungkus .sthd, sisanya .stbody (hanya tampilan). */

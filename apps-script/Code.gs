@@ -22,6 +22,8 @@ var ID_AKTIF = '';
 var AS_USER = '';
 var MODE_TES = false;      // true bila permintaan membawa kode tes yang benar: semua data dibaca dan ditulis di folder TES (terpisah dari data asli)
 var UJI_HASH = '30b31af050739ab03ff27e5b30667767cc2a39b050f925850d4d53c2366077c5';
+var TES_AKHIR = false;     // kode tes benar tetapi sakelar mode tes di Pantau sudah mati: permintaan ditolak, aplikasi keluar dari mode tes
+var PESAN_TES_AKHIR = 'Mode tes sudah berakhir. Aplikasi kembali ke data asli.';
 var PESAN_PM = 'Aplikasi sedang dalam pemeliharaan. Mohon tunggu sebentar dan coba lagi nanti.';
 var IZIN_TERIMA = false;   // akun penerima hanya boleh dipakai oleh aplikasi Terima   // admin kecamatan melihat sebagai operator kelurahan
 
@@ -68,11 +70,18 @@ function aturPemeliharaan(d) {
   var w = masuk(d.u, d.p);
   if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh mengatur pemeliharaan'); }
   var jam = parseInt(d.jam, 10) || 0, props = PropertiesService.getScriptProperties();
-  if (jam <= 0) { props.deleteProperty('PEMELIHARAAN'); catatLog(w.u, 'mematikan pemeliharaan aplikasi'); return simpanHasil({ ok: true, pemeliharaan: 0 }, 'a'); }
+  if (parseInt(d.tambah, 10) === 1) {
+    var ada = pemeliharaanSampai(); if (!ada) throw new Error('Mode tes belum menyala');
+    var sb = Math.min(ada + 3600000, Date.now() + 12 * 3600000);
+    props.setProperty('PEMELIHARAAN', JSON.stringify({ sampai: sb, oleh: w.u }));
+    catatLog(w.u, 'menambah 1 jam mode tes dan pemeliharaan');
+    return simpanHasil({ ok: true, pemeliharaan: sb }, 'a');
+  }
+  if (jam <= 0) { props.deleteProperty('PEMELIHARAAN'); catatLog(w.u, 'mematikan mode tes dan pemeliharaan'); return simpanHasil({ ok: true, pemeliharaan: 0 }, 'a'); }
   if ([1, 3, 6].indexOf(jam) < 0) throw new Error('Lama pemeliharaan 1, 3, atau 6 jam');
   var sampai = Date.now() + jam * 3600000;
   props.setProperty('PEMELIHARAAN', JSON.stringify({ sampai: sampai, oleh: w.u }));
-  catatLog(w.u, 'menyalakan pemeliharaan aplikasi ' + jam + ' jam');
+  catatLog(w.u, 'menyalakan mode tes dan pemeliharaan ' + jam + ' jam');
   return simpanHasil({ ok: true, pemeliharaan: sampai }, 'a');
 }
 var TES_MEM = null;
@@ -99,7 +108,7 @@ function infoTes() {
 function kosongkanTes(d) {
   var w = masuk(d.u, d.p);
   if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh mengosongkan data tes'); }
-  if (!MODE_TES) throw new Error('Mode tes belum menyala di perangkat ini');
+  if (!MODE_TES) throw new Error('Nyalakan mode tes di Pantau dan di perangkat ini dulu');
   var asli = indukAsli(), it = asli.getFoldersByName('TES');
   while (it.hasNext()) it.next().setTrashed(true);
   var props = PropertiesService.getScriptProperties(), sid = props.getProperty('SHEET_ID_TES');
@@ -111,12 +120,14 @@ function kosongkanTes(d) {
 function doGet(e) {
   var p = (e && e.parameter) || {};
   AS_USER = String(p.as || '').toLowerCase();
-  MODE_TES = kodeTesValid(p.tes);
+  MODE_TES = kodeTesValid(p.tes); TES_AKHIR = MODE_TES && !pemeliharaanSampai();   // MODE_TES tetap menyala agar awalan cache hasil konsisten; TES_AKHIR menolak permintaan
   var cb = /^[A-Za-z0-9_]{1,40}$/.test(String(p.cb || '')) ? String(p.cb) : '';
   var hasil = { ok: true, pesan: 'Arsip Laporan Posyandu aktif' };
   var cache = cacheSkr();
   var tahan = (p.aksi === 'cek' || p.aksi === 'hasil' || p.aksi === 'daftarpos' || !p.aksi) ? 0 : tertahanPemeliharaan(p.u, p.p, false);
-  if (tahan) {
+  if (TES_AKHIR && p.aksi !== 'cek' && p.aksi !== 'hasil') {
+    hasil = { ok: false, tesmati: true, pesan: PESAN_TES_AKHIR };
+  } else if (tahan) {
     hasil = { ok: false, pemeliharaan: tahan, pesan: PESAN_PM };
   } else if (p.aksi === 'cek' && ID_RE.test(String(p.id))) {
     hasil = { ok: cache.get('lp_' + p.id + '_' + parseInt(p.i, 10)) != null };
@@ -561,7 +572,7 @@ function doPost(e) {
   try {
     var d = JSON.parse((e.parameter && e.parameter.data) ? e.parameter.data : e.postData.contents);
     AS_USER = String(d.as || '').toLowerCase();
-    MODE_TES = kodeTesValid(d.tes);
+    MODE_TES = kodeTesValid(d.tes); TES_AKHIR = MODE_TES && !pemeliharaanSampai() && d.aksi !== 'pemeliharaan' && d.aksi !== 'bagian';
     TOKEN_BALAS = String(d.t || '');
     ID_AKTIF = String(d.id || '');
     if (!ID_RE.test(ID_AKTIF)) throw new Error('ID tidak valid');
@@ -573,6 +584,7 @@ function doPost(e) {
       return jawab({ ok: true, i: d.i });
     }
 
+    if (TES_AKHIR) return simpanHasil({ ok: false, tesmati: true, pesan: PESAN_TES_AKHIR }, d.aksi === 'catat' ? 'c' : (d.aksi === 'selesai' ? 's' : 'a'));
     if (d.aksi !== 'pemeliharaan') {
       var pmTahan = tertahanPemeliharaan(d.u, d.p, false);
       if (pmTahan) return simpanHasil({ ok: false, pemeliharaan: pmTahan, pesan: PESAN_PM }, d.aksi === 'catat' ? 'c' : (d.aksi === 'selesai' ? 's' : 'a'));

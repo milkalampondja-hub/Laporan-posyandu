@@ -1,7 +1,8 @@
 /* Mode tes dan pemeliharaan, dipakai bersama oleh Pantau, Terima, dan aplikasi kader.
    - Ketuk nomor versi 5 kali (atau buka tautan dengan #tes), masukkan kode: mode tes menyala di perangkat ini.
    - Selama menyala, semua permintaan membawa kode tes dan server memakai data TES yang terpisah dari data asli.
-   - Pita merah selalu tampil; mode tes mati sendiri setelah 3 jam.
+   - Mode tes hanya berlaku selama sakelar "Mode tes dan pemeliharaan" di Pantau menyala; bila sakelar mati, server menolak dan aplikasi keluar dari mode tes sendiri.
+   - Pita merah selalu tampil; mode tes juga mati sendiri setelah 3 jam di perangkat.
    - Saat admin menyalakan pemeliharaan, server menolak kader dan petugas; aplikasi menampilkan popup. */
 (function () {
   var UH = '30b31af050739ab03ff27e5b30667767cc2a39b050f925850d4d53c2366077c5', K = 'lp-tes', LAMA = 3 * 3600000, W = window;
@@ -38,7 +39,7 @@
       x.addEventListener('click', W.TES_MATI); b.appendChild(x);
       document.body.appendChild(b);
     }
-    document.getElementById('tesbar-t').innerHTML = 'MODE TES · data asli tidak berubah<br><span style="font-weight:500;opacity:.9">Mati otomatis pukul ' + hh(o.sampai) + '</span>';
+    document.getElementById('tesbar-t').innerHTML = 'MODE TES · data asli tidak berubah<br><span style="font-weight:500;opacity:.9">Berakhir saat dimatikan di Pantau (paling lama pukul ' + hh(o.sampai) + ')</span>';
     document.body.style.paddingTop = '46px';
   }
   W.TES_MATI = function () { try { localStorage.removeItem(K); } catch (e) {} location.reload(); };
@@ -66,6 +67,7 @@
   };
   /* Dipanggil dari lapisan jaringan tiap aplikasi: tampilkan popup bila server menolak karena pemeliharaan. */
   W.TES_CEK = function (d) {
+    try { if (d && d.ok === false && d.tesmati && baca()) { try { localStorage.removeItem(K); } catch (e2) {} location.reload(); return d; } } catch (e) {}
     try { if (d && d.ok === false && typeof d.pemeliharaan === 'number' && d.pemeliharaan > 0) W.TES_POPUP(d.pemeliharaan); } catch (e) {}
     return d;
   };
