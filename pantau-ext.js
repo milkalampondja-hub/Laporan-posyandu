@@ -298,22 +298,44 @@ function renderBeranda() {
   box.classList.toggle('bgrid', !isOp());
   var pr = periodeBeranda(), h = hitung(pr.th, pr.bl);
   if (isOp()) { berandaOp(box); return; }
-  var c = el('div', 'card span2'), hr = el('div', 'rkhd'); hr.appendChild(el('h4', null, 'Ringkasan ' + pr.bl + ' ' + pr.th));
-  hr.appendChild(btn('Muat ulang data', 'sm plain', function () { if (typeof muat === 'function') muat(); })); c.appendChild(hr);
-  c.appendChild(el('div', 'lt', 'Batas kader mengirim: ' + teksBatas(pr.th, pr.bl) + ' \u00b7 Batas kelurahan mengantar berkas fisik: ' + teksBatasKel(pr.th, pr.bl)));
+  var c = el('div', 'card span2 hero2c');
   var SS = SETOR[perKey(pr)], MM = SS || {}, tot = h.rows.length;
   var lg = h.rows.filter(function (x) { return fisikOK(x, pr); }), pc2 = persen(lg.length, tot);
-  var dig = h.masuk.length, fis = h.rows.filter(function (x) { return MM[x.p.id]; }).length;
-  var hs = el('div', 'hasil2'), ck = el('span', 'ck', '\u2713'); hs.appendChild(ck);
-  var tx = el('div', 'tx'), l1 = el('div');
-  l1.appendChild(el('b', null, (SS ? lg.length : '\u2026') + ' dari ' + tot)); l1.appendChild(document.createTextNode(' laporan sudah masuk ke kecamatan'));
-  tx.appendChild(l1); tx.appendChild(el('small', null, fisikSaja() ? 'Dihitung masuk bila berkas fisik sudah diterima kecamatan. Laporan digital menyusul.' : 'Dihitung masuk bila laporan digital dan berkas fisik sudah ada.')); hs.appendChild(tx);
-  var hb = el('div', 'bar'); hb.appendChild(document.createElement('i')).style.width = (SS ? pc2 : 0) + '%'; hs.appendChild(hb);
-  hs.appendChild(el('div', 'pc', SS ? pc2 + '%' : '\u2026')); c.appendChild(hs);
+  var mf = h.rows.filter(function (x) { return x.d && !MM[x.p.id]; }).length;
+  var bs = lg.filter(function (x) { return !x.d; }).length;
+  var md = h.rows.filter(function (x) { return !x.d && MM[x.p.id]; }).length - bs;
+  var belumN = Math.max(0, tot - lg.length - mf - Math.max(0, md));
+  var hero = el('div', 'hero2');
+  /* cincin kemajuan */
+  var CC = 2 * Math.PI * 48, cin = el('div', 'cincin');
+  cin.innerHTML = '<svg viewBox="0 0 120 120" aria-hidden="true"><circle class="cn0" cx="60" cy="60" r="48"></circle><circle class="cn1" cx="60" cy="60" r="48" transform="rotate(-90 60 60)" stroke-dasharray="' + (SS ? (CC * lg.length / (tot || 1)).toFixed(1) : 0) + ' ' + CC.toFixed(1) + '"></circle></svg>';
+  var ct = el('div', 'cin-t'); ct.appendChild(el('b', null, SS ? lg.length + '/' + tot : '\u2026')); ct.appendChild(el('small', null, SS ? pc2 + '%' : '')); cin.appendChild(ct);
+  hero.appendChild(cin);
+  /* tengah: judul, tiga angka, catatan */
+  var mid = el('div', 'hmid'), lr = el('div', 'hlbl');
+  lr.appendChild(el('span', null, ('Laporan ' + pr.bl + ' ' + pr.th).toUpperCase()));
+  lr.appendChild(btn('Muat ulang data', 'sm plain', function () { if (typeof muat === 'function') muat(); }));
+  mid.appendChild(lr);
+  var tt = el('div', 'htt'); tt.appendChild(el('b', null, (SS ? lg.length : '\u2026') + ' dari ' + tot)); tt.appendChild(document.createTextNode(' Posyandu sudah masuk ke kecamatan')); mid.appendChild(tt);
+  var k3 = el('div', 'kot3');
+  [['g', lg.length, 'sudah masuk'], ['y', mf, 'menunggu berkas fisik'], ['r', belumN, 'belum masuk']].forEach(function (q) {
+    var d = el('div', 'kot ' + q[0]); d.appendChild(el('b', null, SS ? String(q[1]) : '\u2026')); d.appendChild(el('span', null, q[2])); k3.appendChild(d);
+  });
+  mid.appendChild(k3);
+  mid.appendChild(el('small', 'hnote', fisikSaja() ? 'Dihitung masuk bila berkas fisik sudah diterima kecamatan. Laporan digital menyusul.' : 'Dihitung masuk bila laporan digital dan berkas fisik sudah ada.'));
+  hero.appendChild(mid);
+  /* sisa waktu kader */
+  var bt = batasTgl(pr.th, pr.bl), hr0 = new Date(); hr0.setHours(0, 0, 0, 0);
+  var hari = Math.round((new Date(bt.getFullYear(), bt.getMonth(), bt.getDate()) - hr0) / 86400000);
+  var sw = el('div', 'sisa' + (hari < 0 ? ' lewat' : ''));
+  sw.appendChild(el('small', 'sl', hari < 0 ? 'BATAS KADER SUDAH LEWAT' : 'SISA WAKTU KADER'));
+  sw.appendChild(el('b', null, hari < 0 ? Math.abs(hari) + ' hari' : (hari === 0 ? 'Hari ini' : hari + ' hari')));
+  sw.appendChild(el('span', null, 'Batas kader mengirim: ' + teksBatas(pr.th, pr.bl)));
+  sw.appendChild(el('span', 'sl2', 'Antar berkas fisik: ' + teksBatasKel(pr.th, pr.bl)));
+  hero.appendChild(sw);
+  c.appendChild(hero);
   if (SS) {
-    var bs = lg.filter(function (x) { return !x.d; }).length, kt = [];
-    var mf = h.rows.filter(function (x) { return x.d && !MM[x.p.id]; }).length, md = h.rows.filter(function (x) { return !x.d && MM[x.p.id]; }).length - bs;
-    if (mf > 0) kt.push(mf + ' menunggu berkas fisik');
+    var kt = [];
     if (bs > 0) kt.push(bs + ' di antaranya hanya berkas fisik (belum lewat aplikasi)');
     if (md > 0) kt.push(md + ' menunggu laporan digital');
     if (kt.length) c.appendChild(el('div', 'hasil2k', kt.join(' \u00b7 ')));

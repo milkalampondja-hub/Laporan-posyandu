@@ -501,3 +501,63 @@ html .card::-webkit-scrollbar-thumb:hover{background:rgba(255,184,0,.95)}
   #app[data-view=b]:has(#sumB>.card:nth-child(3)) .stbody{flex:1 1 auto;min-height:0;overflow:auto;padding-top:10px;scrollbar-width:thin;scrollbar-color:rgba(255,200,0,.75) transparent}
   .stbody::-webkit-scrollbar{width:6px}.stbody::-webkit-scrollbar-track{background:transparent}.stbody::-webkit-scrollbar-thumb{background:rgba(255,200,0,.75);border-radius:6px}
 }
+
+/* ---------- Beranda admin: kartu hasil (cincin, tiga angka, sisa waktu) dan urutan kartu ---------- */
+:root{--kt-g-bg:#dcf5e6;--kt-g-fg:#0f6b36;--kt-y-bg:#fff3c4;--kt-y-fg:#8a5a00;--kt-r-bg:#fde0de;--kt-r-fg:#a3241b;--kt-ring:rgba(120,110,70,.18);--sw-bg:#fff3c4;--sw-line:#ffe28a;--sw-fg:#241b00;--sw-big:#a15c00}
+:root[data-theme=dark]{--kt-g-bg:#14301f;--kt-g-fg:#6ee79a;--kt-y-bg:#3b3010;--kt-y-fg:#f6c93a;--kt-r-bg:#3d1c1a;--kt-r-fg:#ffb4ad;--kt-ring:rgba(255,255,255,.12);--sw-bg:#3b3010;--sw-line:rgba(255,200,0,.28);--sw-fg:#fff6d1;--sw-big:#ffd84d}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--kt-g-bg:#14301f;--kt-g-fg:#6ee79a;--kt-y-bg:#3b3010;--kt-y-fg:#f6c93a;--kt-r-bg:#3d1c1a;--kt-r-fg:#ffb4ad;--kt-ring:rgba(255,255,255,.12);--sw-bg:#3b3010;--sw-line:rgba(255,200,0,.28);--sw-fg:#fff6d1;--sw-big:#ffd84d}}
+.hero2{display:grid;grid-template-columns:minmax(120px,190px) 1fr minmax(210px,250px);gap:20px;align-items:center}
+.cincin{position:relative;width:100%;max-width:190px;aspect-ratio:1;margin:0 auto}
+.cincin svg{width:100%;height:100%;display:block}
+.cincin .cn0{fill:none;stroke:var(--kt-ring);stroke-width:14}
+.cincin .cn1{fill:none;stroke:var(--ink-green);stroke-width:14;stroke-linecap:round}
+.cin-t{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cin-t b{font-size:clamp(20px,2.2vw,28px);font-weight:800;color:var(--ink-green);letter-spacing:-.02em}
+.cin-t small{font-size:12px;font-weight:700;color:var(--muted)}
+.hlbl{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.3px}
+.htt{font-size:clamp(18px,1.9vw,24px);font-weight:700;line-height:1.25;margin:4px 0 12px}
+.htt b{font-weight:800}
+.kot3{display:flex;gap:10px}
+.kot{flex:1;border-radius:16px;padding:12px 8px;text-align:center;font-size:12px;font-weight:700}
+.kot b{display:block;font-size:clamp(22px,2.4vw,28px);line-height:1.1;font-weight:800}
+.kot.g{background:var(--kt-g-bg);color:var(--kt-g-fg)}.kot.y{background:var(--kt-y-bg);color:var(--kt-y-fg)}.kot.r{background:var(--kt-r-bg);color:var(--kt-r-fg)}
+.hnote{display:block;margin-top:10px;color:var(--muted);font-size:12px}
+.sisa{background:var(--sw-bg);border:1px solid var(--sw-line);color:var(--sw-fg);border-radius:18px;padding:16px;text-align:center}
+.sisa .sl{display:block;font-size:11px;font-weight:800;letter-spacing:.3px;opacity:.7}
+.sisa b{display:block;font-size:44px;font-weight:800;color:var(--sw-big);line-height:1.1;margin:2px 0}
+.sisa span{display:block;font-size:12px;font-weight:700}
+.sisa .sl2{margin-top:8px;padding-top:8px;border-top:1px solid var(--sw-line);font-weight:600}
+.sisa.lewat b{color:var(--kt-r-fg)}
+.hero2c .hasil2k{margin-top:12px}
+
+/* Laptop: kartu hasil selebar baris, lalu kelurahan (kiri) dan belum lengkap (kanan), penyerahan, banner paling bawah */
+@media (min-width:1100px){
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card.span2{grid-column:1/3;order:1;height:auto;overflow:visible}
+  #app[data-view=b]:has(#sumB>.card.span2) #secMx{order:2}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card:nth-child(2){order:3}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card:nth-child(3){grid-column:1/3;order:4;height:auto;max-height:clamp(380px,50vh,460px)}
+  #app[data-view=b]:has(#sumB>.card.span2) .mainc>#msg{order:0}
+  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .mainc>section:not(#sumB):not(#secMx):not(:has(>#btnBuat)){order:9}
+}
+/* HP: kartu hasil dipadatkan (cincin kecil di kiri judul, sisa waktu jadi satu strip) dan urutan sama */
+@media (max-width:1099px){
+  #app[data-view=b]:has(#sumB>.card.span2) .mainc{display:flex;flex-direction:column}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB{display:contents}
+  #app[data-view=b]:has(#sumB>.card.span2) .mainc>#msg{order:0}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card.span2{order:1}
+  #app[data-view=b]:has(#sumB>.card.span2) #secMx{order:2}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card:nth-child(2){order:3}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card:nth-child(3){order:4}
+  #app[data-view=b]:has(#sumB>.card.span2) .mainc>section:not(#sumB):not(#secMx):not(:has(>#btnBuat)){order:9}
+}
+@media (max-width:760px){
+  .hero2{grid-template-columns:112px 1fr;grid-template-areas:"lbl lbl" "ring tt" "k3 k3" "sw sw" "nt nt";gap:12px}
+  .hmid{display:contents}
+  .hlbl{grid-area:lbl}.cincin{grid-area:ring;max-width:112px}.htt{grid-area:tt;margin:0;font-size:18px}.kot3{grid-area:k3;gap:8px}.hnote{grid-area:nt;margin:0}
+  .kot{padding:10px 6px;font-size:11px}.kot b{font-size:24px}
+  .sisa{grid-area:sw;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"b a" "s c";column-gap:12px;text-align:left;padding:10px 14px;align-items:center}
+  .sisa b{grid-area:b;font-size:26px;margin:0;text-align:center}
+  .sisa .sl{grid-area:s;text-align:center;font-size:10px}
+  .sisa>span:not(.sl2){grid-area:a;border-left:1px solid var(--sw-line);padding-left:12px}
+  .sisa .sl2{grid-area:c;border-top:0;margin:0;padding:0 0 0 12px;border-left:1px solid var(--sw-line)}
+}
