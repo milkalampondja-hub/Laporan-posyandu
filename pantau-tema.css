@@ -708,3 +708,19 @@ html #ls .lj-l .tag.jn{background:#fde1ee;color:#b0306a}
 html #ls .empty{grid-column:1/-1}
 @media (min-width:900px){html #ls{grid-template-columns:1fr 1fr;align-items:stretch}html #ls .item.lrow{min-height:112px}}
 @media (max-width:560px){html #ls .lrow .tags{padding-right:0}html #ls .lrow>.btn{position:static;width:100%;margin-top:10px}}
+/* ---- Data Posyandu: kartu terbuka, tabel kader, nomor HP, SK ---- */
+html #dpBox .card>h4:first-child::before{display:none}
+html #dpBox .card>h4:first-child{display:block}
+html #dpBox .tag.jh.ok{background:#dff5e6;color:#17803d}
+html #dpBox .tag.jh.no{background:#fde1e1;color:#b3261e}
+:root[data-theme=dark] #dpBox .tag.jh.no{background:#4a2020;color:#ffb4ab}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #dpBox .tag.jh.no{background:#4a2020;color:#ffb4ab}}
+html #dpBox .dtbl th,html #dpBox .dtbl td{text-align:left}
+html #dpBox .dtbl td.stk{font-weight:700;font-size:12px}
+html #dpBox .dtbl td.stk.ok{color:#17803d}
+html #dpBox .dtbl td.stk.off{color:var(--muted)}
+@media (min-width:900px){
+  html #dpBox .pgrid>details.pos[open]{grid-column:1/-1}
+  html #dpBox #skBox{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  html #dpBox #skBox>.skc{margin:0}
+}

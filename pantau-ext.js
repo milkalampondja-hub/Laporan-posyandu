@@ -1075,13 +1075,13 @@ function renderData() {
 function kartuPos(p) {
   var d = document.createElement('details'); d.className = 'pos ' + (p.jenis === J_L() ? 'pl' : 'pb') + (p.aktif === false ? ' off' : '');
   var s = document.createElement('summary'); s.appendChild(el('div', 'a', p.jenis.replace('Posyandu', 'Posyandu') + ' ' + p.nama));
-  s.appendChild(el('div', 'b', [p.ketua ? 'Ketua/PJ: ' + p.ketua : '', p.hp ? 'HP ' + p.hp : '', aktifKader(p).length + ' kader'].filter(Boolean).join(' · ')));
+  s.appendChild(el('div', 'b', [p.ketua ? 'Ketua/PJ: ' + p.ketua : '', aktifKader(p).length + ' kader'].filter(Boolean).join(' · ')));
   var tg = el('div', 'tags'); tg.appendChild(el('span', 'tag jn', p.jenis === J_L() ? 'Lansia' : 'Balita')); if (p.aktif === false) tg.appendChild(el('span', 'tag g', 'Nonaktif'));
-  if (p.jadwal) tg.appendChild(el('span', 'tag g', p.jadwal)); s.appendChild(tg); d.appendChild(s);
+  tg.appendChild(el('span', 'tag jh ' + (p.hp ? 'ok' : 'no'), p.hp ? 'No. HP ' + p.hp : 'Belum ada nomor HP')); if (p.jadwal) tg.appendChild(el('span', 'tag g', p.jadwal)); s.appendChild(tg); d.appendChild(s);
   var det = el('div', 'det');
   if (p.alamat) det.appendChild(el('div', 'b', 'Alamat: ' + p.alamat)); if (p.puskesmas) det.appendChild(el('div', 'b', p.puskesmas));
   var rows = (p.kader || []).map(function (k, i) { return [String(i + 1), k.nama, k.jabatan || '-', k.aktif === false ? 'Nonaktif' : 'Aktif']; });
-  if (rows.length) { var t = tabel(['No', 'Nama kader', 'Jabatan', 'Status'], rows); t.style.marginTop = '8px'; det.appendChild(t); }
+  if (rows.length) { var t = tabel(['No', 'Nama kader', 'Jabatan', 'Status'], rows); t.style.marginTop = '8px'; Array.prototype.forEach.call(t.querySelectorAll('tr'), function (tr, i) { var c = tr.lastChild; if (i && c) { c.className = 'stk ' + (c.textContent === 'Aktif' ? 'ok' : 'off'); } }); det.appendChild(t); }
   if (utama() && POS.length) {
     var ac = el('div', 'acts'); ac.appendChild(btn('Edit', 'sm plain', function () { formPos(p); }));
     ac.appendChild(btn(p.aktif === false ? 'Aktifkan' : 'Nonaktifkan', 'sm plain', function () {
