@@ -227,6 +227,32 @@ a.btn.wa{min-height:40px;padding:6px 14px;font-size:14px;font-weight:600;margin:
 .cara summary::-webkit-details-marker,.pasang summary::-webkit-details-marker{display:none}
 .cara summary::before,.pasang summary::before{content:"\25B8";display:inline-block;width:18px;color:var(--muted);transition:transform .15s}
 .cara[open] summary::before,.pasang details[open] summary::before{transform:rotate(90deg)}
+/* ---- Halaman awal kader: lebih ringkas ---- */
+.pasang summary{color:var(--fg)}
+main>section.hero{display:none}
+main{padding-top:12px}
+.btn.mulai .pn{display:none}
+.btn.mulai{margin:0;border-radius:16px;padding:16px;font-size:18px}
+p.save{background:var(--ok-soft);color:var(--ok);border-radius:12px;padding:10px 12px;margin:10px 0 14px;font-size:13px;line-height:1.4;text-align:left}
+.batas{font-size:12.5px;padding:7px 11px;margin:0 0 8px;border-radius:11px}
+section.info{padding:10px 12px;gap:10px;margin:0 0 12px;border-left-width:5px}
+section.info .toa{width:36px;height:36px;animation:none}
+section.info .toa svg{width:20px;height:20px}
+section.info .teks{font-size:14px;line-height:1.35}
+section.info b{font-size:10.5px;padding:2px 8px}
+section.info .isi{gap:4px}
+section.info small{font-size:11px}
+.card.cara-card{padding:14px 16px}
+.cara-card .cara summary{font-size:15px;font-weight:700;margin-bottom:6px}
+.how,.cara-card .how{counter-reset:n;gap:0;margin:0;padding:0}
+.how li{position:relative;display:block;padding:9px 0 9px 44px;border-top:1px solid var(--line);line-height:1.35;font-size:13px;min-height:34px}
+.how li:first-child{border-top:0}
+.how li::before{counter-increment:n;content:counter(n);position:absolute;left:0;top:10px;width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+.how .hi{display:none}
+.how li>div{display:block}
+.how li>div b{font-size:14px;color:var(--fg)}
+.how li>div span{display:block;font-size:13px;color:var(--muted)}
+.card.pasang{padding:12px 16px}
 </style>
 </head>
 <body>
@@ -239,7 +265,7 @@ a.btn.wa{min-height:40px;padding:6px 14px;font-size:14px;font-weight:600;margin:
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 33</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 34</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -438,7 +464,7 @@ function viewHome(){
   (has?'<section class="card resume"><div class="rl">Laporan terakhir</div><div class="rt">'+esc(S.posyandu||"Belum diberi nama")+'</div><div class="rs">'+esc((J()?J().label+" · ":"")+(S.kelurahan?"Kelurahan "+S.kelurahan:"Belum memilih kelurahan"))+'</div><div class="btnrow"><button type="button" class="btn primary" data-start="0">Lanjutkan laporan</button><button type="button" class="btn" id="new-report">Laporan bulan baru</button></div></section>':'')+
   batasHtml()+'<div id="antre-wrap">'+antreHtml()+'</div>'+
   (INFO&&!infoTertutup()?'<section class="info" role="note"><span class="toa" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10v4a1 1 0 0 0 1 1h2l3.5 5h2.2l-1.6-5H11l7 4V5l-7 4H4a1 1 0 0 0-1 1zm16-1.5v7a3.5 3.5 0 0 0 0-7zM21 4.5v1.6a6 6 0 0 1 0 11.8v1.6a7.5 7.5 0 0 0 0-15z"/></svg></span><span class="isi"><b>Pengumuman</b><span class="teks">'+esc(INFO)+'</span>'+(tglIndo(INFOTGL)?'<small>Diperbarui '+tglIndo(INFOTGL)+'</small>':'')+'</span><button type="button" class="tutup" id="info-tutup" aria-label="Tutup pengumuman">&times;</button></section>':'')+
-  (has?'':'<button type="button" class="btn primary block big mulai" data-start="0"><span class="pn kr" aria-hidden="true">'+PANAH+'</span><span>Mulai laporan</span><span class="pn kn" aria-hidden="true">'+PANAH+'</span></button>')+
+  (has?'':'<button type="button" class="btn primary block big mulai" data-start="0"><span class="pn kr" aria-hidden="true">'+PANAH+'</span><span>Buat laporan</span><span class="pn kn" aria-hidden="true">'+PANAH+'</span></button>')+
   '<p class="save">Data posyandu dan kader diingat di HP ini, jadi tidak perlu mengisi ulang.</p>'+
   '<section class="card cara-card"><details class="cara"'+(lsGet("lp-pernah")?'':' open')+'><summary>Cara mengisi laporan</summary><ol class="how">'+how.map(function(h){return '<li><span class="hi">'+ic(h[0],22)+'</span><div><b>'+h[1]+'</b><span>'+h[2]+'</span></div></li>'}).join("")+'</ol></details></section>'+
   bantuanHtml()+pasangHtml();
