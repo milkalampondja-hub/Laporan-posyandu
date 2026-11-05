@@ -575,3 +575,38 @@ html .card::-webkit-scrollbar-thumb:hover{background:rgba(255,184,0,.95)}
   html .fc .filters>.full{grid-column:auto / -1;margin:0}
 }
 .sisa em.nb{font-style:normal;white-space:nowrap;font-weight:800}
+/* ---- Data Posyandu ---- */
+html #dpBox .lhd .toolbar{margin:0}
+html #dpBox .grid4 .stat{display:flex;align-items:center;gap:10px;padding:10px 12px;flex-wrap:nowrap}
+html #dpBox .grid4 .stat::before{content:"";flex:none;width:34px;height:34px;border-radius:50%}
+html #dpBox .grid4 .stat b{display:block;font-size:22px;line-height:1}
+html #dpBox .grid4 .stat span{display:block;font-size:12px;color:var(--muted);line-height:1.2}
+html #dpBox .grid4 .stat>b,html #dpBox .grid4 .stat>span{margin:0}
+html #dpBox .stat.sa{background:#e6eefc}html #dpBox .stat.sa::before{background:#2e9b57}
+html #dpBox .stat.sb{background:#e3f6e9}html #dpBox .stat.sb::before{background:#ffc700}
+html #dpBox .stat.sl{background:#fde9f2}html #dpBox .stat.sl::before{background:#d9548f}
+html #dpBox .stat.sk{background:#fff0dc}html #dpBox .stat.sk::before{background:#f08a24}
+:root[data-theme=dark] #dpBox .stat.sa{background:#1b2740}:root[data-theme=dark] #dpBox .stat.sb{background:#1c3326}
+:root[data-theme=dark] #dpBox .stat.sl{background:#3a2030}:root[data-theme=dark] #dpBox .stat.sk{background:#3a2c18}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #dpBox .stat.sa{background:#1b2740}:root:not([data-theme=light]) #dpBox .stat.sb{background:#1c3326}:root:not([data-theme=light]) #dpBox .stat.sl{background:#3a2030}:root:not([data-theme=light]) #dpBox .stat.sk{background:#3a2c18}}
+html #dpBox .stat b,html #dpBox .stat span{color:inherit}
+html #dpBox .kh{display:flex;align-items:center;justify-content:space-between;gap:10px}
+html #dpBox .kh .khn{font-style:normal;font-size:12px;font-weight:700;padding:2px 10px;border-radius:99px;background:rgba(255,214,31,.55);color:var(--accent-text)}
+html #dpBox .pgrid{display:grid;grid-template-columns:1fr;gap:10px;align-items:start}
+@media (min-width:900px){
+  html #dpBox .pgrid{grid-template-columns:1fr 1fr}
+  html #dpBox .fl2{grid-template-columns:1.6fr 1fr 1fr 1fr}
+  html #dpBox .fl2>.full{grid-column:auto}
+}
+html #dpBox .pos{border-left:4px solid #2e9b57}
+html #dpBox .pos.pl{border-left-color:#d9548f}
+html #dpBox .tag.jn{background:#dff5e6;color:#17803d}
+html #dpBox .pos.pl .tag.jn{background:#fde1ee;color:#b0306a}
+html #dpBox .stat.sa,html #dpBox .stat.sb,html #dpBox .stat.sl,html #dpBox .stat.sk{color:#2b2200}
+:root[data-theme=dark] #dpBox .stat{color:#f3ecd2}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #dpBox .stat{color:#f3ecd2}}
+@media (max-width:760px){html #dpBox .lact{width:100%}html #dpBox .lact .btn{flex:1}}
+@media (max-width:760px){html #dpBox .grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}html #dpBox .grid4 .stat b{font-size:20px}}
+:root[data-theme=dark] .lact .btn:not(.line):not(.plain),:root[data-theme=dark] #dpBox .lact .btn:not(.line):not(.plain){color:#2b2200}
+:root[data-theme=dark] .lact .btn.line,:root[data-theme=dark] #dpBox .lact .btn.line{color:#ffd84a;background:transparent}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .lact .btn:not(.line):not(.plain){color:#2b2200}:root:not([data-theme=light]) .lact .btn.line{color:#ffd84a;background:transparent}}

@@ -1021,8 +1021,8 @@ function csvUnduh(nama, bagian) {
 var dpDibuat = false, dpFilter = { kel: '', jenis: '', st: '', q: '' };
 function dpSiap() {
   var box = $('dpBox'); if (!box || dpDibuat) return; dpDibuat = true;
-  box.innerHTML = '<div class="card"><h4>Data Posyandu</h4><p class="hint">Sumber nama Posyandu untuk menu Laporan dan Rekap.</p>' +
-    '<div class="grid4" id="dpStat"></div><div class="toolbar" id="dpTool"></div>' +
+  box.innerHTML = '<div class="card"><div class="lhd"><div class="lht"><h4>Data Posyandu</h4><small>Sumber nama Posyandu untuk menu Laporan dan Rekap.</small></div><div class="toolbar lact" id="dpTool"></div></div>' +
+    '<div class="grid4" id="dpStat"></div>' +
     '<div class="fl2"><input class="full" id="dfq" type="search" name="cari-posyandu-x" readonly onfocus="this.removeAttribute(\'readonly\')" placeholder="Cari Posyandu atau kader…" aria-label="Cari Posyandu atau kader" autocomplete="off"><select class="full" id="dfk" aria-label="Kelurahan"></select><select id="dfj" aria-label="Jenis"></select><select id="dfs" aria-label="Status"></select></div></div>' +
     '<div id="dpUbah"></div><div id="dpList"></div><div class="card"><h4>Surat Keputusan (SK) Kader</h4><p class="hint">Ketuk SK untuk membacanya utuh.</p><div id="skBox"></div></div>';
   if (KELSAYA && KELSAYA !== '-') $('dfk').style.display = 'none';
@@ -1037,9 +1037,9 @@ function renderData() {
   dpSiap(); if (!$('dpList')) return;
   var all = dasarPos(), st = $('dpStat'); st.textContent = '';
   var ak = all.filter(function (p) { return p.aktif !== false; });
-  st.appendChild(tileStat('', ak.length, 'Posyandu aktif')); st.appendChild(tileStat('', ak.filter(function (p) { return p.jenis === J_B(); }).length, 'Balita'));
-  st.appendChild(tileStat('', ak.filter(function (p) { return p.jenis === J_L(); }).length, 'Lansia'));
-  st.appendChild(tileStat('', ak.reduce(function (n, p) { return n + aktifKader(p).length; }, 0), 'Kader aktif'));
+  st.appendChild(tileStat('sa', ak.length, 'Posyandu aktif')); st.appendChild(tileStat('sb', ak.filter(function (p) { return p.jenis === J_B(); }).length, 'Posyandu Balita'));
+  st.appendChild(tileStat('sl', ak.filter(function (p) { return p.jenis === J_L(); }).length, 'Posyandu Lansia'));
+  st.appendChild(tileStat('sk', ak.reduce(function (n, p) { return n + aktifKader(p).length; }, 0), 'Kader aktif'));
   var tb = $('dpTool'); tb.textContent = '';
   if (utama()) {
     if (!POS.length) tb.appendChild(btn('Simpan daftar dari SK', '', simpanDariSK));
@@ -1058,16 +1058,16 @@ function renderData() {
   if (!fl.length) l.appendChild(el('div', 'empty', 'Tidak ada Posyandu yang cocok.'));
   KEL.forEach(function (k) {
     var g = fl.filter(function (p) { return p.kel === k; }).sort(function (a, b) { return a.jenis.localeCompare(b.jenis) || a.nama.localeCompare(b.nama); }); if (!g.length) return;
-    l.appendChild(el('div', 'kh', k + ' (' + g.length + ')'));
-    g.forEach(function (p) { l.appendChild(kartuPos(p)); });
+    var kh = el('div', 'kh', k); kh.appendChild(el('em', 'khn', g.length + ' Posyandu')); l.appendChild(kh);
+    var pg = el('div', 'pgrid'); g.forEach(function (p) { pg.appendChild(kartuPos(p)); }); l.appendChild(pg);
   });
   renderSK();
 }
 function kartuPos(p) {
-  var d = document.createElement('details'); d.className = 'pos' + (p.aktif === false ? ' off' : '');
+  var d = document.createElement('details'); d.className = 'pos ' + (p.jenis === J_L() ? 'pl' : 'pb') + (p.aktif === false ? ' off' : '');
   var s = document.createElement('summary'); s.appendChild(el('div', 'a', p.jenis.replace('Posyandu', 'Posyandu') + ' ' + p.nama));
   s.appendChild(el('div', 'b', [p.ketua ? 'Ketua/PJ: ' + p.ketua : '', p.hp ? 'HP ' + p.hp : '', aktifKader(p).length + ' kader'].filter(Boolean).join(' · ')));
-  var tg = el('div', 'tags'); if (p.aktif === false) tg.appendChild(el('span', 'tag g', 'Nonaktif'));
+  var tg = el('div', 'tags'); tg.appendChild(el('span', 'tag jn', p.jenis === J_L() ? 'Lansia' : 'Balita')); if (p.aktif === false) tg.appendChild(el('span', 'tag g', 'Nonaktif'));
   if (p.jadwal) tg.appendChild(el('span', 'tag g', p.jadwal)); s.appendChild(tg); d.appendChild(s);
   var det = el('div', 'det');
   if (p.alamat) det.appendChild(el('div', 'b', 'Alamat: ' + p.alamat)); if (p.puskesmas) det.appendChild(el('div', 'b', p.puskesmas));
