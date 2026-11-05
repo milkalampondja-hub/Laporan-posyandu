@@ -4,7 +4,7 @@
    - Pita merah selalu tampil; mode tes mati sendiri setelah 3 jam.
    - Saat admin menyalakan pemeliharaan, server menolak kader dan petugas; aplikasi menampilkan popup. */
 (function () {
-  var UH = '11a350718fe00135122220ea04e9a14b9a414841f16057118c7bf18b8eedb0e2', K = 'lp-tes', LAMA = 3 * 3600000, W = window;
+  var UH = '30b31af050739ab03ff27e5b30667767cc2a39b050f925850d4d53c2366077c5', K = 'lp-tes', LAMA = 3 * 3600000, W = window;
   var flagHash = /(^|[#&])tes(&|$)/.test(location.hash || '');
 
   function baca() {

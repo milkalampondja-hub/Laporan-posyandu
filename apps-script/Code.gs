@@ -21,7 +21,7 @@ var TOKEN_BALAS = '';
 var ID_AKTIF = '';
 var AS_USER = '';
 var MODE_TES = false;      // true bila permintaan membawa kode tes yang benar: semua data dibaca dan ditulis di folder TES (terpisah dari data asli)
-var UJI_HASH = '11a350718fe00135122220ea04e9a14b9a414841f16057118c7bf18b8eedb0e2';
+var UJI_HASH = '30b31af050739ab03ff27e5b30667767cc2a39b050f925850d4d53c2366077c5';
 var PESAN_PM = 'Aplikasi sedang dalam pemeliharaan. Mohon tunggu sebentar dan coba lagi nanti.';
 var IZIN_TERIMA = false;   // akun penerima hanya boleh dipakai oleh aplikasi Terima   // admin kecamatan melihat sebagai operator kelurahan
 
