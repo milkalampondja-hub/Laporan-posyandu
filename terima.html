@@ -106,6 +106,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .sheet .acts{position:sticky;bottom:calc(-22px - env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(255,255,255,0),#fff 18%);padding-top:12px;padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))}
 .okmark{width:72px;height:72px;border-radius:50%;background:#d9f3e1;color:var(--g);font-size:44px;line-height:72px;text-align:center;margin:4px auto 10px}
 .sheet .okc{text-align:center}
+.vtap{text-align:center;font-size:11px;opacity:.5;margin:14px 0 0;padding:6px}
 .atau{text-align:center;font-size:13px;color:var(--mu);margin:-2px 0 10px}
 </style>
 </head>
@@ -128,6 +129,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
     <div class="fld"><label for="lp">Kata sandi</label><input id="lp" type="password" autocomplete="current-password"></div>
     <div class="err" id="lerr" role="alert"></div>
     <button class="btn" id="lb" type="submit">Masuk</button>
+    <div data-ver class="vtap">Terima Posyandu · tampilan 20261106a</div>
   </form>
 </section>
 
@@ -150,6 +152,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
       <button class="btn scan" id="scan" type="button"><svg class="ic"><use href="#i-scan"/></svg>SCAN QR LAPORAN</button>
       <h2>Riwayat penerimaan</h2>
       <div class="list" id="riw"></div>
+      <div data-ver class="vtap" style="margin-bottom:90px">Terima Posyandu · tampilan 20261106a</div>
     </section>
 
     <section id="vR" class="hidden">
@@ -179,7 +182,9 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 </div>
 <input type="file" id="foto" accept="image/*" class="hidden">
 
+<script src="tes.js?v=1"></script>
 <script>
+window.TES_CATATAN='Pemindaian dan konfirmasi dihentikan sementara. Data tidak berubah.';
 var ARSIP_URL='https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec';
 var BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 var CRED=null,REK={},PER='',REKPER='',NAMA='Operator',JNS='',KUNCI_LS='terima-cred';
@@ -198,9 +203,9 @@ function jsonp(params,ms){
   return new Promise(function(res,rej){
     var cb='jq'+Math.random().toString(36).slice(2),s=document.createElement('script'),done=false;
     function end(fn,v){if(done)return;done=true;clearTimeout(t);try{delete window[cb]}catch(e){window[cb]=undefined}if(s.parentNode)s.parentNode.removeChild(s);fn(v)}
-    window[cb]=function(d){end(res,d)};
+    window[cb]=function(d){if(window.TES_CEK)TES_CEK(d);end(res,d)};
     s.onerror=function(){end(rej,new Error('Tidak bisa menghubungi server'))};
-    var q=new URLSearchParams(params);q.set('cb',cb);q.set('_',Date.now());
+    var q=new URLSearchParams(params);var tk=window.TES_KODE&&TES_KODE();if(tk)q.set('tes',tk);q.set('cb',cb);q.set('_',Date.now());
     s.src=ARSIP_URL+'?'+q.toString();document.head.appendChild(s);
     var t=setTimeout(function(){end(rej,new Error('Server tidak menjawab'))},ms||20000);
   });
@@ -208,7 +213,7 @@ function jsonp(params,ms){
 function api(aksi,extra){var o={aksi:aksi,u:CRED.u,p:CRED.p};for(var k in extra)o[k]=extra[k];return jsonp(o,25000).then(function(r){if(r&&r.login===false){keluar(r.pesan||'Silakan masuk lagi');throw new Error(r.pesan||'Silakan masuk lagi')}return r})}
 async function kirim(f){
   var id='a'+Math.random().toString(36).slice(2,12)+Date.now().toString(36);
-  var o={id:id,t:id,u:CRED.u,p:CRED.p};for(var k in f)o[k]=f[k];
+  var o={id:id,t:id,u:CRED.u,p:CRED.p};for(var k in f)o[k]=f[k];if(window.TES_KODE&&TES_KODE())o.tes=TES_KODE();
   var fr=document.createElement('iframe');fr.name='af'+id;fr.style.display='none';document.body.appendChild(fr);
   var fm=document.createElement('form');fm.method='POST';fm.action=ARSIP_URL;fm.target=fr.name;fm.style.display='none';
   var i=document.createElement('input');i.type='hidden';i.name='data';i.value=JSON.stringify(o);fm.appendChild(i);document.body.appendChild(fm);fm.submit();

@@ -360,7 +360,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
     <div class="lerr" id="lerr" role="alert"></div>
     <button class="btn" id="lb" type="submit">Masuk</button>
   </form>
-  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small style="opacity:.55;font-size:10px">tampilan 20261105ze</small></div>
+  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small id="ver" style="opacity:.55;font-size:10px">tampilan 20261106a</small></div>
 </section>
 
 <div id="app" class="hidden" data-view="b">
@@ -517,8 +517,9 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
     <button data-go="p"><svg class="ic "><use href="#i-gear"/></svg>Atur</button>
   </nav>
 </div>
+<script src="tes.js?v=1"></script>
 <script src="seed-posyandu.js"></script>
-<script src="pantau-ext.js?v=20261105ze" defer></script>
+<script src="pantau-ext.js?v=20261106a" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script>
 var ARSIP_URL='https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec';
@@ -634,6 +635,8 @@ function muat(dariLogin){
   var tm=setTimeout(function(){if(selesai)return;bersih();err()},25000);
   window[cb]=function(r){
     if(selesai)return;bersih();
+    if(window.TES_CEK)TES_CEK(r);
+    if(r&&r.ok===false&&r.pemeliharaan){if(dariLogin===true){$('lb').disabled=false;$('lb').textContent='Masuk';$('lerr').textContent=r.pesan||'Aplikasi sedang dalam pemeliharaan.'}else gagal(r.pesan||'Aplikasi sedang dalam pemeliharaan.');return}
     if(r&&r.login===false){gagalLogin(r.pesan||'Nama pengguna atau kata sandi salah');return}
     if(dariLogin){try{sessionStorage.setItem('pantau-cred',JSON.stringify(CRED))}catch(x){}buka()}
     if(!r||!r.ok){gagal('Data belum bisa dimuat'+(r&&r.pesan?': '+r.pesan:'. Coba lagi sebentar.'));return}
@@ -642,7 +645,7 @@ function muat(dariLogin){
     isiTahun();tampil();if(!POSOK&&window.ambilPos)ambilPos();
   };
   s.onerror=function(){if(selesai)return;bersih();err()};
-  s.src=ARSIP_URL+'?aksi=daftar&u='+encodeURIComponent(CRED.u)+'&p='+encodeURIComponent(CRED.p)+(CRED.as?'&as='+encodeURIComponent(CRED.as):'')+'&cb='+cb+'&_='+Date.now();
+  s.src=ARSIP_URL+'?aksi=daftar&u='+encodeURIComponent(CRED.u)+'&p='+encodeURIComponent(CRED.p)+(CRED.as?'&as='+encodeURIComponent(CRED.as):'')+(window.TES_KODE&&TES_KODE()?'&tes='+encodeURIComponent(TES_KODE()):'')+'&cb='+cb+'&_='+Date.now();
   document.head.appendChild(s);
 }
 function gagal(t){
@@ -725,9 +728,9 @@ function jsonp(params,ms){
   return new Promise(function(res,rej){
     var cb='jq'+Math.random().toString(36).slice(2),s=document.createElement('script'),done=false;
     function end(fn,v){if(done)return;done=true;clearTimeout(t);try{delete window[cb]}catch(e){window[cb]=undefined}if(s.parentNode)s.parentNode.removeChild(s);fn(v)}
-    window[cb]=function(d){end(res,d)};
+    window[cb]=function(d){if(window.TES_CEK)TES_CEK(d);end(res,d)};
     s.onerror=function(){end(rej,new Error('Tidak bisa menghubungi server'))};
-    var q=new URLSearchParams(params);if(CRED&&CRED.as&&q.has('u')&&!q.has('as'))q.set('as',CRED.as);q.set('cb',cb);q.set('_',Date.now());
+    var q=new URLSearchParams(params);if(CRED&&CRED.as&&q.has('u')&&!q.has('as'))q.set('as',CRED.as);var tk=window.TES_KODE&&TES_KODE();if(tk)q.set('tes',tk);q.set('cb',cb);q.set('_',Date.now());
     s.src=ARSIP_URL+'?'+q.toString();document.head.appendChild(s);
     var t=setTimeout(function(){end(rej,new Error('Server tidak menjawab'))},ms||20000);
   });
@@ -748,6 +751,7 @@ function pasangAdmin(){
     box.appendChild(r)});
   $('svAdm').disabled=ADM.length>=5;
   if(window.pasangPenerima)pasangPenerima();
+  if(window.pasangPm)pasangPm();
 }
 function kelolaAdm(f,ok){
   f.aksi='kelola';status('stAdm','Menyimpan…');
@@ -775,14 +779,14 @@ function profKeCache(){try{localStorage.setItem(profKey(),JSON.stringify(PROFIL)
 function ambilProfil(){
   if(!CRED||profJalan)return;profJalan=true;
   jsonp({aksi:'profil',u:CRED.u,p:CRED.p}).then(function(r){profJalan=false;
-    if(r&&r.ok){if(r.peran){PERAN=r.peran}if(window.terapKel&&r.peran)terapKel(r.peran==='admin'?(r.kel||'-'):'');if(r.admins)ADM=r.admins;if(r.penerima!==undefined)PENERIMA=r.penerima;if(window.terapFisik&&r.fisik!==undefined)terapFisik(r.fisik);pasangAdmin();PROFIL={nama:r.nama||'Admin Posyandu',nip:(r.nip!==undefined&&r.nip!==''?r.nip:lsNip()),jabatan:r.jabatan||'',unit:r.unit||'',foto:r.foto||''};if(window.terimaProfil)terimaProfil(r);profilOk=true;PEND={foto:null};pasangProfil();profKeCache()}
+    if(r&&r.ok){if(r.peran){PERAN=r.peran}if(window.terapKel&&r.peran)terapKel(r.peran==='admin'?(r.kel||'-'):'');if(r.admins)ADM=r.admins;if(r.penerima!==undefined)PENERIMA=r.penerima;if(window.terapFisik&&r.fisik!==undefined)terapFisik(r.fisik);window.PM_SAMPAI=r.pemeliharaan||0;window.TES_INFO=r.tes||null;pasangAdmin();PROFIL={nama:r.nama||'Admin Posyandu',nip:(r.nip!==undefined&&r.nip!==''?r.nip:lsNip()),jabatan:r.jabatan||'',unit:r.unit||'',foto:r.foto||''};if(window.terimaProfil)terimaProfil(r);profilOk=true;PEND={foto:null};pasangProfil();profKeCache()}
   }).catch(function(){profJalan=false;profilOk=false});
 }
 function tunda(ms){return new Promise(function(r){setTimeout(r,ms)})}
 async function kirimAtur(f){
   if(!CRED)throw new Error('Silakan masuk lagi');
   var id=f.id||('a'+Math.random().toString(36).slice(2,12)+Date.now().toString(36));
-  var o={aksi:'atur',id:id,t:id,u:CRED.u,p:CRED.p};if(CRED.as)o.as=CRED.as;for(var k in f)o[k]=f[k];
+  var o={aksi:'atur',id:id,t:id,u:CRED.u,p:CRED.p};if(CRED.as)o.as=CRED.as;for(var k in f)o[k]=f[k];if(window.TES_KODE&&TES_KODE())o.tes=TES_KODE();
   var fr=document.createElement('iframe');fr.name='af'+id;fr.style.display='none';document.body.appendChild(fr);
   var fm=document.createElement('form');fm.method='POST';fm.action=ARSIP_URL;fm.target=fr.name;fm.style.display='none';
   var i=document.createElement('input');i.type='hidden';i.name='data';i.value=JSON.stringify(o);fm.appendChild(i);document.body.appendChild(fm);fm.submit();

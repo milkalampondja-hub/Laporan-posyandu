@@ -20,15 +20,105 @@ var ID_RE       = /^[A-Za-z0-9]{6,40}$/;
 var TOKEN_BALAS = '';
 var ID_AKTIF = '';
 var AS_USER = '';
+var MODE_TES = false;      // true bila permintaan membawa kode tes yang benar: semua data dibaca dan ditulis di folder TES (terpisah dari data asli)
+var UJI_HASH = '11a350718fe00135122220ea04e9a14b9a414841f16057118c7bf18b8eedb0e2';
+var PESAN_PM = 'Aplikasi sedang dalam pemeliharaan. Mohon tunggu sebentar dan coba lagi nanti.';
 var IZIN_TERIMA = false;   // akun penerima hanya boleh dipakai oleh aplikasi Terima   // admin kecamatan melihat sebagai operator kelurahan
+
+/* ---------- mode tes dan pemeliharaan ---------- */
+function kodeTesValid(k) {
+  k = String(k || '').trim(); if (!k || k.length > 80) return false;
+  var b = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 'lp-uji:' + k, Utilities.Charset.UTF_8);
+  return b.map(function (x) { return ('0' + (x & 255).toString(16)).slice(-2); }).join('') === UJI_HASH;
+}
+/** Cache bersama, tetapi kuncinya diberi awalan khusus bila mode tes, sehingga cache data asli tidak tercampur. */
+function cacheSkr() {
+  var c = CacheService.getScriptCache();
+  if (!MODE_TES) return c;
+  var P = 'TES_';
+  return {
+    get: function (k) { return c.get(P + k); },
+    put: function (k, v, t) { return c.put(P + k, v, t); },
+    remove: function (k) { return c.remove(P + k); },
+    removeAll: function (ks) { return c.removeAll((ks || []).map(function (k) { return P + k; })); }
+  };
+}
+/** Waktu selesai pemeliharaan (milidetik) bila sedang menyala, selain itu 0. */
+function pemeliharaanSampai() {
+  try {
+    var o = JSON.parse(PropertiesService.getScriptProperties().getProperty('PEMELIHARAAN') || 'null');
+    if (o && o.sampai > Date.now()) return o.sampai;
+  } catch (x) {}
+  return 0;
+}
+/** Dipakai doGet/doPost: true bila permintaan ini harus ditolak karena pemeliharaan. Admin utama dan perangkat penguji (kode tes) dikecualikan. */
+function tertahanPemeliharaan(u, pw, bolehTanpaLogin) {
+  var pm = MODE_TES ? 0 : pemeliharaanSampai();
+  if (!pm) return 0;
+  if (bolehTanpaLogin) return 0;
+  if (u && pw) {
+    var as0 = AS_USER; AS_USER = '';
+    var w = null; try { w = masuk(u, pw); } catch (x) { w = null; }
+    AS_USER = as0;
+    if (w && w.peran === 'utama') return 0;
+  }
+  return pm;
+}
+function aturPemeliharaan(d) {
+  var w = masuk(d.u, d.p);
+  if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh mengatur pemeliharaan'); }
+  var jam = parseInt(d.jam, 10) || 0, props = PropertiesService.getScriptProperties();
+  if (jam <= 0) { props.deleteProperty('PEMELIHARAAN'); catatLog(w.u, 'mematikan pemeliharaan aplikasi'); return simpanHasil({ ok: true, pemeliharaan: 0 }, 'a'); }
+  if ([1, 3, 6].indexOf(jam) < 0) throw new Error('Lama pemeliharaan 1, 3, atau 6 jam');
+  var sampai = Date.now() + jam * 3600000;
+  props.setProperty('PEMELIHARAAN', JSON.stringify({ sampai: sampai, oleh: w.u }));
+  catatLog(w.u, 'menyalakan pemeliharaan aplikasi ' + jam + ' jam');
+  return simpanHasil({ ok: true, pemeliharaan: sampai }, 'a');
+}
+var TES_MEM = null;
+/** Folder data tes (di dalam folder utama). Saat baru dibuat, diisi salinan data Posyandu dan pengaturan supaya aplikasi langsung bisa dicoba. */
+function indukTes() {
+  if (TES_MEM) return TES_MEM;
+  var asli = indukAsli(), it = asli.getFoldersByName('TES'), baru = !it.hasNext(), f = baru ? asli.createFolder('TES') : it.next();
+  if (baru) {
+    var ai = asli.getFiles();
+    while (ai.hasNext()) {
+      var x = ai.next(), n = x.getName();
+      if (n === NAMA_POS || n === NAMA_PENGATURAN || /^pengaturan-pantau-.+\.json$/.test(n)) { try { x.makeCopy(n, f); } catch (e) {} }
+    }
+  }
+  TES_MEM = f;
+  return f;
+}
+function infoTes() {
+  var r = { lap: 0, terima: 0 };
+  try { var sh = lembar(); r.lap = Math.max(0, sh.getLastRow() - 1); } catch (x) {}
+  try { var sl = bacaSetorLengkap(); Object.keys(sl.t).forEach(function (pr) { r.terima += Object.keys(sl.t[pr]).length; }); } catch (x) {}
+  return r;
+}
+function kosongkanTes(d) {
+  var w = masuk(d.u, d.p);
+  if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh mengosongkan data tes'); }
+  if (!MODE_TES) throw new Error('Mode tes belum menyala di perangkat ini');
+  var asli = indukAsli(), it = asli.getFoldersByName('TES');
+  while (it.hasNext()) it.next().setTrashed(true);
+  var props = PropertiesService.getScriptProperties(), sid = props.getProperty('SHEET_ID_TES');
+  if (sid) { try { DriveApp.getFileById(sid).setTrashed(true); } catch (x) {} props.deleteProperty('SHEET_ID_TES'); }
+  TES_MEM = null; props.setProperty('STAMP_TES', String(Date.now()));
+  return simpanHasil({ ok: true, tes: infoTes() }, 'a');
+}
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
   AS_USER = String(p.as || '').toLowerCase();
+  MODE_TES = kodeTesValid(p.tes);
   var cb = /^[A-Za-z0-9_]{1,40}$/.test(String(p.cb || '')) ? String(p.cb) : '';
   var hasil = { ok: true, pesan: 'Arsip Laporan Posyandu aktif' };
-  var cache = CacheService.getScriptCache();
-  if (p.aksi === 'cek' && ID_RE.test(String(p.id))) {
+  var cache = cacheSkr();
+  var tahan = (p.aksi === 'cek' || p.aksi === 'hasil' || p.aksi === 'daftarpos' || !p.aksi) ? 0 : tertahanPemeliharaan(p.u, p.p, false);
+  if (tahan) {
+    hasil = { ok: false, pemeliharaan: tahan, pesan: PESAN_PM };
+  } else if (p.aksi === 'cek' && ID_RE.test(String(p.id))) {
     hasil = { ok: cache.get('lp_' + p.id + '_' + parseInt(p.i, 10)) != null };
   } else if (p.aksi === 'hasil' && ID_RE.test(String(p.id)) && (p.tag === 'c' || p.tag === 's' || p.tag === 'a')) {
     var v = cache.get('hasil_' + p.tag + '_' + p.id);
@@ -41,7 +131,7 @@ function doGet(e) {
       .map(function (x) {
         return { nama: x.nama, kel: x.kel, jenis: x.jenis,
                  kader: (x.kader || []).filter(function (k) { return k.aktif !== false; }).map(function (k) { return { nama: k.nama, jabatan: k.jabatan }; }) };
-      }), info: ps.pengumuman, infoTgl: ps.pengumumanTgl, wa: ps.wa, batas: ps.batas };
+      }), info: ps.pengumuman, infoTgl: ps.pengumumanTgl, wa: ps.wa, batas: ps.batas, pemeliharaan: MODE_TES ? 0 : pemeliharaanSampai() };
   }
   else if (p.aksi === 'posyandu') {
     if (masuk(p.u, p.p)) {
@@ -67,7 +157,8 @@ function doGet(e) {
       var c = bacaPengaturan(w2.u), bs = bacaPengaturan(PANTAU_USER);
       hasil = { ok: true, nama: c.nama, nip: c.nip, jabatan: c.jabatan, unit: c.unit, foto: c.foto,
                 banners: bs.banners, batas: bs.batas, batasKel: bs.batasKel, sk: bs.sk, pengumuman: bs.pengumuman, wa: bs.wa, fisik: bs.fisik, peran: w2.peran, kel: w2.kel || '' };
-      if (w2.peran === 'utama') { hasil.admins = daftarAdmin(); hasil.ruang = bacaRuang(); hasil.penerima = infoPenerima(); }
+      if (w2.peran === 'utama') { hasil.admins = daftarAdmin(); hasil.ruang = bacaRuang(); hasil.penerima = infoPenerima(); hasil.pemeliharaan = pemeliharaanSampai(); if (MODE_TES) hasil.tes = infoTes(); }
+      hasil.modeTes = MODE_TES;
     } else {
       hasil = gagalLogin();
     }
@@ -344,7 +435,7 @@ function bacaPengaturan(u) {
 function simpanPengaturan(c, u) {
   var nb = berkasProfil(u), teks = JSON.stringify(c), f = induk(), it = f.getFilesByName(nb);
   if (it.hasNext()) it.next().setContent(teks); else f.createFile(nb, teks, MimeType.PLAIN_TEXT);
-  if (!u || u === PANTAU_USER) { try { CacheService.getScriptCache().removeAll(['cfg_batas', 'nm_' + PANTAU_USER]); } catch (x) {} }
+  if (!u || u === PANTAU_USER) { try { cacheSkr().removeAll(['cfg_batas', 'nm_' + PANTAU_USER]); } catch (x) {} }
 }
 function cekGambar(s, maks) {
   s = String(s || '');
@@ -470,10 +561,11 @@ function doPost(e) {
   try {
     var d = JSON.parse((e.parameter && e.parameter.data) ? e.parameter.data : e.postData.contents);
     AS_USER = String(d.as || '').toLowerCase();
+    MODE_TES = kodeTesValid(d.tes);
     TOKEN_BALAS = String(d.t || '');
     ID_AKTIF = String(d.id || '');
     if (!ID_RE.test(ID_AKTIF)) throw new Error('ID tidak valid');
-    var cache = CacheService.getScriptCache();
+    var cache = cacheSkr();
 
     if (d.aksi === 'bagian') {
       if (String(d.isi).length > 95000) throw new Error('Potongan terlalu besar');
@@ -481,6 +573,10 @@ function doPost(e) {
       return jawab({ ok: true, i: d.i });
     }
 
+    if (d.aksi !== 'pemeliharaan') {
+      var pmTahan = tertahanPemeliharaan(d.u, d.p, false);
+      if (pmTahan) return simpanHasil({ ok: false, pemeliharaan: pmTahan, pesan: PESAN_PM }, d.aksi === 'catat' ? 'c' : (d.aksi === 'selesai' ? 's' : 'a'));
+    }
     var kunci = LockService.getScriptLock();
     try {
       kunci.waitLock(30000);
@@ -499,6 +595,8 @@ function doPost(e) {
       if (d.aksi === 'cadang') { tag = 'a'; return cadangSekarang(d); }
       if (d.aksi === 'pulih') { tag = 'a'; return pulihkanPos(d); }
       if (d.aksi === 'ruang') { tag = 'a'; return perbaruiRuang(d); }
+      if (d.aksi === 'pemeliharaan') { tag = 'a'; return aturPemeliharaan(d); }
+      if (d.aksi === 'kosongkantes') { tag = 'a'; return kosongkanTes(d); }
       throw new Error('Aksi tidak dikenal');
     } finally {
       try { kunci.releaseLock(); } catch (x) {}
@@ -582,14 +680,15 @@ function selesai(d, cache) {
 
 function simpanHasil(o, tag) {
   if (ID_RE.test(ID_AKTIF)) {
-    try { CacheService.getScriptCache().put('hasil_' + tag + '_' + ID_AKTIF, JSON.stringify(o), 21600); } catch (x) {}
+    try { cacheSkr().put('hasil_' + tag + '_' + ID_AKTIF, JSON.stringify(o), 21600); } catch (x) {}
   }
   return jawab(o);
 }
 
 /** Penanda perubahan data (waktu terakhir ada laporan atau data Posyandu yang berubah). */
-function bacaStamp() { return PropertiesService.getScriptProperties().getProperty('STAMP_DATA') || '0'; }
-function sentuhStamp() { try { var lama = parseInt(bacaStamp(), 10) || 0; PropertiesService.getScriptProperties().setProperty('STAMP_DATA', String(Math.max(Date.now(), lama + 1))); } catch (x) {} }
+function kunciStamp() { return MODE_TES ? 'STAMP_TES' : 'STAMP_DATA'; }
+function bacaStamp() { return PropertiesService.getScriptProperties().getProperty(kunciStamp()) || '0'; }
+function sentuhStamp() { try { var lama = parseInt(bacaStamp(), 10) || 0; PropertiesService.getScriptProperties().setProperty(kunciStamp(), String(Math.max(Date.now(), lama + 1))); } catch (x) {} }
 
 function jawab(o) {
   o.t = TOKEN_BALAS;
@@ -599,7 +698,8 @@ function jawab(o) {
 function bersih(s, maks) { return String(s == null ? '' : s).replace(/[\\\/:*?"<>|\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maks || 120); }
 
 var INDUK_MEM = null;
-function induk() {
+function induk() { return MODE_TES ? indukTes() : indukAsli(); }
+function indukAsli() {
   if (INDUK_MEM) return INDUK_MEM;
   var props = PropertiesService.getScriptProperties(), id = props.getProperty('FOLDER_ID');
   if (id) { try { INDUK_MEM = DriveApp.getFolderById(id); return INDUK_MEM; } catch (x) { INDUK_MEM = null; } }
@@ -611,7 +711,7 @@ function induk() {
 }
 /** Baca berkas JSON kecil dengan cache sementara. Kunci cache memuat penanda perubahan data, jadi otomatis baru setiap ada perubahan. */
 function bacaBerkasCepat(nb) {
-  var cache = CacheService.getScriptCache(), k = 'bk_' + nb + '_' + bacaStamp();
+  var cache = cacheSkr(), k = 'bk_' + nb + '_' + bacaStamp();
   try { var v = cache.get(k); if (v) return JSON.parse(v); } catch (x) {}
   var o = bacaBerkas(nb);
   try { var s = JSON.stringify(o); if (s.length < 90000) cache.put(k, s, 900); } catch (x) {}
@@ -619,7 +719,7 @@ function bacaBerkasCepat(nb) {
 }
 /** Batas tanggal pengumpulan laporan (disimpan sementara; dihapus saat pengaturan admin utama berubah). */
 function bacaBatas() {
-  var cache = CacheService.getScriptCache();
+  var cache = cacheSkr();
   try { var v = cache.get('cfg_batas'); if (v) return parseInt(v, 10) || 25; } catch (x) {}
   var b = bacaPengaturan(PANTAU_USER).batas;
   try { cache.put('cfg_batas', String(b), 21600); } catch (x) {}
@@ -630,11 +730,11 @@ function anak(p, nama) {
   return it.hasNext() ? it.next() : p.createFolder(nama);
 }
 function lembar() {
-  var props = PropertiesService.getScriptProperties(), id = props.getProperty('SHEET_ID'), ss;
+  var props = PropertiesService.getScriptProperties(), kp = MODE_TES ? 'SHEET_ID_TES' : 'SHEET_ID', id = props.getProperty(kp), ss;
   if (id) { try { ss = SpreadsheetApp.openById(id); } catch (x) { ss = null; } }
   if (!ss) {
-    ss = SpreadsheetApp.create(NAMA_SHEET);
-    props.setProperty('SHEET_ID', ss.getId());
+    ss = SpreadsheetApp.create(MODE_TES ? NAMA_SHEET + ' (TES)' : NAMA_SHEET);
+    props.setProperty(kp, ss.getId());
     var f = DriveApp.getFileById(ss.getId());
     induk().addFile(f); DriveApp.getRootFolder().removeFile(f);
   }
@@ -981,7 +1081,7 @@ function masukTerima(u, p) {
 }
 function namaOperator(w) {
   if (w.peran === 'terima') return w.nama || w.u;
-  var cache = CacheService.getScriptCache(), k = 'nm_' + w.u, utama = (w.u === PANTAU_USER);
+  var cache = cacheSkr(), k = 'nm_' + w.u, utama = (w.u === PANTAU_USER);
   if (utama) { try { var v = cache.get(k); if (v) return v; } catch (x) {} }
   var n = bacaPengaturan(w.u).nama || w.u;
   if (utama) { try { cache.put(k, n, 21600); } catch (x) {} }
@@ -992,7 +1092,7 @@ function kodePeriode(thn, bln) { var m = BULAN.indexOf(String(bln)) + 1; return 
 function infoLaporanKode(kode) {
   kode = String(kode || '');
   if (!ID_RE.test(kode)) return null;
-  var cache = CacheService.getScriptCache(), ck = 'ik_' + kode + '_' + bacaStamp();
+  var cache = cacheSkr(), ck = 'ik_' + kode + '_' + bacaStamp();
   try { var cv = cache.get(ck); if (cv) return JSON.parse(cv); } catch (x) {}
   var sh = lembar(), n = sh.getLastRow();
   if (n < 2) return null;
@@ -1037,7 +1137,7 @@ function terimaRekap(p) {
     if (nw.getDate() <= batas) { m0--; if (m0 < 0) { m0 = 11; y0--; } }
     per = y0 + '-' + (m0 + 1 < 10 ? '0' : '') + (m0 + 1);
   }
-  var cache = CacheService.getScriptCache(), ck = 'rk_' + per + '_' + batas + '_' + bacaStamp(), hasil = null;
+  var cache = cacheSkr(), ck = 'rk_' + per + '_' + batas + '_' + bacaStamp(), hasil = null;
   if (!p.fresh) { try { var cv = cache.get(ck); if (cv) hasil = JSON.parse(cv); } catch (x) {} }
   if (!hasil) {
     hasil = hitungRekap(per, batas);
@@ -1140,7 +1240,7 @@ function buatCadangan(oleh) {
   var isi = JSON.stringify({ versi: 1, tgl: new Date().toISOString(), oleh: String(oleh || ''), posyandu: bacaPos(), pengaturan: bacaBerkas(NAMA_PENGATURAN), operator: ops, setoran: bacaSetor(), log: bacaLog() });
   hapusNama(f, nama);
   f.createFile(nama, isi, MimeType.PLAIN_TEXT);
-  var sid = PropertiesService.getScriptProperties().getProperty('SHEET_ID'), ns = 'cadangan-rekap-' + kode;
+  var sid = PropertiesService.getScriptProperties().getProperty(MODE_TES ? 'SHEET_ID_TES' : 'SHEET_ID'), ns = 'cadangan-rekap-' + kode;
   if (sid) { try { var sf = DriveApp.getFileById(sid); hapusNama(f, ns); sf.makeCopy(ns, f); } catch (x) {} }
   ['cadangan-data-', 'cadangan-rekap-'].forEach(function (awal) {
     var arr = [], it = f.getFiles();

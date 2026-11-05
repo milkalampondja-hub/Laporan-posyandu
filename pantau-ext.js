@@ -1323,7 +1323,7 @@ function lihatSK(judul, id) {
 function b64(file) { return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(String(r.result).split(',')[1]); }; r.onerror = rej; r.readAsDataURL(file); }); }
 function kirimForm(data) {
   var tok = Math.random().toString(36).slice(2), nm = 'sf' + tok, fr = document.createElement('iframe'); fr.name = nm; fr.style.display = 'none'; document.body.appendChild(fr);
-  var f = document.createElement('form'); f.method = 'POST'; f.action = ARSIP_URL; f.target = nm; f.style.display = 'none'; data.t = tok;
+  var f = document.createElement('form'); f.method = 'POST'; f.action = ARSIP_URL; f.target = nm; f.style.display = 'none'; data.t = tok; if (window.TES_KODE && TES_KODE()) data.tes = TES_KODE(); else delete data.tes;
   var i = document.createElement('input'); i.type = 'hidden'; i.name = 'data'; i.value = JSON.stringify(data); f.appendChild(i); document.body.appendChild(f); f.submit();
   return function () { try { f.remove(); fr.remove(); } catch (e) { } };
 }
@@ -1921,6 +1921,66 @@ window.pasangPenerima = function () {
     b4.addEventListener('click', function () { if (confirm('Hapus ' + (q.nama || q.u) + '? Tautannya berhenti berlaku.')) { trmTautanSimpan(q.u, ''); if (TRM_BARU && TRM_BARU.u === q.u) TRM_BARU = null; kelolaAdm({ op: 'hapuspenerima', nu: q.u }, 'Petugas penerima dihapus.'); } });
     ac.appendChild(b4); k.appendChild(ac); c.appendChild(k);
   });
+};
+
+/* ---------- Pemeliharaan aplikasi dan mode tes (khusus admin kecamatan) ---------- */
+var PM_JAM = 3;
+function pmJam(ts) { var d = new Date(ts); return ('0' + d.getHours()).slice(-2) + '.' + ('0' + d.getMinutes()).slice(-2); }
+window.pasangPm = function () {
+  var app = $('cardApp'); if (!app) return;
+  var c = $('cardPm'), c2 = $('cardTes');
+  if (!c) { c = el('div', 'card'); c.id = 'cardPm'; c.setAttribute('data-tab', 'app'); app.parentNode.insertBefore(c, app); }
+  if (!c2) { c2 = el('div', 'card'); c2.id = 'cardTes'; c2.setAttribute('data-tab', 'app'); app.parentNode.insertBefore(c2, c); }
+  var utama = PERAN === 'utama', tesOn = !!(window.TES_ON && TES_ON());
+  if (!utama) { c.style.display = 'none'; c2.style.display = 'none'; return; }
+  var sampai = +window.PM_SAMPAI || 0, aktif = sampai > Date.now();
+  c.textContent = ''; c.appendChild(el('h4', null, 'Pemeliharaan aplikasi'));
+  c.appendChild(el('p', 'hint', 'Saat menyala, kader dan petugas tidak bisa masuk atau mengirim; mereka melihat popup "sedang dalam pemeliharaan". Admin kecamatan tetap bisa masuk. Perangkat penguji (ketuk nomor versi 5 kali, masukkan kode) memakai data tes yang terpisah, sehingga data asli tidak berubah.'));
+  var st = el('p', 'st'); c.appendChild(st);
+  if (aktif) {
+    c.appendChild(el('p', 'hint', 'Pemeliharaan MENYALA. Selesai otomatis pukul ' + pmJam(sampai) + '.'));
+    var bm = el('button', 'btn sm', 'Matikan pemeliharaan'); bm.type = 'button';
+    bm.addEventListener('click', function () {
+      bm.disabled = true; st.textContent = 'Menyimpan…'; st.className = 'st';
+      kirimAtur({ aksi: 'pemeliharaan', jam: 0 }).then(function () { window.PM_SAMPAI = 0; toast('Pemeliharaan dimatikan.'); pasangPm(); }).catch(function (e) { bm.disabled = false; st.textContent = e.message; st.className = 'st bad'; });
+    });
+    c.appendChild(bm);
+  } else {
+    c.appendChild(el('label', null, 'Lamanya')); c.lastChild.style.cssText = 'font-weight:700;display:block;margin:8px 0 4px';
+    var row = el('div'); row.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap';
+    var info = el('p', 'hint');
+    function ket() { info.textContent = 'Selesai otomatis pukul ' + pmJam(Date.now() + PM_JAM * 3600000) + '. Jam ini tampil di popup kader dan petugas.'; }
+    [1, 3, 6].forEach(function (j) {
+      var b = el('button', 'btn sm' + (j === PM_JAM ? '' : ' plain'), j + ' jam'); b.type = 'button';
+      b.addEventListener('click', function () { PM_JAM = j; pasangPm(); });
+      row.appendChild(b);
+    });
+    c.appendChild(row); ket(); c.appendChild(info);
+    var bn = el('button', 'btn sm', 'Nyalakan pemeliharaan'); bn.type = 'button'; bn.style.cssText = 'background:#b3261e;color:#fff';
+    bn.addEventListener('click', function () {
+      if (!confirm('Kader dan petugas tidak bisa mengirim atau masuk selama ' + PM_JAM + ' jam. Lanjutkan?')) return;
+      bn.disabled = true; st.textContent = 'Menyimpan…'; st.className = 'st';
+      kirimAtur({ aksi: 'pemeliharaan', jam: PM_JAM }).then(function (r) { window.PM_SAMPAI = r.pemeliharaan || 0; toast('Pemeliharaan dinyalakan.'); pasangPm(); }).catch(function (e) { bn.disabled = false; st.textContent = e.message; st.className = 'st bad'; });
+    });
+    c.appendChild(bn);
+    c.appendChild(el('p', 'hint', 'Disarankan malam hari saat sepi laporan.'));
+  }
+  /* kartu Mode tes: hanya tampil bila mode tes menyala di perangkat ini */
+  c2.textContent = '';
+  if (!tesOn) { c2.style.display = 'none'; return; }
+  c2.appendChild(el('h4', null, 'Mode tes'));
+  c2.appendChild(el('p', 'hint', 'Mode tes menyala di perangkat ini untuk Pantau, Terima, dan aplikasi kader yang dibuka di browser yang sama. Data asli tidak berubah. Mati otomatis setelah 3 jam.'));
+  var ti = window.TES_INFO; if (ti) c2.appendChild(el('p', 'hint', 'Data tes saat ini: ' + ti.lap + ' laporan, ' + ti.terima + ' penerimaan.'));
+  var st2 = el('p', 'st'); c2.appendChild(st2);
+  var r2 = el('div'); r2.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
+  var bk = el('button', 'btn sm', 'Kosongkan data tes'); bk.type = 'button';
+  bk.addEventListener('click', function () {
+    if (!confirm('Semua laporan dan penerimaan tes dihapus. Data asli tidak tersentuh. Lanjutkan?')) return;
+    bk.disabled = true; st2.textContent = 'Mengosongkan…'; st2.className = 'st';
+    kirimAtur({ aksi: 'kosongkantes' }).then(function (r) { window.TES_INFO = r.tes || null; toast('Data tes dikosongkan.'); location.reload(); }).catch(function (e) { bk.disabled = false; st2.textContent = e.message; st2.className = 'st bad'; });
+  });
+  var bo = el('button', 'btn sm plain', 'Matikan mode tes'); bo.type = 'button'; bo.addEventListener('click', function () { TES_MATI(); });
+  r2.appendChild(bk); r2.appendChild(bo); c2.appendChild(r2);
 };
 
 /* Judul kartu Beranda yang tetap diam saat kartu digulir: judul + keterangan dibungkus .sthd, sisanya .stbody (hanya tampilan). */
