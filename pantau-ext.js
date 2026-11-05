@@ -1870,24 +1870,27 @@ window.pasangPenerima = function () {
   hd.appendChild(bTam); c.appendChild(hd);
   if (!L.length && !TRM_TAMBAH) c.appendChild(el('p', 'hint', 'Belum ada petugas penerima. Tekan "+ Tambah penerima".'));
   function kotakTautan(o) {
+    var ip = (L.filter(function (q) { return q.u === o.u; })[0] || {}).hp === 'iphone';
     var bx = el('div', 'trmbox');
-    bx.appendChild(el('p', 'hint', 'Tautan untuk ' + o.nama + '. Buka SEKALI di HP petugas itu; setelah itu aplikasi langsung bisa dipakai tanpa mengetik sandi. Jangan dibagikan ke kader.'));
+    bx.appendChild(el('p', 'hint', 'Tautan untuk ' + o.nama + (ip ? ' (iPhone). Petugas membuka tautan di Safari, menambahkannya ke layar utama, lalu membuka aplikasinya dan menempel tautan ini di kotak yang muncul. Jangan dibagikan ke kader.' : '. Buka SEKALI di HP petugas itu; setelah itu aplikasi langsung bisa dipakai tanpa mengetik sandi. Jangan dibagikan ke kader.')));
     var inp = el('input'); inp.type = 'text'; inp.readOnly = true; inp.value = o.link; inp.addEventListener('focus', function () { inp.select(); });
     bx.appendChild(inp);
     var r2 = el('div', 'trmbtn'), bs = el('button', 'btn sm', 'Salin tautan'); bs.type = 'button';
     bs.addEventListener('click', function () { try { navigator.clipboard.writeText(o.link).then(function () { bs.textContent = 'Tersalin'; }, function () { inp.select(); }); } catch (x) { inp.select(); } });
-    var bw = el('a', 'btn sm plain', 'Kirim lewat WhatsApp'); bw.target = '_blank'; bw.rel = 'noopener'; bw.href = 'https://wa.me/?text=' + encodeURIComponent('Tautan akses aplikasi Terima Posyandu untuk ' + o.nama + ' (jangan dibagikan): ' + o.link);
+    var bw = el('a', 'btn sm plain', 'Kirim lewat WhatsApp'); bw.target = '_blank'; bw.rel = 'noopener'; bw.href = 'https://wa.me/?text=' + encodeURIComponent(ip ? 'Tautan akses aplikasi Terima Posyandu untuk ' + o.nama + ' (jangan dibagikan).\n\nLangkah di iPhone:\n1. Buka tautan ini di Safari.\n2. Tekan tombol Bagikan, lalu Tambah ke Layar Utama.\n3. Buka aplikasi dari layar utama, lalu salin tautan ini dan tempel di kotak "Tempel tautan akses".\n\n' + o.link : 'Tautan akses aplikasi Terima Posyandu untuk ' + o.nama + ' (jangan dibagikan). Buka tautan ini sekali di HP Anda:\n' + o.link);
     r2.appendChild(bs); r2.appendChild(bw); bx.appendChild(r2); return bx;
   }
   if (TRM_TAMBAH) {
     var fm = el('div', 'trmadd'); fm.appendChild(el('label', null, 'Nama petugas penerima'));
     var inN = el('input'); inN.type = 'text'; inN.maxLength = 40; inN.placeholder = 'Contoh: Ibu Sari'; fm.appendChild(inN);
+    fm.appendChild(el('label', null, 'HP petugas'));
+    var seH = el('select'); [['android', 'Android'], ['iphone', 'iPhone']].forEach(function (o) { var op = el('option', null, o[1]); op.value = o[0]; seH.appendChild(op); }); fm.appendChild(seH);
     var bb = el('button', 'btn sm', 'Buat tautan'); bb.type = 'button';
     bb.addEventListener('click', function () {
       var nm = inN.value.trim(); if (!nm) { inN.focus(); return; }
       var u = 'p' + trmAcak(7, 'abcdefghjkmnpqrstuvwxyz23456789'), sdi = trmAcak(14, 'abcdefghjkmnpqrstuvwxyz23456789'), tl = link + '#u=' + u + '&p=' + sdi;
       bb.disabled = true;
-      kelolaAdm({ op: 'penerima', nu: u, ns: sdi, nama: nm }, 'Petugas penerima ditambahkan.').then(function (okk) {
+      kelolaAdm({ op: 'penerima', nu: u, ns: sdi, nama: nm, hp: seH.value }, 'Petugas penerima ditambahkan.').then(function (okk) {
         if (okk) { trmTautanSimpan(u, tl); TRM_BARU = { u: u, nama: nm, link: tl }; TRM_TAMBAH = false; }
         pasangPenerima();
       });
@@ -1897,7 +1900,7 @@ window.pasangPenerima = function () {
   if (TRM_BARU) c.appendChild(kotakTautan(TRM_BARU));
   L.forEach(function (q) {
     var warna = q.kunci ? 'r' : (q.pakai ? 'g' : 'y'), k = el('div', 'trmrow ' + warna), t = el('div', 'trmt');
-    t.appendChild(el('b', null, q.nama || q.u));
+    t.appendChild(el('b', null, (q.nama || q.u) + (q.hp === 'iphone' ? ' \u00b7 iPhone' : '')));
     t.appendChild(el('span', null, q.kunci ? (q.kunci.permanen ? 'TERKUNCI. Buka kunci dulu' : 'Terkunci sementara') : trmWaktu(q.pakai)));
     t.appendChild(el('span', null, (q.jml || 0) + ' laporan diterima'));
     k.appendChild(t);
@@ -1907,9 +1910,12 @@ window.pasangPenerima = function () {
     b2.addEventListener('click', function () {
       if (!confirm('Tautan lama milik ' + (q.nama || q.u) + ' berhenti berlaku. Lanjutkan?')) return;
       var sdi = trmAcak(14, 'abcdefghjkmnpqrstuvwxyz23456789'), tl = link + '#u=' + q.u + '&p=' + sdi;
-      kelolaAdm({ op: 'penerima', nu: q.u, ns: sdi, nama: q.nama || q.u }, 'Tautan baru dibuat.').then(function (okk) { if (okk) { trmTautanSimpan(q.u, tl); TRM_BARU = { u: q.u, nama: q.nama || q.u, link: tl }; TRM_TAMBAH = false; } pasangPenerima(); });
+      kelolaAdm({ op: 'penerima', nu: q.u, ns: sdi, nama: q.nama || q.u, hp: q.hp }, 'Tautan baru dibuat.').then(function (okk) { if (okk) { trmTautanSimpan(q.u, tl); TRM_BARU = { u: q.u, nama: q.nama || q.u, link: tl }; TRM_TAMBAH = false; } pasangPenerima(); });
     });
     ac.appendChild(b2);
+    var b5 = el('button', 'btn sm plain', q.hp === 'iphone' ? 'Ganti ke Android' : 'Ganti ke iPhone'); b5.type = 'button';
+    b5.addEventListener('click', function () { kelolaAdm({ op: 'penerima', nu: q.u, nama: q.nama || q.u, hp: q.hp === 'iphone' ? 'android' : 'iphone' }, 'Jenis HP petugas diubah.'); });
+    ac.appendChild(b5);
     if (q.kunci) { var b3 = el('button', 'btn sm', 'Buka kunci'); b3.type = 'button'; b3.addEventListener('click', function () { kelolaAdm({ op: 'buka', nu: q.u }, 'Kunci dibuka.'); }); ac.appendChild(b3); }
     var b4 = el('button', 'btn sm plain', 'Hapus'); b4.type = 'button';
     b4.addEventListener('click', function () { if (confirm('Hapus ' + (q.nama || q.u) + '? Tautannya berhenti berlaku.')) { trmTautanSimpan(q.u, ''); if (TRM_BARU && TRM_BARU.u === q.u) TRM_BARU = null; kelolaAdm({ op: 'hapuspenerima', nu: q.u }, 'Petugas penerima dihapus.'); } });

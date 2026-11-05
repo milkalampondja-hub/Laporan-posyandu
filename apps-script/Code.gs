@@ -231,7 +231,7 @@ function infoPenerima() {
     var sl = bacaSetorLengkap();
     Object.keys(sl.t).forEach(function (pr) { Object.keys(sl.t[pr]).forEach(function (id) { var by = sl.t[pr][id].by; if (by && (sl.d[pr] || {})[id]) jml[by] = (jml[by] || 0) + 1; }); });
   } catch (x) {}
-  return daftarPenerima().map(function (q) { return { u: q.u, nama: q.nama || '', kunci: statusKunci(q.u), buat: q.buat || 0, pakai: pakai[q.u] || 0, jml: jml[q.u] || 0 }; });
+  return daftarPenerima().map(function (q) { return { u: q.u, nama: q.nama || '', kunci: statusKunci(q.u), buat: q.buat || 0, pakai: pakai[q.u] || 0, jml: jml[q.u] || 0, hp: q.hp === 'iphone' ? 'iphone' : 'android' }; });
 }
 /** Periksa sandi admin utama di server (untuk tindakan penting). Salah berulang ikut menghitung kunci login. */
 function cekKonfirmasi(w, k) {
@@ -262,11 +262,13 @@ function kelola(d) {
       if (ns) {
         if (ns.length < 6 || ns.length > 60) throw new Error('Kata sandi minimal 6 karakter');
       } else if (ip < 0) throw new Error('Kata sandi minimal 6 karakter');
-      if (ip < 0) { lp.push({ u: nu, h: hashAdmin(nu, ns), nama: nmp, buat: Date.now() }); catatLog(w.u, 'menambah petugas penerima ' + nmp + ' (' + nu + ')'); }
+      var hpn = d.hp === 'iphone' ? 'iphone' : 'android';
+      if (ip < 0) { lp.push({ u: nu, h: hashAdmin(nu, ns), nama: nmp, buat: Date.now(), hp: hpn }); catatLog(w.u, 'menambah petugas penerima ' + nmp + ' (' + nu + ')'); }
       else {
         var lamaNm = lp[ip].nama || '';
         if (ns) lp[ip].h = hashAdmin(nu, ns);
         lp[ip].nama = nmp;
+        if (d.hp !== undefined) lp[ip].hp = hpn;
         catatLog(w.u, (ns ? 'membuat tautan akses baru untuk petugas penerima ' : 'mengubah nama petugas penerima ') + nmp + ' (' + nu + ')' + (lamaNm && lamaNm !== nmp ? ' dari ' + lamaNm : ''));
       }
       simpanPenerima(lp); hapusGagal(nu);

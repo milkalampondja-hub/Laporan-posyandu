@@ -106,6 +106,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .sheet .acts{position:sticky;bottom:calc(-22px - env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(255,255,255,0),#fff 18%);padding-top:12px;padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))}
 .okmark{width:72px;height:72px;border-radius:50%;background:#d9f3e1;color:var(--g);font-size:44px;line-height:72px;text-align:center;margin:4px auto 10px}
 .sheet .okc{text-align:center}
+.atau{text-align:center;font-size:13px;color:var(--mu);margin:-2px 0 10px}
 </style>
 </head>
 <body>
@@ -121,6 +122,8 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
     <img src="logo.png" alt="">
     <h1>TERIMA POSYANDU</h1>
     <p>Kecamatan Palu Utara</p>
+    <div class="fld"><label for="lt">Tempel tautan akses</label><input id="lt" type="text" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Tempel tautan dari WhatsApp di sini"></div>
+    <div class="atau">atau ketik nama pengguna dan kata sandi</div>
     <div class="fld"><label for="lu">Nama pengguna</label><input id="lu" type="text" autocapitalize="none" autocomplete="username"></div>
     <div class="fld"><label for="lp">Kata sandi</label><input id="lp" type="password" autocomplete="current-password"></div>
     <div class="err" id="lerr" role="alert"></div>
@@ -524,6 +527,17 @@ $('foto').addEventListener('change',async function(){
   }catch(e){pesanKamera(e.message||'Foto tidak bisa dibaca.')}
 });
 
+/* Tempel tautan akses (untuk aplikasi layar utama iPhone): mengisi nama pengguna dan sandi dari tautan lalu masuk */
+function bacaTautan(t){
+  t=String(t||'').trim();var i=t.indexOf('#');if(i<0)return null;
+  try{var hs=new URLSearchParams(t.slice(i+1)),u=hs.get('u'),p=hs.get('p');return(u&&p)?{u:u,p:p}:null}catch(e){return null}
+}
+$('lt').addEventListener('input',function(){
+  var v=this.value.trim();if(!v){$('lerr').textContent='';return}
+  var o=bacaTautan(v);
+  if(o){$('lu').value=o.u;$('lp').value=o.p;$('lerr').textContent='';$('lb').click()}
+  else if(/^https?:/i.test(v)||v.length>20)$('lerr').textContent='Tautan tidak lengkap. Salin seluruh tautan dari pesan WhatsApp, sampai ujungnya.';
+});
 /* ---------- awal ---------- */
 (function(){
   // Tautan akses dari admin kecamatan: terima.html#u=...&p=... (disimpan di HP, lalu dihapus dari alamat)

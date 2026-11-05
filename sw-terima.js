@@ -1,7 +1,7 @@
 /* Service worker khusus aplikasi Terima: membuat halaman terbuka seketika dari simpanan di HP.
    Hanya menyentuh terima.html dan berkas pendukungnya. Server Apps Script dan aplikasi lain tidak dicegat.
    Halaman diperbarui di latar belakang, jadi versi baru muncul pada pembukaan berikutnya. */
-var NAMA = 'terima-v3';
+var NAMA = 'terima-v4';
 var BERKAS = ['terima.html', 'jsQR.js', 'logo.png', 'icon-terima-192.png', 'icon-terima-512.png', 'apple-touch-icon-terima.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(NAMA).then(function (c) {
