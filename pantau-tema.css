@@ -779,3 +779,12 @@ html #app.isop #secP .st:empty{display:none}
   html #app.isop #secP>.card:last-child .btns{display:grid!important;grid-template-columns:1fr 1fr;gap:10px}
   html #app.isop #secP>.card:last-child .btns .btn{width:100%;white-space:nowrap;padding-left:6px;padding-right:6px}
 }
+
+/* Aplikasi Terima: daftar petugas penerima */
+#cardTrm .trmhd{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0 8px}
+#cardTrm .trmrow{border:1px solid var(--line,#e2e8e4);border-left:5px solid #2e9b57;border-radius:14px;padding:10px 12px;margin-bottom:8px;background:var(--card,#fff)}
+#cardTrm .trmrow.y{border-left-color:#e0a800}#cardTrm .trmrow.r{border-left-color:#d33}
+#cardTrm .trmt{display:flex;flex-direction:column;gap:2px}#cardTrm .trmt span{font-size:13px;opacity:.75}
+#cardTrm .trmbtn{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+#cardTrm .trmbox,#cardTrm .trmadd{margin:0 0 10px;padding:12px;border-radius:12px;background:rgba(10,122,53,.08)}
+#cardTrm .trmbox input,#cardTrm .trmadd input{width:100%;margin:6px 0 8px;box-sizing:border-box}

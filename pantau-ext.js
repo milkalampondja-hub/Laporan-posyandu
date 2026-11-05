@@ -279,8 +279,15 @@ function tutupModal() { var m = $('modalExt'); if (m) m.remove(); }
 function tileStat(cls, n, lbl) { var d = el('div', 'stat ' + cls); d.appendChild(el('b', null, n)); d.appendChild(el('span', null, lbl)); return d; }
 /* Di Pantau kecamatan, laporan baru dihitung masuk bila laporan digital sudah dikirim DAN laporan fisik sudah diterima. */
 /* Masa peralihan: berkas fisik yang diterima tanpa laporan digital tetap dihitung masuk. Pilihan disimpan di perangkat ini (nanti bisa dipindah ke Code.gs). */
-function fisikSaja() { try { return localStorage.getItem('pantau_fisik_saja') !== '0'; } catch (e) { return true; } }
-function setFisikSaja(v) { try { localStorage.setItem('pantau_fisik_saja', v ? '1' : '0'); } catch (e) {} }
+/* Pilihan kini disimpan di server (berlaku di semua perangkat). Simpanan di perangkat hanya cadangan sampai server menjawab. */
+var FISIK_SRV = null;
+function fisikSaja() { if (FISIK_SRV !== null) return FISIK_SRV; try { return localStorage.getItem('pantau_fisik_saja') !== '0'; } catch (e) { return true; } }
+function setFisikSaja(v) { FISIK_SRV = !!v; try { localStorage.setItem('pantau_fisik_saja', v ? '1' : '0'); } catch (e) {} }
+window.terapFisik = function (v) {
+  if (v !== true && v !== false) return;   // server belum pernah menyimpan pilihan: pakai simpanan perangkat
+  var ubah = FISIK_SRV !== v; setFisikSaja(v);
+  if (ubah) { try { renderBeranda(); renderRekap(); renderKelAll(); } catch (e) {} }
+};
 function fisikTanda(r, pr) { return !!(SETOR[perKey(pr)] || {})[r.p.id]; }
 function fisikOK(r, pr) { return !!((r.d || fisikSaja()) && fisikTanda(r, pr)); }
 function lengkap(r, pr) { return isOp() ? !!r.d : fisikOK(r, pr); }
@@ -1110,8 +1117,9 @@ function kartuPos(p) {
   if (isOp() && POS.length) { var ao = el('div', 'acts'); ao.appendChild(btn(p.hp ? 'Ubah nomor ketua/perwakilan' : 'Isi nomor ketua/perwakilan', 'sm plain', function () { formNomor(p); })); det.appendChild(ao); }
   d.appendChild(det); return d;
 }
-function simpanDaftar(list, ok) {
-  return kirimAtur({ aksi: 'pos', list: list }).then(function (r) { POS = r.list || list; POSOK = true; renderData(); renderBeranda(); renderRekap(); if (ok) toast(ok); return true; })
+function simpanDaftar(list, ok, konfirmasi) {
+  var f = { aksi: 'pos', list: list }; if (konfirmasi !== undefined) f.konfirmasi = konfirmasi;
+  return kirimAtur(f).then(function (r) { POS = r.list || list; POSOK = true; renderData(); renderBeranda(); renderRekap(); if (ok) toast(ok); return true; })
     .catch(function (e) { alert('Gagal menyimpan: ' + e.message); return false; });
 }
 function toast(t) { var d = el('div', 'ok2', t); d.style.cssText = 'position:fixed;left:12px;right:12px;bottom:90px;z-index:300;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)'; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 2800); }
@@ -1235,7 +1243,7 @@ function kartuExcel(c) {
     if (H.ganti.length && !SERVER_ALIAS) { er.textContent = 'Perbarui Code.gs dulu untuk ganti nama Posyandu'; er.className = 'st bad'; return; }
     if (!CRED || inp.value !== CRED.p) { er.textContent = 'Sandi tidak cocok'; er.className = 'st bad'; inp.value = ''; return; }
     ok.disabled = true; er.textContent = 'Menyimpan…'; er.className = 'st';
-    simpanDaftar(I.daftar, total + ' perubahan diterapkan.').then(function (b) { if (b) { UBAH_BUKA = false; UBAH_MODE = ''; IMPOR = null; pasangUbah(); } else { ok.disabled = false; er.textContent = ''; } });
+    simpanDaftar(I.daftar, total + ' perubahan diterapkan.', inp.value).then(function (b) { if (b) { UBAH_BUKA = false; UBAH_MODE = ''; IMPOR = null; pasangUbah(); } else { ok.disabled = false; er.textContent = ''; } });
   });
   bt.appendChild(ok); bt.appendChild(document.createTextNode(' ')); bt.appendChild(btn('Batal', 'plain', function () { IMPOR = null; pasangUbah(); })); c.appendChild(bt);
   inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ok.click(); } });
@@ -1356,12 +1364,15 @@ function dialogPeralihan(hidup, sesudah) {
   var er = el('div', 'st'); f.appendChild(er);
   function ok() {
     if (!CRED || inp.value !== CRED.p) { er.textContent = 'Sandi tidak cocok'; er.className = 'st bad'; inp.value = ''; return; }
-    setFisikSaja(hidup); tutupModal(); sesudah();
-    renderBeranda(); renderRekap(); renderKelAll(); if (typeof ANG !== 'undefined' && ANG && typeof renderAngkaIsi === 'function') renderAngkaIsi();
-    toast(hidup ? 'Masa peralihan dihidupkan.' : 'Masa peralihan dimatikan.');
+    er.textContent = 'Menyimpan\u2026'; er.className = 'st'; bOk.disabled = true;
+    kirimAtur({ fisik: hidup, konfirmasi: inp.value }).then(function () {
+      setFisikSaja(hidup); tutupModal(); sesudah();
+      renderBeranda(); renderRekap(); renderKelAll(); if (typeof ANG !== 'undefined' && ANG && typeof renderAngkaIsi === 'function') renderAngkaIsi();
+      toast(hidup ? 'Masa peralihan dihidupkan.' : 'Masa peralihan dimatikan.');
+    }).catch(function (e) { bOk.disabled = false; er.textContent = e.message; er.className = 'st bad'; inp.value = ''; });
   }
   inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ok(); } });
-  var bt = el('div', 'toolbar'); bt.appendChild(btn(hidup ? 'Ya, hidupkan' : 'Ya, matikan', 'wide', ok)); bt.appendChild(document.createTextNode(' ')); bt.appendChild(btn('Batal', 'wide plain', function () { tutupModal(); }));
+  var bt = el('div', 'toolbar'); var bOk = btn(hidup ? 'Ya, hidupkan' : 'Ya, matikan', 'wide', ok); bt.appendChild(bOk); bt.appendChild(document.createTextNode(' ')); bt.appendChild(btn('Batal', 'wide plain', function () { tutupModal(); }));
   f.appendChild(bt); bukaModal(hidup ? 'Hidupkan masa peralihan?' : 'Matikan masa peralihan?', f);
 }
 function pasangSetelan() {
@@ -1823,57 +1834,87 @@ function renderPosHal(box, h, pr, rows) {
 }
 function renderKelAll() { renderPohon(); if ($('app').getAttribute('data-view') === 'k') renderKelHal(); }
 window.tampilBaru = function () { renderBeranda(); renderRekap(); renderData(); renderKelAll(); };
-window.setelahKeluar = function () { TAUTAN_TRM = ''; SETOR_VIA = {}; SETOR = {}; SETOR_T = {}; SETOR_BUSY = 0; SETOR_OPEN = {}; BELUM_OPEN = {}; KSEL = { kel: '', pos: '' }; POHON_BUKA = {}; LEMB = {}; LEMB_T = {}; LEMB_BUSY = 0; terapKel(''); RUANG = null; CAD = null; POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
+window.setelahKeluar = function () { TRM_BARU = null; TRM_TAMBAH = false; SETOR_VIA = {}; SETOR = {}; SETOR_T = {}; SETOR_BUSY = 0; SETOR_OPEN = {}; BELUM_OPEN = {}; KSEL = { kel: '', pos: '' }; POHON_BUKA = {}; LEMB = {}; LEMB_T = {}; LEMB_BUSY = 0; terapKel(''); RUANG = null; CAD = null; POS = []; SK = {}; BANNERS = ['', '', '']; POSOK = false; bangunBanner(); tutupMenu(); tutupModal(); };
 document.addEventListener('DOMContentLoaded', function () { bangunBanner(); });
 if (document.readyState !== 'loading') bangunBanner();
 })();
 
 
-/* ---------- akun aplikasi Terima Posyandu (khusus admin kecamatan) ---------- */
-var TAUTAN_TRM = '';
+/* ---------- akun aplikasi Terima Posyandu (khusus admin kecamatan): banyak petugas, masing-masing bernama (maksimal 10) ---------- */
+var TRM_BARU = null, TRM_TAMBAH = false, MAKS_TRM = 10;
+function trmTautanAmbil(u) { try { return (JSON.parse(localStorage.getItem('pantau_trm_tautan') || '{}'))[u] || ''; } catch (e) { return ''; } }
+function trmTautanSimpan(u, v) { try { var o = JSON.parse(localStorage.getItem('pantau_trm_tautan') || '{}'); if (v) o[u] = v; else delete o[u]; localStorage.setItem('pantau_trm_tautan', JSON.stringify(o)); } catch (e) {} }
+function trmAcak(n, abc) { var r = new Uint32Array(n), s = '', i; (window.crypto || window.msCrypto).getRandomValues(r); for (i = 0; i < n; i++) s += abc.charAt(r[i] % abc.length); return s; }
+function trmWaktu(ts) {
+  if (!ts) return 'Belum pernah dipakai';
+  var d = new Date(ts), n = new Date(), mnt = Math.round((n - d) / 60000);
+  if (mnt < 2) return 'Terakhir dipakai baru saja';
+  if (mnt < 60) return 'Terakhir dipakai ' + mnt + ' menit lalu';
+  var jam = ('0' + d.getHours()).slice(-2) + '.' + ('0' + d.getMinutes()).slice(-2);
+  if (d.toDateString() === n.toDateString()) return 'Terakhir dipakai hari ini ' + jam;
+  return 'Terakhir dipakai ' + d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'][d.getMonth()] + ' ' + jam;
+}
 window.pasangPenerima = function () {
   var c = $('cardTrm'), adm = $('cardAdm');
   if (!adm) return;
   if (!c) { c = el('div', 'card'); c.id = 'cardTrm'; c.setAttribute('data-tab', 'pengguna'); var adm2 = $('cardAdm2') || adm; adm2.parentNode.insertBefore(c, adm2.nextSibling); }
-  c.style.display = PERAN === 'utama' ? '' : 'none'; if (!PERAN === 'utama') return;
+  c.style.display = PERAN === 'utama' ? '' : 'none'; if (PERAN !== 'utama') return;
   c.textContent = '';
+  var L = Array.isArray(PENERIMA) ? PENERIMA : (PENERIMA && PENERIMA.u ? [PENERIMA] : []);
   c.appendChild(el('h4', null, 'Aplikasi Terima Posyandu'));
   var link = new URL('terima.html', location.href).href;
-  var p1 = el('p', 'hint', 'Aplikasi terpisah untuk mencatat penerimaan laporan fisik dengan memindai QR di halaman terakhir laporan. Alamat: ' + link);
-  c.appendChild(p1);
-  var st = el('p', 'hint', PENERIMA ? 'Akun penerima: ' + PENERIMA.u + (PENERIMA.nama ? ' (' + PENERIMA.nama + ')' : '') + (PENERIMA.kunci ? (PENERIMA.kunci.permanen ? ' \u00b7 TERKUNCI' : ' \u00b7 terkunci sementara') : '') : 'Belum ada akun penerima. Buat tautan akses supaya petugas tidak perlu mengetik sandi.');
-  c.appendChild(st);
-  var row = el('div'); row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
-  var bt = el('button', 'btn sm', PENERIMA ? 'Buat tautan akses baru' : 'Buat tautan akses (tanpa sandi)'); bt.type = 'button';
-  bt.addEventListener('click', function () {
-    if (PENERIMA && !confirm('Tautan lama akan berhenti berlaku. Lanjutkan?')) return;
-    var abc = 'abcdefghjkmnpqrstuvwxyz23456789', s = '', i, rnd = new Uint32Array(14);
-    (window.crypto || window.msCrypto).getRandomValues(rnd);
-    for (i = 0; i < 14; i++) s += abc.charAt(rnd[i] % abc.length);
-    var u = PENERIMA ? PENERIMA.u : 'terima', n = PENERIMA ? PENERIMA.nama : 'Petugas Penerima';
-    kelolaAdm({ op: 'penerima', nu: u, ns: s, nama: n }, 'Tautan akses dibuat.').then(function (okk) {
-      if (okk) { TAUTAN_TRM = link + '#u=' + u + '&p=' + s; pasangPenerima(); }
-    });
-  });
-  row.appendChild(bt);
-  if (PENERIMA) {
-    var b2 = el('button', 'btn sm plain', 'Hapus akun'); b2.type = 'button';
-    b2.addEventListener('click', function () { if (confirm('Hapus akun penerima? Tautan akses berhenti berlaku.')) { TAUTAN_TRM = ''; kelolaAdm({ op: 'hapuspenerima' }, 'Akun penerima dihapus.'); } });
-    row.appendChild(b2);
-    if (PENERIMA.kunci) { var b3 = el('button', 'btn sm', 'Buka kunci'); b3.type = 'button'; b3.addEventListener('click', function () { kelolaAdm({ op: 'buka', nu: PENERIMA.u }, 'Kunci dibuka.'); }); row.appendChild(b3); }
-  }
-  c.appendChild(row);
-  if (TAUTAN_TRM) {
-    var bx = el('div'); bx.style.cssText = 'margin-top:12px;padding:12px;border-radius:12px;background:rgba(10,122,53,.08)';
-    bx.appendChild(el('p', 'hint', 'Buka tautan ini SEKALI di HP petugas penerima. Setelah itu aplikasi langsung bisa dipakai tanpa mengetik sandi. Jangan dibagikan ke kader.'));
-    var inp = el('input'); inp.type = 'text'; inp.readOnly = true; inp.value = TAUTAN_TRM; inp.style.cssText = 'width:100%;margin-bottom:8px'; inp.addEventListener('focus', function () { inp.select(); });
+  c.appendChild(el('p', 'hint', 'Aplikasi terpisah untuk mencatat penerimaan laporan fisik dengan memindai QR laporan atau lembar pengantar. Beri satu tautan untuk tiap petugas supaya tercatat siapa yang menerima. Alamat: ' + link));
+  var hd = el('div', 'trmhd'); hd.appendChild(el('b', null, 'Petugas penerima (' + L.length + ' dari ' + MAKS_TRM + ')'));
+  var bTam = el('button', 'btn sm', '+ Tambah penerima'); bTam.type = 'button'; bTam.disabled = L.length >= MAKS_TRM;
+  bTam.addEventListener('click', function () { TRM_TAMBAH = !TRM_TAMBAH; TRM_BARU = null; pasangPenerima(); });
+  hd.appendChild(bTam); c.appendChild(hd);
+  if (!L.length && !TRM_TAMBAH) c.appendChild(el('p', 'hint', 'Belum ada petugas penerima. Tekan "+ Tambah penerima".'));
+  function kotakTautan(o) {
+    var bx = el('div', 'trmbox');
+    bx.appendChild(el('p', 'hint', 'Tautan untuk ' + o.nama + '. Buka SEKALI di HP petugas itu; setelah itu aplikasi langsung bisa dipakai tanpa mengetik sandi. Jangan dibagikan ke kader.'));
+    var inp = el('input'); inp.type = 'text'; inp.readOnly = true; inp.value = o.link; inp.addEventListener('focus', function () { inp.select(); });
     bx.appendChild(inp);
-    var r2 = el('div'); r2.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
-    var bs = el('button', 'btn sm', 'Salin tautan'); bs.type = 'button';
-    bs.addEventListener('click', function () { try { navigator.clipboard.writeText(TAUTAN_TRM).then(function () { bs.textContent = 'Tersalin'; }, function () { inp.select(); }); } catch (x) { inp.select(); } });
-    var bw = el('a', 'btn sm plain', 'Kirim lewat WhatsApp'); bw.target = '_blank'; bw.rel = 'noopener'; bw.href = 'https://wa.me/?text=' + encodeURIComponent('Tautan akses aplikasi Terima Posyandu (jangan dibagikan): ' + TAUTAN_TRM);
-    r2.appendChild(bs); r2.appendChild(bw); bx.appendChild(r2); c.appendChild(bx);
+    var r2 = el('div', 'trmbtn'), bs = el('button', 'btn sm', 'Salin tautan'); bs.type = 'button';
+    bs.addEventListener('click', function () { try { navigator.clipboard.writeText(o.link).then(function () { bs.textContent = 'Tersalin'; }, function () { inp.select(); }); } catch (x) { inp.select(); } });
+    var bw = el('a', 'btn sm plain', 'Kirim lewat WhatsApp'); bw.target = '_blank'; bw.rel = 'noopener'; bw.href = 'https://wa.me/?text=' + encodeURIComponent('Tautan akses aplikasi Terima Posyandu untuk ' + o.nama + ' (jangan dibagikan): ' + o.link);
+    r2.appendChild(bs); r2.appendChild(bw); bx.appendChild(r2); return bx;
   }
+  if (TRM_TAMBAH) {
+    var fm = el('div', 'trmadd'); fm.appendChild(el('label', null, 'Nama petugas penerima'));
+    var inN = el('input'); inN.type = 'text'; inN.maxLength = 40; inN.placeholder = 'Contoh: Ibu Sari'; fm.appendChild(inN);
+    var bb = el('button', 'btn sm', 'Buat tautan'); bb.type = 'button';
+    bb.addEventListener('click', function () {
+      var nm = inN.value.trim(); if (!nm) { inN.focus(); return; }
+      var u = 'p' + trmAcak(7, 'abcdefghjkmnpqrstuvwxyz23456789'), sdi = trmAcak(14, 'abcdefghjkmnpqrstuvwxyz23456789'), tl = link + '#u=' + u + '&p=' + sdi;
+      bb.disabled = true;
+      kelolaAdm({ op: 'penerima', nu: u, ns: sdi, nama: nm }, 'Petugas penerima ditambahkan.').then(function (okk) {
+        if (okk) { trmTautanSimpan(u, tl); TRM_BARU = { u: u, nama: nm, link: tl }; TRM_TAMBAH = false; }
+        pasangPenerima();
+      });
+    });
+    fm.appendChild(bb); c.appendChild(fm);
+  }
+  if (TRM_BARU) c.appendChild(kotakTautan(TRM_BARU));
+  L.forEach(function (q) {
+    var warna = q.kunci ? 'r' : (q.pakai ? 'g' : 'y'), k = el('div', 'trmrow ' + warna), t = el('div', 'trmt');
+    t.appendChild(el('b', null, q.nama || q.u));
+    t.appendChild(el('span', null, q.kunci ? (q.kunci.permanen ? 'TERKUNCI. Buka kunci dulu' : 'Terkunci sementara') : trmWaktu(q.pakai)));
+    t.appendChild(el('span', null, (q.jml || 0) + ' laporan diterima'));
+    k.appendChild(t);
+    var ac = el('div', 'trmbtn'), tl0 = trmTautanAmbil(q.u);
+    if (tl0) { var b1 = el('button', 'btn sm plain', 'Salin tautan'); b1.type = 'button'; b1.addEventListener('click', function () { TRM_BARU = { u: q.u, nama: q.nama || q.u, link: tl0 }; TRM_TAMBAH = false; pasangPenerima(); }); ac.appendChild(b1); }
+    var b2 = el('button', 'btn sm plain', 'Tautan baru'); b2.type = 'button';
+    b2.addEventListener('click', function () {
+      if (!confirm('Tautan lama milik ' + (q.nama || q.u) + ' berhenti berlaku. Lanjutkan?')) return;
+      var sdi = trmAcak(14, 'abcdefghjkmnpqrstuvwxyz23456789'), tl = link + '#u=' + q.u + '&p=' + sdi;
+      kelolaAdm({ op: 'penerima', nu: q.u, ns: sdi, nama: q.nama || q.u }, 'Tautan baru dibuat.').then(function (okk) { if (okk) { trmTautanSimpan(q.u, tl); TRM_BARU = { u: q.u, nama: q.nama || q.u, link: tl }; TRM_TAMBAH = false; } pasangPenerima(); });
+    });
+    ac.appendChild(b2);
+    if (q.kunci) { var b3 = el('button', 'btn sm', 'Buka kunci'); b3.type = 'button'; b3.addEventListener('click', function () { kelolaAdm({ op: 'buka', nu: q.u }, 'Kunci dibuka.'); }); ac.appendChild(b3); }
+    var b4 = el('button', 'btn sm plain', 'Hapus'); b4.type = 'button';
+    b4.addEventListener('click', function () { if (confirm('Hapus ' + (q.nama || q.u) + '? Tautannya berhenti berlaku.')) { trmTautanSimpan(q.u, ''); if (TRM_BARU && TRM_BARU.u === q.u) TRM_BARU = null; kelolaAdm({ op: 'hapuspenerima', nu: q.u }, 'Petugas penerima dihapus.'); } });
+    ac.appendChild(b4); k.appendChild(ac); c.appendChild(k);
+  });
 };
 
 /* Judul kartu Beranda yang tetap diam saat kartu digulir: judul + keterangan dibungkus .sthd, sisanya .stbody (hanya tampilan). */

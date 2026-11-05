@@ -66,7 +66,7 @@ function doGet(e) {
     if (w2) {
       var c = bacaPengaturan(w2.u), bs = bacaPengaturan(PANTAU_USER);
       hasil = { ok: true, nama: c.nama, nip: c.nip, jabatan: c.jabatan, unit: c.unit, foto: c.foto,
-                banners: bs.banners, batas: bs.batas, batasKel: bs.batasKel, sk: bs.sk, pengumuman: bs.pengumuman, wa: bs.wa, peran: w2.peran, kel: w2.kel || '' };
+                banners: bs.banners, batas: bs.batas, batasKel: bs.batasKel, sk: bs.sk, pengumuman: bs.pengumuman, wa: bs.wa, fisik: bs.fisik, peran: w2.peran, kel: w2.kel || '' };
       if (w2.peran === 'utama') { hasil.admins = daftarAdmin(); hasil.ruang = bacaRuang(); hasil.penerima = infoPenerima(); }
     } else {
       hasil = gagalLogin();
@@ -132,11 +132,25 @@ var MAKS_ADMIN = 5;
 function bacaAdmin() {
   try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('PANTAU_ADMINS') || '{}'); } catch (x) { return {}; }
 }
-/** Akun tunggal untuk aplikasi Terima Posyandu: {u, h (hash), nama}. Hanya bisa scan dan konfirmasi penerimaan. */
-function bacaPenerima() {
-  try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('PANTAU_PENERIMA') || '{}'); } catch (x) { return {}; }
+/** Akun penerima aplikasi Terima Posyandu (maksimal 10): [{u, h (hash), nama, buat}]. Hanya bisa scan dan konfirmasi penerimaan.
+ *  Format lama (satu akun {u,h,nama}) otomatis dibaca sebagai daftar berisi satu akun. */
+var MAKS_PENERIMA = 10;
+function daftarPenerima() {
+  var o; try { o = JSON.parse(PropertiesService.getScriptProperties().getProperty('PANTAU_PENERIMA') || '{}'); } catch (x) { o = {}; }
+  if (Array.isArray(o.list)) return o.list;
+  return o && o.u ? [{ u: o.u, h: o.h, nama: o.nama || '', buat: 0 }] : [];
 }
-function simpanPenerima(o) { PropertiesService.getScriptProperties().setProperty('PANTAU_PENERIMA', JSON.stringify(o)); }
+function simpanPenerima(list) { PropertiesService.getScriptProperties().setProperty('PANTAU_PENERIMA', JSON.stringify({ list: list })); }
+function cariPenerima(k) { var l = daftarPenerima(); for (var i = 0; i < l.length; i++) if (l[i].u === k) return l[i]; return null; }
+function bacaPakai() { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('PANTAU_PENERIMA_PAKAI') || '{}'); } catch (x) { return {}; } }
+/** Catat kapan petugas terakhir memakai aplikasi (paling sering sekali tiap 10 menit, agar cepat). */
+function catatPakai(u) {
+  try {
+    var g = bacaPakai(), now = Date.now();
+    if (g[u] && now - g[u] < 600000) return;
+    g[u] = now; PropertiesService.getScriptProperties().setProperty('PANTAU_PENERIMA_PAKAI', JSON.stringify(g));
+  } catch (x) {}
+}
 function bacaKelAdmin() {
   try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('PANTAU_ADMIN_KEL') || '{}'); } catch (x) { return {}; }
 }
@@ -152,9 +166,9 @@ function masuk(u, p) {
   var w = null;
   if (u === PANTAU_USER) { if (sandiBenar(u, p)) w = { u: u, peran: 'utama' }; }
   else {
-    var a = bacaAdmin(), pn = bacaPenerima();
+    var a = bacaAdmin(), pn = a[k] ? null : cariPenerima(k);
     if (a[k] && a[k] === hashAdmin(k, p)) w = { u: k, peran: 'admin', kel: bacaKelAdmin()[k] || '-' };
-    else if (!a[k] && pn.u && pn.u === k && pn.h === hashAdmin(k, p)) w = { u: k, peran: 'terima', nama: pn.nama || 'Operator Kecamatan' };
+    else if (pn && pn.h === hashAdmin(k, p)) w = { u: k, peran: 'terima', nama: pn.nama || 'Operator Kecamatan' };
   }
   if (w) {
     if (dikenal) hapusGagal(k);
@@ -173,7 +187,7 @@ var KUNCI_INFO = null, GAGAL_PESAN = '';
 function bacaGagal() { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('PANTAU_GAGAL') || '{}'); } catch (x) { return {}; } }
 function simpanGagal(g) { PropertiesService.getScriptProperties().setProperty('PANTAU_GAGAL', JSON.stringify(g)); }
 function kunciAkun(u) { return u === PANTAU_USER ? PANTAU_USER : String(u || '').toLowerCase(); }
-function akunDikenal(k) { return k === PANTAU_USER || !!bacaAdmin()[k] || (!!bacaPenerima().u && bacaPenerima().u === k); }
+function akunDikenal(k) { return k === PANTAU_USER || !!bacaAdmin()[k] || !!cariPenerima(k); }
 function statusKunci(k) {
   var e = bacaGagal()[k];
   if (!e) return null;
@@ -210,7 +224,20 @@ function gagalLogin() {
 /** Darurat: jalankan dari editor Apps Script untuk membuka semua akun yang terkunci (termasuk admin utama). */
 function bukaSemuaKunci() { simpanGagal({}); }
 
-function infoPenerima() { var pn = bacaPenerima(); return pn.u ? { u: pn.u, nama: pn.nama || '', kunci: statusKunci(pn.u) } : null; }
+/** Daftar petugas penerima beserta kunci, terakhir dipakai, dan jumlah laporan yang sudah diterimanya. */
+function infoPenerima() {
+  var pakai = bacaPakai(), jml = {};
+  try {
+    var sl = bacaSetorLengkap();
+    Object.keys(sl.t).forEach(function (pr) { Object.keys(sl.t[pr]).forEach(function (id) { var by = sl.t[pr][id].by; if (by && (sl.d[pr] || {})[id]) jml[by] = (jml[by] || 0) + 1; }); });
+  } catch (x) {}
+  return daftarPenerima().map(function (q) { return { u: q.u, nama: q.nama || '', kunci: statusKunci(q.u), buat: q.buat || 0, pakai: pakai[q.u] || 0, jml: jml[q.u] || 0 }; });
+}
+/** Periksa sandi admin utama di server (untuk tindakan penting). Salah berulang ikut menghitung kunci login. */
+function cekKonfirmasi(w, k) {
+  var x = masuk(w.u, String(k || ''));
+  if (!x) { Utilities.sleep(1200); throw new Error('Sandi tidak cocok'); }
+}
 function daftarAdmin() {
   var a = bacaAdmin();
   return Object.keys(a).sort().map(function (k) { var c = bacaPengaturan(k); return { u: k, nama: c.nama, nip: c.nip, kel: bacaKelAdmin()[k] || '', kunci: statusKunci(k) }; });
@@ -221,14 +248,28 @@ function kelola(d) {
   if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh mengelola admin'); }
   var a = bacaAdmin(), nu = String(d.nu || '').toLowerCase().trim(), ns = String(d.ns || '');
   if (d.op === 'penerima' || d.op === 'hapuspenerima') {
-    if (d.op === 'hapuspenerima') { simpanPenerima({}); catatLog(w.u, 'menghapus akun aplikasi Terima'); }
-    else {
+    var lp = daftarPenerima(), ip = -1; lp.forEach(function (q, i) { if (q.u === nu) ip = i; });
+    if (d.op === 'hapuspenerima') {
+      if (ip < 0) throw new Error('Petugas penerima tidak ditemukan');
+      var nmh = lp[ip].nama || nu; lp.splice(ip, 1); simpanPenerima(lp); hapusGagal(nu);
+      catatLog(w.u, 'menghapus petugas penerima ' + nmh + ' (' + nu + ')');
+    } else {
       if (!/^[a-z0-9]{3,20}$/.test(nu)) throw new Error('Nama pengguna 3-20 huruf kecil atau angka');
       if (nu === PANTAU_USER.toLowerCase() || a[nu]) throw new Error('Nama pengguna itu sudah dipakai akun lain');
-      if (ns.length < 6 || ns.length > 60) throw new Error('Kata sandi minimal 6 karakter');
-      var pn0 = bacaPenerima(); if (pn0.u && pn0.u !== nu) hapusGagal(pn0.u);
-      simpanPenerima({ u: nu, h: hashAdmin(nu, ns), nama: bersih(d.nama, 40) }); hapusGagal(nu);
-      catatLog(w.u, 'mengatur akun aplikasi Terima (' + nu + ')');
+      var nmp = bersih(d.nama, 40);
+      if (!nmp) throw new Error('Isi nama petugas penerima');
+      if (ip < 0 && lp.length >= MAKS_PENERIMA) throw new Error('Petugas penerima sudah penuh (maksimal ' + MAKS_PENERIMA + ')');
+      if (ns) {
+        if (ns.length < 6 || ns.length > 60) throw new Error('Kata sandi minimal 6 karakter');
+      } else if (ip < 0) throw new Error('Kata sandi minimal 6 karakter');
+      if (ip < 0) { lp.push({ u: nu, h: hashAdmin(nu, ns), nama: nmp, buat: Date.now() }); catatLog(w.u, 'menambah petugas penerima ' + nmp + ' (' + nu + ')'); }
+      else {
+        var lamaNm = lp[ip].nama || '';
+        if (ns) lp[ip].h = hashAdmin(nu, ns);
+        lp[ip].nama = nmp;
+        catatLog(w.u, (ns ? 'membuat tautan akses baru untuk petugas penerima ' : 'mengubah nama petugas penerima ') + nmp + ' (' + nu + ')' + (lamaNm && lamaNm !== nmp ? ' dari ' + lamaNm : ''));
+      }
+      simpanPenerima(lp); hapusGagal(nu);
     }
     return simpanHasil({ ok: true, admins: daftarAdmin(), penerima: infoPenerima() }, 'a');
   }
@@ -258,7 +299,7 @@ function kelola(d) {
     var k2 = bacaKelAdmin(); k2[nu] = String(d.kel); simpanKelAdmin(k2);
     catatLog(w.u, 'memindahkan operator ' + nu + ' ke Kelurahan ' + d.kel);
   } else if (d.op === 'buka') {
-    if (!a[nu] && bacaPenerima().u !== nu) throw new Error('Admin tidak ditemukan');
+    if (!a[nu] && !cariPenerima(nu)) throw new Error('Admin tidak ditemukan');
     hapusGagal(nu);
     catatLog(w.u, 'membuka kunci akun operator ' + nu);
   } else if (d.op === 'hapus') {
@@ -294,6 +335,7 @@ function bacaPengaturan(u) {
     c.pengumuman = String(o.pengumuman || '');
     c.pengumumanTgl = String(o.pengumumanTgl || '');
     c.wa = String(o.wa || '');
+    c.fisik = o.fisik === false ? false : (o.fisik === true ? true : null);   // masa peralihan: null = belum pernah diatur di server
   }
   return c;
 }
@@ -354,6 +396,11 @@ function atur(d) {
     if (nw && !/^\d{9,15}$/.test(nw)) throw new Error('Nomor WhatsApp tidak valid');
     c.wa = nw;
   }
+  if (d.fisik !== undefined) {
+    if (w.peran !== 'utama') throw new Error('Hanya admin utama yang boleh mengubah masa peralihan');
+    cekKonfirmasi(w, d.konfirmasi);
+    c.fisik = d.fisik === true || d.fisik === 'true' || d.fisik === 1 || d.fisik === '1';
+  }
   if (d.sandiBaru !== undefined) {
     var sb = String(d.sandiBaru);
     if (sb.length < 6 || sb.length > 60) throw new Error('Kata sandi baru minimal 6 karakter');
@@ -369,6 +416,7 @@ function atur(d) {
   if (d.batasKel !== undefined) cl.push('mengubah batas waktu kelurahan mengantar laporan menjadi tanggal ' + c.batasKel);
   if (d.pengumuman !== undefined) cl.push(c.pengumuman ? 'mengubah pengumuman untuk kader' : 'menghapus pengumuman untuk kader');
   if (d.wa !== undefined) cl.push(c.wa ? 'mengubah nomor WhatsApp bantuan' : 'menghapus nomor WhatsApp bantuan');
+  if (d.fisik !== undefined) cl.push(c.fisik ? 'menghidupkan masa peralihan' : 'mematikan masa peralihan');
   if (d.sandiBaru !== undefined) cl.push('mengganti kata sandi');
   if (cl.length) catatLog(w.u, cl.join(', '));
   return simpanHasil({ ok: true }, 'a');
@@ -648,6 +696,7 @@ function bersihPos(arr) {
 function simpanPos(d) {
   var w = masuk(d.u, d.p);
   if (!w || w.peran !== 'utama') { Utilities.sleep(1200); throw new Error('Hanya admin utama yang boleh mengubah data Posyandu'); }
+  if (d.konfirmasi !== undefined) cekKonfirmasi(w, d.konfirmasi);
   var lama = bacaPos(), list = bersihPos(d.list), teks = JSON.stringify({ list: list, tgl: Date.now() }), f = induk(), it = f.getFilesByName(NAMA_POS);
   if (it.hasNext()) it.next().setContent(teks); else f.createFile(NAMA_POS, teks, MimeType.PLAIN_TEXT);
   sentuhStamp();
@@ -827,7 +876,7 @@ function buatLembar(d) {
       Object.keys(K).forEach(function (kk) { if (K[kk] === k) delete K[kk]; });
     });
     items.forEach(function (x) {
-      if (x.st === 'ikut' || x.st === 'diterima') { var q = pos.filter(function (y) { return y.id === x.pid; })[0]; K[kunciLap(per, q.kel, q.jenis, q.nama)] = kode; }
+      if (x.st === 'ikut' || (x.st === 'diterima' && x.nomor)) { var q = pos.filter(function (y) { return y.id === x.pid; })[0]; K[kunciLap(per, q.kel, q.jenis, q.nama)] = kode; }
     });
     var oleh = namaOperator(w);
     L[kode] = { kode: kode, kel: kel, per: per, bln: BULAN[parseInt(per.slice(5), 10) - 1], thn: per.slice(0, 4),
@@ -906,7 +955,7 @@ function terimaLembarGet(p) {
         if (!q || !r || r.nomor !== it.nomor) { lewati.push(it.nama + ': laporan berubah setelah lembar dibuat'); return; }
         if (K[kunciLap(o.per, q.kel, q.jenis, q.nama)] !== o.kode) { lewati.push(it.nama + ': laporan sudah dibuka kembali'); return; }
         sl.d[o.per][it.pid] = Utilities.formatDate(now, zona, 'yyyy-MM-dd');
-        sl.t[o.per][it.pid] = { nomor: it.nomor, kode: it.kode, oleh: oleh, jam: Utilities.formatDate(now, zona, 'HH:mm'), ts: now.getTime(), lembar: o.kode };
+        sl.t[o.per][it.pid] = { nomor: it.nomor, kode: it.kode, oleh: oleh, by: w.u, jam: Utilities.formatDate(now, zona, 'HH:mm'), ts: now.getTime(), lembar: o.kode };
         baru++;
       });
       if (baru) tulisSetor(sl.d, sl.t);
@@ -925,6 +974,7 @@ function masukTerima(u, p) {
   IZIN_TERIMA = true;
   var w = masuk(u, p);
   if (w && w.peran !== 'utama' && w.peran !== 'terima') return null;
+  if (w && w.peran === 'terima') catatPakai(w.u);
   return w;
 }
 function namaOperator(w) {
@@ -1034,7 +1084,7 @@ function terimaKonfirmasiInti(d, w) {
   var oleh = namaOperator(w);
   sl.d[o.per] = sl.d[o.per] || {}; sl.t[o.per] = sl.t[o.per] || {};
   sl.d[o.per][o.pid] = Utilities.formatDate(now, zona, 'yyyy-MM-dd');
-  sl.t[o.per][o.pid] = { nomor: o.nomor, kode: o.kode, oleh: oleh, jam: Utilities.formatDate(now, zona, 'HH:mm'), ts: now.getTime() };
+  sl.t[o.per][o.pid] = { nomor: o.nomor, kode: o.kode, oleh: oleh, by: w.u, jam: Utilities.formatDate(now, zona, 'HH:mm'), ts: now.getTime() };
   tulisSetor(sl.d, sl.t);
   catatLog(w.u, 'menerima laporan fisik ' + o.jenis + ' ' + o.pos + ' (' + o.kel + ') ' + o.bln + ' ' + o.thn + ' [' + o.nomor + ']');
   o.terima = statusTerima(o.per, o.pid);
