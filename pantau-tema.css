@@ -773,7 +773,9 @@ html #app.isop #secP .st:empty{display:none}
   html #app.isop #cardProf>.btn{grid-column:3}
 }
 @media (max-width:760px){
-  html #app.isop #cardProf .pf{flex-wrap:wrap}
+  html #app.isop #cardProf .pf{flex-direction:column;align-items:center;gap:10px}
+  html #app.isop #cardProf .pf>div{grid-template-columns:1fr 1fr;width:100%}
+  html #app.isop #cardProf .pf .btn{width:100%;white-space:nowrap;padding-left:6px;padding-right:6px}
   html #app.isop #secP>.card:last-child .btns{display:grid!important;grid-template-columns:1fr 1fr;gap:10px}
   html #app.isop #secP>.card:last-child .btns .btn{width:100%;white-space:nowrap;padding-left:6px;padding-right:6px}
 }
