@@ -464,19 +464,19 @@ html .banner h2{color:var(--fg)}html .banner p{color:var(--muted)}html .banner .
 
 /* ---------- Beranda laptop: kisi 2x2, kartu sama tinggi ---------- */
 @media (min-width:1100px){
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .mainc{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch;align-content:start}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .mainc>#msg:empty{display:none}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .mainc>section:has(>#btnBuat[style*="none"]){display:none}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .mainc>#msg,#app[data-view=b]:has(#sumB>.card:nth-child(3)) .mainc>section:not(#sumB):not(#secMx){grid-column:1/3;margin:0}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .banner.d{margin-bottom:0}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) #sumB{display:contents}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) #sumB>.card,#app[data-view=b]:has(#sumB>.card:nth-child(3)) #secMx>.card{height:clamp(400px,52vh,500px);overflow:auto;margin:0}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) #secMx{margin:0}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) #sumB>.card.span2{grid-column:auto}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) #sumB>.card.span2 .hasil2{flex-wrap:wrap;padding:22px 24px}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) #sumB>.card.span2 .hasil2 .tx{flex:1 1 60%}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) #sumB>.card.span2 .hasil2 .bar{flex:1 1 100%;order:5;height:12px}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) #sumB>.card.span2 .hasil2 .tx b{white-space:nowrap;font-size:34px}
+  #app[data-view=b]:has(#sumB>.card.span2) .mainc{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch;align-content:start}
+  #app[data-view=b]:has(#sumB>.card.span2) .mainc>#msg:empty{display:none}
+  #app[data-view=b]:has(#sumB>.card.span2) .mainc>section:has(>#btnBuat[style*="none"]){display:none}
+  #app[data-view=b]:has(#sumB>.card.span2) .mainc>#msg,#app[data-view=b]:has(#sumB>.card.span2) .mainc>section:not(#sumB):not(#secMx){grid-column:1/3;margin:0}
+  #app[data-view=b]:has(#sumB>.card.span2) .banner.d{margin-bottom:0}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB{display:contents}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card,#app[data-view=b]:has(#sumB>.card.span2) #secMx>.card{height:clamp(400px,52vh,500px);overflow:auto;margin:0}
+  #app[data-view=b]:has(#sumB>.card.span2) #secMx{margin:0}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card.span2{grid-column:auto}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card.span2 .hasil2{flex-wrap:wrap;padding:22px 24px}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card.span2 .hasil2 .tx{flex:1 1 60%}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card.span2 .hasil2 .bar{flex:1 1 100%;order:5;height:12px}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card.span2 .hasil2 .tx b{white-space:nowrap;font-size:34px}
 }
 
 /* ---------- Batang gulir tipis, kaca kuning (kartu yang bisa digulir) ---------- */
@@ -494,11 +494,11 @@ html .card::-webkit-scrollbar-thumb:hover{background:rgba(255,184,0,.95)}
 :root[data-theme=dark]{--st-bg:linear-gradient(180deg,rgba(120,92,0,.7),rgba(60,46,0,.5)),#2a2308;--st-line:rgba(255,200,0,.28)}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){--st-bg:linear-gradient(180deg,rgba(120,92,0,.7),rgba(60,46,0,.5)),#2a2308;--st-line:rgba(255,200,0,.28)}}
 @media (min-width:1100px){
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) #sumB>.card:has(>.sthd),#app[data-view=b]:has(#sumB>.card:nth-child(3)) #secMx>.card:has(>.sthd){display:flex;flex-direction:column;overflow:hidden;padding-top:0}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .sthd{flex:none;margin:0 -16px 0;padding:14px 16px 10px;border-radius:0;background:var(--st-bg);border:0;border-bottom:1px solid var(--st-line);z-index:2}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .sthd>h4{margin:0}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .sthd>.lt{margin:4px 0 0}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .stbody{flex:1 1 auto;min-height:0;overflow:auto;padding-top:10px;scrollbar-width:thin;scrollbar-color:rgba(255,200,0,.75) transparent}
+  #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card:has(>.sthd),#app[data-view=b]:has(#sumB>.card.span2) #secMx>.card:has(>.sthd){display:flex;flex-direction:column;overflow:hidden;padding-top:0}
+  #app[data-view=b]:has(#sumB>.card.span2) .sthd{flex:none;margin:0 -16px 0;padding:14px 16px 10px;border-radius:0;background:var(--st-bg);border:0;border-bottom:1px solid var(--st-line);z-index:2}
+  #app[data-view=b]:has(#sumB>.card.span2) .sthd>h4{margin:0}
+  #app[data-view=b]:has(#sumB>.card.span2) .sthd>.lt{margin:4px 0 0}
+  #app[data-view=b]:has(#sumB>.card.span2) .stbody{flex:1 1 auto;min-height:0;overflow:auto;padding-top:10px;scrollbar-width:thin;scrollbar-color:rgba(255,200,0,.75) transparent}
   .stbody::-webkit-scrollbar{width:6px}.stbody::-webkit-scrollbar-track{background:transparent}.stbody::-webkit-scrollbar-thumb{background:rgba(255,200,0,.75);border-radius:6px}
 }
 
@@ -537,7 +537,7 @@ html .card::-webkit-scrollbar-thumb:hover{background:rgba(255,184,0,.95)}
   #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card:nth-child(2){order:3}
   #app[data-view=b]:has(#sumB>.card.span2) #sumB>.card:nth-child(3){grid-column:1/3;order:4;height:auto;max-height:clamp(380px,50vh,460px)}
   #app[data-view=b]:has(#sumB>.card.span2) .mainc>#msg{order:0}
-  #app[data-view=b]:has(#sumB>.card:nth-child(3)) .mainc>section:not(#sumB):not(#secMx):not(:has(>#btnBuat)){order:9}
+  #app[data-view=b]:has(#sumB>.card.span2) .mainc>section:not(#sumB):not(#secMx):not(:has(>#btnBuat)){order:9}
 }
 /* HP: kartu hasil dipadatkan (cincin kecil di kiri judul, sisa waktu jadi satu strip) dan urutan sama */
 @media (max-width:1099px){
