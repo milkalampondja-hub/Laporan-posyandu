@@ -645,3 +645,30 @@ html #rkBox .cmp i{max-width:30px;min-height:4px}
 }
 @media (max-width:760px){html #rkBox .rkctl{width:100%}html #rkBox .rkctl .fl2{width:100%}html #rkBox .rkctl .fl2 select{flex:1;width:auto;min-width:0}html #rkBox .rkctl .toolbar{width:100%}html #rkBox .rkctl .toolbar .btn{flex:1}html #rkBox .dtbl{font-size:13px}}
 @media (max-width:760px){html #rkBox .tabbar button{font-size:13px;padding:9px 2px}html #rkBox .dtbl th,html #rkBox .dtbl td{padding:8px 2px}}
+/* ---- Pengaturan ---- */
+html #secP>.card>h4:first-child::before,html #secP #boxRuang .card>h4:first-child::before{display:none}
+html #secP>.card>h4:first-child{display:block}
+html #secP .tabbar{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;margin:2px 0 12px;border:0;border-radius:14px;background:rgba(255,255,255,.55);overflow:visible}
+html #secP .tabbar button{padding:9px 4px;border:0;border-radius:10px;text-align:center;white-space:normal;line-height:1.2}
+html #secP .tabbar button.on{background:var(--accent);color:#2b2200}
+:root[data-theme=dark] #secP .tabbar{background:rgba(255,255,255,.08)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #secP .tabbar{background:rgba(255,255,255,.08)}}
+html #cardApp .kh{margin:16px 0 8px;padding-top:14px;border-top:1px solid var(--line)}
+html #admList .admrow>.btn[style*="flex-basis"]{flex-basis:auto!important}
+@media (min-width:1000px){
+  html #secP{column-count:2;column-gap:12px;display:block}
+  html #secP>*{break-inside:avoid;margin-top:0;margin-bottom:12px}
+  html #secP>.tabbar{column-span:all}
+  html #secP>.card:not(.x),html #secP>#boxRuang{break-inside:avoid}
+  html #cardProf{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;align-items:end}
+  html #cardProf>h4,html #cardProf>.pf,html #cardProf>.btn,html #cardProf>.st{grid-column:1/-1}
+  html #cardAdm2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;align-items:end}
+  html #cardAdm2[style*="none"]{display:none}
+  html #cardAdm2>h4,html #cardAdm2>.btn,html #cardAdm2>.st{grid-column:1/-1}
+  html #cardProf>.btn.wide,html #cardPw>.btn.wide,html #cardAdm2>.btn.wide,html #cardApp>.btn.wide{width:auto;justify-self:end}
+  html #cardPw,html #cardApp{display:flex;flex-direction:column}
+  html #cardPw>.btn.wide,html #cardApp>.btn.wide{align-self:flex-end}
+  html #cardApp .fld input[type=number]{max-width:200px}
+  html #secP>.card:last-child .btns{display:flex!important;flex-wrap:wrap;gap:10px}
+  html #secP>.card:last-child .btns .btn{width:auto;flex:1}
+}

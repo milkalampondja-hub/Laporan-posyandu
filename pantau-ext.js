@@ -1810,7 +1810,7 @@ var TAUTAN_TRM = '';
 window.pasangPenerima = function () {
   var c = $('cardTrm'), adm = $('cardAdm');
   if (!adm) return;
-  if (!c) { c = el('div', 'card'); c.id = 'cardTrm'; c.setAttribute('data-tab', 'pengguna'); adm.parentNode.insertBefore(c, adm.nextSibling); }
+  if (!c) { c = el('div', 'card'); c.id = 'cardTrm'; c.setAttribute('data-tab', 'pengguna'); var adm2 = $('cardAdm2') || adm; adm2.parentNode.insertBefore(c, adm2.nextSibling); }
   c.style.display = PERAN === 'utama' ? '' : 'none'; if (!PERAN === 'utama') return;
   c.textContent = '';
   c.appendChild(el('h4', null, 'Aplikasi Terima Posyandu'));

@@ -294,7 +294,7 @@ footer.dsk{display:none}
 #toastbaru.on{opacity:1;transform:translate(-50%,0)}
 @media (min-width:900px){#toastbaru{bottom:24px}}
 </style>
-<link rel="stylesheet" href="pantau-tema.css?v=20261105s">
+<link rel="stylesheet" href="pantau-tema.css?v=20261105t">
 <style id="loginKaca">
 /* ---------- Gaya kaca: halaman masuk ---------- */
 html .login{background:#fff8e1}
@@ -360,7 +360,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
     <div class="lerr" id="lerr" role="alert"></div>
     <button class="btn" id="lb" type="submit">Masuk</button>
   </form>
-  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small style="opacity:.55;font-size:10px">tampilan 20261105s</small></div>
+  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small style="opacity:.55;font-size:10px">tampilan 20261105t</small></div>
 </section>
 
 <div id="app" class="hidden" data-view="b">
@@ -447,7 +447,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
             <div class="kv"><span>Terakhir diperbarui</span><b class="lastt">-</b></div>
             <div class="kv"><span>Status</span><span class="okpill">Online</span></div>
           </div>
-          <div class="card" data-tab="akun"><h4>Profil admin</h4>
+          <div class="card" id="cardProf" data-tab="akun"><h4>Profil admin</h4>
             <div class="pf"><span class="avt big" id="pvfoto"><svg class="ic "><use href="#i-user"/></svg></span>
               <div style="display:grid;gap:8px">
                 <label class="btn sm fbtn">Pilih foto profil<input id="inFoto" type="file" accept="image/*"></label>
@@ -462,7 +462,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
             <div class="st" id="stProfil" role="status"></div>
           </div>
           <div class="card" id="cardBan" data-tab="app" style="display:none"></div>
-          <div class="card" data-tab="akun"><h4>Ganti kata sandi</h4>
+          <div class="card" id="cardPw" data-tab="akun"><h4>Ganti kata sandi</h4>
             <div class="fld"><label for="pwLama">Kata sandi sekarang</label><input id="pwLama" type="password" autocomplete="current-password"></div>
             <div class="fld"><label for="pwBaru">Kata sandi baru</label><input id="pwBaru" type="password" autocomplete="new-password"></div>
             <div class="fld"><label for="pwUlang">Ulangi kata sandi baru</label><input id="pwUlang" type="password" autocomplete="new-password"></div>
@@ -477,6 +477,8 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
             <p class="hint" id="admInfo"></p>
             <p class="hint">Anda adalah Admin kecamatan: dapat mengelola data, memeriksa laporan, dan mengatur aplikasi. Akun tambahan berperan sebagai Petugas/operator: dapat melihat, memeriksa, dan merekap laporan, tetapi tidak dapat mengubah data Posyandu, SK, banner, atau akun.</p>
             <div id="admList"></div>
+            </div>
+          <div class="card" id="cardAdm2" data-tab="pengguna" style="display:none"><h4>Tambah admin</h4>
             <div class="fld"><label for="adU">Nama pengguna baru</label><input id="adU" type="text" name="op-adU-x" readonly onfocus="this.removeAttribute('readonly')" maxlength="20" autocomplete="off" autocapitalize="none" placeholder="huruf kecil atau angka, 3-20"></div>
             <div class="fld"><label for="adK">Kelurahan operator (hanya melihat data kelurahan ini)</label><select id="adK"><option value="">Pilih kelurahan…</option><option>Kayumalue Ngapa</option><option>Kayumalue Pajeko</option><option>Mamboro</option><option>Mamboro Barat</option><option>Taipa</option></select></div>
             <div class="fld"><label for="adN">Nama admin (boleh dikosongkan)</label><input id="adN" type="text" name="op-adN-x" readonly onfocus="this.removeAttribute('readonly')" maxlength="40" autocomplete="off"></div>
@@ -516,7 +518,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
   </nav>
 </div>
 <script src="seed-posyandu.js"></script>
-<script src="pantau-ext.js?v=20261105s" defer></script>
+<script src="pantau-ext.js?v=20261105t" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script>
 var ARSIP_URL='https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec';
@@ -732,7 +734,7 @@ function jsonp(params,ms){
 }
 var PENERIMA=null;
 function pasangAdmin(){
-  var c=$('cardAdm');if(!c)return;c.style.display=PERAN==='utama'?'':'none';if(PERAN!=='utama')return;
+  var c=$('cardAdm');if(!c)return;c.style.display=PERAN==='utama'?'':'none';var c2=$('cardAdm2');if(c2)c2.style.display=PERAN==='utama'?'':'none';if(PERAN!=='utama')return;
   $('admInfo').textContent='Admin utama: '+CRED.u+'. Admin tambahan: '+ADM.length+' dari 5.';
   var box=$('admList');box.textContent='';
   ADM.forEach(function(a){
