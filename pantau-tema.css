@@ -691,3 +691,8 @@ html .opb .item .pill{white-space:normal}
 html .opb .item.op-r .pill{background:#fde1e1!important;color:#b3261e!important}
 html .opb .item.op-y .pill{background:#fff0b8!important;color:#8a6a00!important}
 @media (max-width:760px){html .trow .tt{min-width:0}html .tt .wil.op{white-space:normal;font-size:11.5px}html .tt .wil.op span+span{width:auto}}
+/* daftar antar laporan operator: setiap kartu sama bentuknya (nama di atas, status dan tombol di bawah) */
+html .opb .item{display:flex!important;flex-wrap:wrap;align-items:center!important;gap:8px!important;padding:10px 12px!important}
+html .opb .item>label{flex:1 1 100%!important;min-width:0!important;min-height:0!important}
+html .opb .item>.btn:last-of-type{margin-left:auto}
+@media (min-width:900px){html .opb{align-items:stretch}html .opb>.item{height:100%}}
