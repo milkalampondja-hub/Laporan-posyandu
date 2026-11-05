@@ -815,6 +815,15 @@ function renderRekap() {
   if (!isOp()) muatSetor(prR);
   var nt = el('div', 'lt rknote'); nt.setAttribute('data-tab', 'ring');
   if (!isOp()) { nt.textContent = 'Angka Balita, Lansia, dan Total di halaman ini adalah laporan digital yang sudah terkirim. Laporan yang resmi dihitung masuk (digital + fisik diterima kecamatan) tampil di Beranda dan di kolom "Fisik diterima" pada tabel per kelurahan.'; isi.appendChild(nt); }
+  // 0 angka ringkas (operator)
+  var cs = null;
+  if (isOp()) {
+    cs = el('div', 'card rkst');
+    [['a', h.masuk.length + '/' + h.rows.length, 'Laporan masuk'], ['d', persen(h.masuk.length, h.rows.length) + '%', 'Capaian ' + R.bl], ['b', String(h.terlambat.length), 'Terlambat'], ['c', String(h.rows.length - h.masuk.length), 'Belum masuk']].forEach(function (x) {
+      var d = el('div', x[0]); d.appendChild(el('b', null, x[1])); d.appendChild(document.createTextNode(x[2])); cs.appendChild(d);
+    });
+    isi.appendChild(cs);
+  }
   // 1 per bulan
   var c1 = el('div', 'card'); c1.appendChild(el('h4', null, 'Rekap laporan per bulan - ' + R.th));
   c1.appendChild(tabel(['Bulan', 'Balita', 'Lansia', 'Total', '%'], R.bulanan.map(function (o) {
@@ -829,6 +838,15 @@ function renderRekap() {
       var fut = +R.th > now.getFullYear() || (+R.th === now.getFullYear() && o.i > now.getMonth());
       if (fut || !o.m) tr.classList.add('nol'); if (o.i === R.bm) tr.classList.add('sel');
     });
+    if (isOp()) {
+      var kosong = [];
+      for (var q = 0; q < R.bulanan.length && q < R.bm && !R.bulanan[q].m; q++) kosong.push(trs[q + 1]);
+      if (kosong.length >= 2) {
+        var td0 = kosong[0].children[0]; kosong[0].textContent = '';
+        var tdk = el('td', 'gab', R.bulanan[0].b + ' - ' + R.bulanan[kosong.length - 1].b + ': belum ada laporan'); tdk.colSpan = 5; kosong[0].appendChild(tdk);
+        for (var w = 1; w < kosong.length; w++) kosong[w].style.display = 'none';
+      }
+    }
   })();
   // 2 per kelurahan
   var c2 = el('div', 'card'); c2.appendChild(el('h4', null, 'Rekap laporan per kelurahan - ' + R.bl + ' ' + R.th));
@@ -848,14 +866,14 @@ function renderRekap() {
   c3.appendChild(barRow('Posyandu Balita', gt.b[0], gt.b[1])); c3.appendChild(barRow('Posyandu Lansia', gt.l[0], gt.l[1]));
   if (!op1) isi.appendChild(c3);
   // 4 rekap posyandu
-  var c4 = el('div', 'card'); c4.appendChild(el('h4', null, 'Rekap Posyandu Balita dan Lansia bulan ' + R.bl + ' ' + R.th));
+  var c4 = el('div', 'card rkpos'); c4.appendChild(el('h4', null, 'Rekap Posyandu Balita dan Lansia bulan ' + R.bl + ' ' + R.th));
   JENIS.forEach(function (j) {
     c4.appendChild(el('div', 'kh', j));
     KEL.forEach(function (k) {
       var l = h.rows.filter(function (r) { return r.p.kel === k && r.p.jenis === j; }); if (!l.length) return;
       c4.appendChild(el('div', 'lt', k + ' - ' + l.filter(function (r) { return r.d; }).length + ' dari ' + l.length + ' sudah masuk'));
       l.forEach(function (r) {
-        var it = el('div', 'item'); it.style.cssText = 'display:flex;align-items:center;gap:8px;padding:9px 12px';
+        var it = el('div', 'item rg-' + (r.st === 'tepat' || r.st === 'telat' ? 'g' : r.st === 'lewat' ? 'y' : 'r')); it.style.cssText = 'display:flex;align-items:center;gap:8px;padding:9px 12px';
         var t = el('div'); t.style.flex = '1'; t.appendChild(el('div', 'a', r.p.nama));
         if (r.d) t.appendChild(el('div', 'b', 'Dikirim ' + (r.d.tk || '-').slice(0, 10)));
         it.appendChild(t); it.appendChild(pillSt(r)); c4.appendChild(it);
@@ -892,7 +910,7 @@ function renderRekap() {
   isi.appendChild(c6);
   // 7 angka
   var c7 = kartuAngka(isi);
-  [[c1, 'ring'], [c2, 'ring'], [c3, 'ring'], [c6, 'ring'], [c4, 'pos'], [c5, 'pos']].forEach(function (x) { x[0].setAttribute('data-tab', x[1]); });
+  [[cs || c1, 'ring'], [c1, 'ring'], [c2, 'ring'], [c3, 'ring'], [c6, 'ring'], [c4, 'pos'], [c5, 'pos']].forEach(function (x) { x[0].setAttribute('data-tab', x[1]); });
 }
 /* ---------- Hasil laporan (angka kegiatan): filter sendiri, hanya dari laporan yang fisiknya sudah diterima ---------- */
 var ANG = null;

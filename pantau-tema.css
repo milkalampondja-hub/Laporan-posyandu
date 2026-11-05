@@ -724,3 +724,38 @@ html #dpBox .dtbl td.stk.off{color:var(--muted)}
   html #dpBox #skBox{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   html #dpBox #skBox>.skc{margin:0}
 }
+/* ---- Rekapitulasi operator ---- */
+html #rkBox .rkst{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+html #rkBox .rkst>div{background:var(--kc-in,#fff);border-radius:14px;padding:12px 8px;text-align:center;border-top:4px solid #cfcfcf;font-size:12.5px;line-height:1.3}
+html #rkBox .rkst>div b{display:block;font-size:24px;line-height:1.2}
+html #rkBox .rkst .a,html #rkBox .rkst .d{border-top-color:#2e9b57}
+html #rkBox .rkst .b{border-top-color:#e0a800}
+html #rkBox .rkst .c{border-top-color:#d33}
+:root[data-theme=dark] #rkBox .rkst>div{background:rgba(255,255,255,.08)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #rkBox .rkst>div{background:rgba(255,255,255,.08)}}
+html #rkBox .dtbl td.gab{text-align:center;color:var(--muted,#888);font-style:italic}
+html #app.isop #rkBox .cmp{height:90px}
+html #app.isop #rkBox .cmp>div{height:90px}
+html #app.isop #rkBox .item[class*=rg-]{border-left:5px solid #d33;border-radius:12px;background:#fff}
+html #app.isop #rkBox .item.rg-g{border-left-color:#2e9b57}
+html #app.isop #rkBox .item.rg-y{border-left-color:#e0a800}
+html #app.isop #rkBox .item.rg-r .pill{background:#fbd9d9;color:#a11;font-weight:700;font-size:12px;padding:3px 10px;border-radius:99px;max-width:none!important;white-space:nowrap!important}
+html #app.isop #rkBox .item[class*=rg-] .pill{font-weight:700;font-size:12px;padding:3px 10px;border-radius:99px;max-width:none!important;white-space:nowrap!important}
+:root[data-theme=dark] #app.isop #rkBox .item[class*=rg-]{background:rgba(255,255,255,.08)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #app.isop #rkBox .item[class*=rg-]{background:rgba(255,255,255,.08)}}
+:root[data-theme=dark] #app.isop #rkBox .item.rg-r .pill{background:#4a2020;color:#ffb4ab}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #app.isop #rkBox .item.rg-r .pill{background:#4a2020;color:#ffb4ab}}
+html #app.isop #rkBox .card[data-tab=pos] .kh{margin-top:6px}
+html #app.isop #rkBox .empty{background:#fff6d6;border-left:5px solid #e0a800;border-radius:12px;padding:12px 14px;text-align:left;color:#7a5a00}
+:root[data-theme=dark] #app.isop #rkBox .empty{background:#3a2f0a;color:#f3e6b0}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #app.isop #rkBox .empty{background:#3a2f0a;color:#f3e6b0}}
+@media (min-width:900px){
+  html #app.isop #rkBox #rkIsi[data-rtab=pos] .card.rkpos{display:grid;grid-template-columns:1fr 1fr;column-gap:12px}
+  html #app.isop #rkBox #rkIsi[data-rtab=pos] .card.rkpos>h4,html #app.isop #rkBox #rkIsi[data-rtab=pos] .card.rkpos>.kh,html #app.isop #rkBox #rkIsi[data-rtab=pos] .card.rkpos>.lt{grid-column:1/-1}
+  html #app.isop #rkBox #rkIsi[data-rtab=ang] .card[data-tab=ang]:has(#angB){display:grid;grid-template-columns:1fr auto;column-gap:12px;align-items:center}
+  html #app.isop #rkBox #rkIsi[data-rtab=ang] .card[data-tab=ang]:has(#angB)>h4{grid-column:1/-1}
+  html #app.isop #rkBox #rkIsi[data-rtab=ang] .card[data-tab=ang]:has(#angB) .fl2{display:flex;gap:10px;margin:0}
+  html #app.isop #rkBox #rkIsi[data-rtab=ang] .card[data-tab=ang]:has(#angB) .fl2 select{flex:1;min-width:0;width:auto}
+  html #app.isop #rkBox #rkIsi[data-rtab=ang] .card[data-tab=ang]:has(#angB) .toolbar{margin:0}
+}
+@media (max-width:760px){html #rkBox .rkst{grid-template-columns:1fr 1fr}}
