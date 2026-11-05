@@ -294,7 +294,7 @@ footer.dsk{display:none}
 #toastbaru.on{opacity:1;transform:translate(-50%,0)}
 @media (min-width:900px){#toastbaru{bottom:24px}}
 </style>
-<link rel="stylesheet" href="pantau-tema.css?v=20261105x">
+<link rel="stylesheet" href="pantau-tema.css?v=20261105y">
 <style id="loginKaca">
 /* ---------- Gaya kaca: halaman masuk ---------- */
 html .login{background:#fff8e1}
@@ -360,7 +360,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
     <div class="lerr" id="lerr" role="alert"></div>
     <button class="btn" id="lb" type="submit">Masuk</button>
   </form>
-  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small style="opacity:.55;font-size:10px">tampilan 20261105x</small></div>
+  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small style="opacity:.55;font-size:10px">tampilan 20261105y</small></div>
 </section>
 
 <div id="app" class="hidden" data-view="b">
@@ -518,7 +518,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
   </nav>
 </div>
 <script src="seed-posyandu.js"></script>
-<script src="pantau-ext.js?v=20261105x" defer></script>
+<script src="pantau-ext.js?v=20261105y" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script>
 var ARSIP_URL='https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec';
@@ -949,10 +949,11 @@ function tampil(){
   var ls=$('ls');ls.textContent='';
   if(!lihat.length){ls.appendChild(el('div','empty',DATA.length?'Belum ada laporan untuk pilihan ini.':'Belum ada laporan yang masuk.'))}
   lihat.slice().sort(function(a,b){return b.n<a.n?-1:b.n>a.n?1:0}).forEach(function(d){
-    var it=el('div','item lrow'),lm=el('div','lmain');
+    var it=el('div','item lrow '+(String(d.jenis||'').indexOf('Lansia')>=0?'lj-l':'lj-b')),lm=el('div','lmain');
     lm.appendChild(el('div','a',d.pos));
     lm.appendChild(el('div','b',[d.kel,String(d.jenis||'').replace('Posyandu ',''),'Kegiatan '+String(d.tgl||'-').replace(/\s+00:00:00$/,''),'Terkirim '+(d.tk||'-')].join(' \u00b7 ')));
     var tg=el('div','tags');
+    tg.appendChild(el('span','tag jn',String(d.jenis||'').indexOf('Lansia')>=0?'Lansia':'Balita'));
     tg.appendChild(el('span','tag g',d.n));
     tg.appendChild(el('span','tag',d.bln+' '+d.thn));
     tg.appendChild(el('span','tag '+(d.pdf?'':'w'),d.pdf?'PDF tersimpan':'PDF menunggu'));
