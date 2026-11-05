@@ -561,3 +561,17 @@ html .card::-webkit-scrollbar-thumb:hover{background:rgba(255,184,0,.95)}
   .sisa>span:not(.sl2){grid-area:a;border-left:1px solid var(--sw-line);padding-left:12px}
   .sisa .sl2{grid-area:c;border-top:0;margin:0;padding:0 0 0 12px;border-left:1px solid var(--sw-line)}
 }
+
+/* ---------- Menu Laporan: tombol unduh di judul daftar, filter satu baris ---------- */
+.lhd{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;margin-bottom:12px}
+.lht h4{margin:0}
+.lht small{display:block;margin-top:2px;font-size:12px;color:var(--muted)}
+.lact{display:flex;gap:8px;flex-wrap:wrap}
+.lact .btn{min-height:40px;padding:4px 14px;font-size:14px;width:auto;display:inline-flex;align-items:center;gap:6px}
+.opdl{display:none!important}
+@media (max-width:760px){.lact{width:100%}.lact .btn{flex:1;justify-content:center}}
+@media (min-width:900px){
+  html .fc .filters{display:grid;grid-template-columns:repeat(4,1fr) 1.4fr;gap:12px;align-items:end}
+  html .fc .filters>.full{grid-column:auto / -1;margin:0}
+}
+.sisa em.nb{font-style:normal;white-space:nowrap;font-weight:800}

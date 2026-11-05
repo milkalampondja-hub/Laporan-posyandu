@@ -330,8 +330,8 @@ function renderBeranda() {
   var sw = el('div', 'sisa' + (hari < 0 ? ' lewat' : ''));
   sw.appendChild(el('small', 'sl', hari < 0 ? 'BATAS KADER SUDAH LEWAT' : 'SISA WAKTU KADER'));
   sw.appendChild(el('b', null, hari < 0 ? Math.abs(hari) + ' hari' : (hari === 0 ? 'Hari ini' : hari + ' hari')));
-  sw.appendChild(el('span', null, 'Batas kader mengirim: ' + teksBatas(pr.th, pr.bl)));
-  sw.appendChild(el('span', 'sl2', 'Antar berkas fisik: ' + teksBatasKel(pr.th, pr.bl)));
+  var s1 = el('span'); s1.appendChild(document.createTextNode('Batas kader mengirim: ')); s1.appendChild(el('em', 'nb', teksBatas(pr.th, pr.bl))); sw.appendChild(s1);
+  var s2 = el('span', 'sl2'); s2.appendChild(document.createTextNode('Antar berkas fisik: ')); s2.appendChild(el('em', 'nb', teksBatasKel(pr.th, pr.bl))); sw.appendChild(s2);
   hero.appendChild(sw);
   c.appendChild(hero);
   if (SS) {

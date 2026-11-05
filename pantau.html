@@ -294,7 +294,7 @@ footer.dsk{display:none}
 #toastbaru.on{opacity:1;transform:translate(-50%,0)}
 @media (min-width:900px){#toastbaru{bottom:24px}}
 </style>
-<link rel="stylesheet" href="pantau-tema.css?v=20261105p">
+<link rel="stylesheet" href="pantau-tema.css?v=20261105q">
 <style id="loginKaca">
 /* ---------- Gaya kaca: halaman masuk ---------- */
 html .login{background:#fff8e1}
@@ -342,6 +342,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
 <symbol id="i-clip" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M8 12h8M8 16h5"/></symbol>
 <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
 <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></symbol>
 <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
 <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
 <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
@@ -359,7 +360,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
     <div class="lerr" id="lerr" role="alert"></div>
     <button class="btn" id="lb" type="submit">Masuk</button>
   </form>
-  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small style="opacity:.55;font-size:10px">tampilan 20261105p</small></div>
+  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small style="opacity:.55;font-size:10px">tampilan 20261105q</small></div>
 </section>
 
 <div id="app" class="hidden" data-view="b">
@@ -426,16 +427,12 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
             </div>
           </div>
           <div class="v v-l">
-            <div class="card dl">
-              <div class="top2"><span class="cl"><svg class="ic "><use href="#i-cloud"/></svg></span><div><small id="stamp">Memuat data…</small><h3>Tarik data untuk laporan bulanan</h3><p>Data mengikuti pilihan Bulan, Tahun, Jenis, dan Kelurahan di atas.</p></div></div>
-              <div class="btns"><button class="btn line" id="dx" type="button"><svg class="ic "><use href="#i-cloud"/></svg>Unduh Excel (.xlsx)</button><button class="btn" id="dc" type="button"><svg class="ic "><use href="#i-doc"/></svg>Unduh CSV</button></div>
-            </div>
             <div class="tot" id="tot"></div>
           </div>
         </div>
 
         <section class="v v-b" id="secMx"><div class="card"><h4 id="mx2h">Status per kelurahan</h4><div id="mx2"></div></div></section>
-        <section class="v v-l"><div class="card"><h4>Laporan yang sudah terkirim</h4><div class="opdl"><button class="btn sm line" id="dx2" type="button">Unduh Excel</button><button class="btn sm line" id="dc2" type="button">Unduh CSV</button></div><div id="ls"></div></div></section>
+        <section class="v v-l"><div class="card"><div class="lhd"><div class="lht"><h4>Laporan yang sudah terkirim</h4><small id="stamp">Memuat data…</small></div><div class="lact"><button class="btn sm line" id="dx" type="button"><svg class="ic"><use href="#i-dl"/></svg>Unduh Excel</button><button class="btn sm" id="dc" type="button"><svg class="ic"><use href="#i-dl"/></svg>Unduh CSV</button></div></div><div class="opdl"><button class="btn sm line" id="dx2" type="button">Unduh Excel</button><button class="btn sm line" id="dc2" type="button">Unduh CSV</button></div><div id="ls"></div></div></section>
         <section class="v v-d" id="dpBox"></section>
         <section class="v v-d" id="pengBox"></section>
         <section class="v v-r" id="rkBox"></section>
@@ -519,7 +516,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
   </nav>
 </div>
 <script src="seed-posyandu.js"></script>
-<script src="pantau-ext.js?v=20261105p" defer></script>
+<script src="pantau-ext.js?v=20261105q" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script>
 var ARSIP_URL='https://script.google.com/macros/s/AKfycbwnaGeg2gGim7aViuugfbN8TWg3XeTBxjE041tp6dd9PSyUpadGqOUD_d4EFsojjqgugw/exec';
