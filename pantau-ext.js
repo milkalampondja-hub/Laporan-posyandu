@@ -723,8 +723,14 @@ function kartuOp(box, h, pr, pc, dua, idx) {
   hd.appendChild(ht); if (dua) hd.appendChild(ar); c.appendChild(hd);
   if (dua) { hd.style.cursor = 'pointer'; hd.addEventListener('click', function () { OP_BUKA[kp] = !OP_BUKA[kp]; renderBeranda(); }); }
   if (!OP_BUKA[kp] && dua) { box.appendChild(c); return; }
-  var k = el('div'); k.style.cssText = 'font-size:17px;margin:2px 0 8px'; var bb = el('b', null, msk + ' dari ' + tot); k.appendChild(bb); k.appendChild(document.createTextNode(' Posyandu sudah membuat laporan')); body.appendChild(k);
-  var br = el('div', 'bar'); br.appendChild(document.createElement('i')).style.width = pc + '%'; body.appendChild(br);
+  var SO = SETOR[kp] || {}, fs = h.rows.filter(function (x) { return !x.d && SO[x.p.id]; }).length, bl2 = Math.max(0, tot - msk - fs);
+  var hero = el('div', 'hero2 h2op'), CC = 2 * Math.PI * 48, cin = el('div', 'cincin');
+  cin.innerHTML = '<svg viewBox="0 0 120 120" aria-hidden="true"><circle class="cn0" cx="60" cy="60" r="48"></circle><circle class="cn1" cx="60" cy="60" r="48" transform="rotate(-90 60 60)" stroke-dasharray="' + (CC * Math.max(0, Math.min(100, +pc || 0)) / 100).toFixed(1) + ' ' + CC.toFixed(1) + '"' + (+pc > 0 ? '' : ' style="display:none"') + '></circle></svg>';
+  var ct = el('div', 'cin-t'); ct.appendChild(el('b', null, msk + '/' + tot)); ct.appendChild(el('small', null, pc + '%')); cin.appendChild(ct); hero.appendChild(cin);
+  var mid = el('div', 'hmid'), tt = el('div', 'htt'); tt.appendChild(el('b', null, msk + ' dari ' + tot)); tt.appendChild(document.createTextNode(' Posyandu sudah membuat laporan')); mid.appendChild(tt);
+  var k3 = el('div', 'kot3');
+  [['g', msk, 'sudah membuat laporan'], ['y', fs, 'fisik saja'], ['r', bl2, 'belum kirim']].forEach(function (q) { var d = el('div', 'kot ' + q[0]); d.appendChild(el('b', null, String(q[1]))); d.appendChild(el('span', null, q[2])); k3.appendChild(d); });
+  mid.appendChild(k3); hero.appendChild(mid); body.appendChild(hero);
   if (tot && msk === tot) body.appendChild(el('div', 'hm ok', 'Semua Posyandu sudah membuat laporan. Terima kasih.'));
   else { var hm = hitungMundur(pr); body.appendChild(el('div', 'hm ' + hm.c, hm.t)); }
   if (h.asing.length) body.appendChild(el('div', 'warn2', h.asing.length + ' laporan memakai nama Posyandu yang belum cocok dengan Data Posyandu, sehingga tidak dihitung.'));
@@ -1636,7 +1642,7 @@ function kartuAntar(box, h, pr, gabung) {
   c.appendChild(el('p', 'hint', (gabung ? '' : 'Centang laporan yang akan diantar. ') + 'Setelah lembar dibuat, laporan yang ikut tidak bisa dikirim ulang oleh kader kecuali Anda membukanya kembali.'));
   var cek = {}, rows = h.rows.slice().sort(function (a, b) { return a.p.jenis.localeCompare(b.p.jenis) || a.p.nama.localeCompare(b.p.nama); }), siap = 0;
   rows.forEach(function (r) {
-    var diterima = S[r.p.id], ada = !!(r.d && r.d.pdf), terkunci = !!(D && D.kunci[r.p.id]), it = el('div', 'item'), lb = document.createElement('label');
+    var diterima = S[r.p.id], ada = !!(r.d && r.d.pdf), terkunci = !!(D && D.kunci[r.p.id]), it = el('div', 'item ' + (r.d ? 'op-g' : diterima ? 'op-y' : 'op-r')), lb = document.createElement('label');
     it.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 12px;flex-wrap:wrap'; lb.style.cssText = 'display:flex;align-items:center;gap:10px;flex:1;min-width:200px;min-height:44px;cursor:pointer';
     var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = ada && !diterima; cb.disabled = !ada || !!diterima; cb.style.cssText = 'width:22px;height:22px;flex:none'; cek[r.p.id] = cb; if (cb.checked) siap++;
     lb.appendChild(cb); var tb = el('div'); tb.appendChild(el('b', null, r.p.nama + ' · ' + r.p.jenis.replace('Posyandu ', '')));

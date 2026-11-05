@@ -672,3 +672,22 @@ html #admList .admrow>.btn[style*="flex-basis"]{flex-basis:auto!important}
   html #secP>.card:last-child .btns{display:flex!important;flex-wrap:wrap;gap:10px}
   html #secP>.card:last-child .btns .btn{width:auto;flex:1}
 }
+/* ---- Beranda operator kelurahan ---- */
+html .hero2.h2op{grid-template-columns:minmax(110px,160px) 1fr;grid-template-areas:none;gap:18px;margin:4px 0 12px}
+html .hero2.h2op>*{grid-area:auto}
+html .hero2.h2op .htt{font-size:17px;margin-bottom:8px}
+@media (max-width:760px){html .hero2.h2op{grid-template-columns:96px 1fr;gap:12px}html .hero2.h2op .kot3{gap:6px}html .hero2.h2op .kot{padding:8px 4px;font-size:11px}html .hero2.h2op .kot b{font-size:20px}html .hero2.h2op .htt{font-size:15px}}
+html .opb .item.op-g{border-left:4px solid #2e9b57}
+html .opb .item.op-y{border-left:4px solid #f0b400}
+html .opb .item.op-r{border-left:4px solid #d9534f}
+html .opb .item .pill{white-space:normal}
+@media (min-width:900px){
+  html .opb{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+  html .opb>*{grid-column:1/-1;margin-top:0;margin-bottom:0}
+  html .opb>.item{grid-column:auto}
+  html .opb>.btn.wide{width:auto;justify-self:end}
+}
+@media (max-width:760px){html .hero2.h2op .hmid{display:block}html .hero2.h2op .htt{margin:0 0 8px}html .hero2.h2op .cincin{max-width:96px}}
+html .opb .item.op-r .pill{background:#fde1e1!important;color:#b3261e!important}
+html .opb .item.op-y .pill{background:#fff0b8!important;color:#8a6a00!important}
+@media (max-width:760px){html .trow .tt{min-width:0}html .tt .wil.op{white-space:normal;font-size:11.5px}html .tt .wil.op span+span{width:auto}}
