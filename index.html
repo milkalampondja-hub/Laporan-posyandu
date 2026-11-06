@@ -94,7 +94,14 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .badge{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;margin-top:1px}
 .badge.ok{background:var(--ok-soft);color:var(--ok)}.badge.warn{background:var(--warn-soft);color:var(--warn)}.badge.no{background:var(--danger-soft);color:var(--danger)}
 .check .t{font-weight:600}.check .d{font-size:14px;color:var(--muted)}
-.check .go{margin-left:auto;flex:none}
+.check .go{margin-left:auto;flex:none;border:0;background:none;box-shadow:none;color:var(--accent);font-weight:700;min-height:0;padding:4px 0 4px 8px}
+.check li{padding:10px 0;align-items:center}
+.two{align-items:end;row-gap:14px}.two>.f{margin-bottom:0}
+.mcard .l{font-size:14.5px}.mcard{padding:14px 14px 6px}.mcard .sub{margin:14px 0 8px}
+.hint2{font-size:13.5px;color:var(--muted);margin:8px 4px 0}
+.file{display:flex}.file .dz{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;box-sizing:border-box;padding:26px 12px;background:var(--accent-soft);color:var(--accent);border:2px dashed var(--accent);box-shadow:none;border-radius:14px}
+.dzi{display:flex}
+.file+.thumbs,.card .status:empty{margin-top:0}.card .status:empty{display:none}
 .pvbox{background:var(--line);border-radius:12px;padding:10px;overflow:hidden}
 .scaler{position:relative;margin:0 auto}
 .stage{width:816px;transform-origin:0 0;display:flex;flex-direction:column;gap:16px}
@@ -272,7 +279,7 @@ section.info small{font-size:11px}
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 37</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 38</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -554,44 +561,44 @@ function viewPosyandu(){
 function viewKegiatan(){
   var fl=FIELDS();
   var rows=S.rows.map(function(r,i){
-    var fs=fl.map(function(f){return '<div class="f"><label class="l" for="f'+r.id+'_'+f.k+'">'+esc(f.l)+'</label><input type="number" min="0" inputmode="numeric" id="f'+r.id+'_'+f.k+'" data-f="'+f.k+'" value="'+esc(r.v[f.k]==null?"":r.v[f.k])+'"></div>'}).join("");
-    return '<div class="mcard" data-id="'+r.id+'"><div class="mh"><span>Bulan ke-'+(i+1)+'</span>'+(S.rows.length>1?'<button type="button" class="btn sm danger" data-delrow="'+r.id+'">Hapus</button>':'')+'</div>'+
-    '<div class="f"><label class="l" for="b'+r.id+'">Bulan</label><select id="b'+r.id+'" data-f="bulan">'+opt(BULAN,r.bulan,"Pilih bulan")+'</select></div>'+
-    '<div class="two keep">'+fs+'</div></div>';
+    function fld(f){return '<div class="f"><label class="l" for="f'+r.id+'_'+f.k+'">'+esc(f.l)+'</label><input type="number" min="0" inputmode="numeric" id="f'+r.id+'_'+f.k+'" data-f="'+f.k+'" placeholder="0" value="'+esc(r.v[f.k]==null?"":r.v[f.k])+'"></div>'}
+    var isb=fl.length>2&&fl[0].k==="sibu";
+    var fs=isb?'<p class="sub">Ibu hamil</p><div class="two keep">'+fl.slice(0,2).map(fld).join("")+'</div><p class="sub">Bayi dan balita</p><div class="two keep">'+fl.slice(2).map(fld).join("")+'</div>':'<div class="two keep">'+fl.map(fld).join("")+'</div>';
+    return '<div class="mcard" data-id="'+r.id+'">'+(S.rows.length>1?'<div class="mh"><span>Bulan ke-'+(i+1)+'</span><button type="button" class="btn sm danger" data-delrow="'+r.id+'">Hapus</button></div>':'')+
+    '<div class="f"><label class="l" for="b'+r.id+'">Bulan</label><select id="b'+r.id+'" data-f="bulan">'+opt(BULAN,r.bulan,"Pilih bulan")+'</select></div>'+fs+'</div>';
   }).join("");
   return '<div class="eyebrow">Langkah 2 dari 5</div><h1>Kegiatan</h1><p class="lead">Kapan dan di mana kegiatan, serta hasilnya.</p>'+
   '<section class="card"><div class="f"><label class="l" for="tanggal">Tanggal kegiatan</label><input type="date" id="tanggal" data-k="tanggal" value="'+esc(S.tanggal)+'"></div>'+
   '<div class="f"><label class="l" for="tempat">Tempat kegiatan<span class="hint">Kosongkan jika di '+esc(S.posyandu?"Posyandu "+S.posyandu:"posyandu sendiri")+'</span></label><input type="text" id="tempat" data-k="tempat" value="'+esc(S.tempat)+'" placeholder="'+esc(S.posyandu?"Posyandu "+S.posyandu:"")+'"></div></section>'+
-  '<section class="card"><h2>Hasil kegiatan '+esc(J()?J().label:"")+'</h2><p class="help">Isi angka per bulan. Tulis 0 jika tidak ada. Tambah bulan jika laporan mencakup lebih dari satu bulan.</p>'+rows+
-  '<button type="button" class="btn sm" id="add-row">+ Tambah bulan</button></section>';
+  '<section class="card"><h2>Hasil kegiatan '+esc(J()?J().label:"")+'</h2><p class="help">Isi angka per bulan. Tulis 0 jika tidak ada.</p>'+rows+
+  '<button type="button" class="btn sm" id="add-row">+ Tambah bulan</button><p class="hint2">Laporan mencakup lebih dari satu bulan? Tambah bulan.</p></section>';
 }
 function viewFoto(){
   var cards=S.rows.map(function(r,i){
     var th=r.photos.map(function(p,pi){return '<div class="thumb"><img src="'+p.s+'" alt="Foto '+(pi+1)+'"><button type="button" data-rm="'+r.id+':'+pi+'" aria-label="Hapus foto '+(pi+1)+'">×</button></div>'}).join("");
     return '<section class="card"><h2>Foto '+esc(r.bulan?"bulan "+r.bulan:"bulan ke-"+(i+1))+'</h2><p class="help">'+r.photos.length+' dari '+MAXFOTO+' foto</p>'+
-    '<label class="file"><input type="file" accept="image/*" multiple data-up="'+r.id+'" aria-label="Pilih foto '+esc(r.bulan||"bulan ke-"+(i+1))+'"><span class="btn primary">+ Pilih atau ambil foto</span></label>'+
+    '<label class="file"><input type="file" accept="image/*" multiple data-up="'+r.id+'" aria-label="Pilih foto '+esc(r.bulan||"bulan ke-"+(i+1))+'"><span class="btn primary dz"><span class="dzi" aria-hidden="true">'+ic("camera",34)+'</span><span>Pilih atau ambil foto</span></span></label>'+
     (th?'<div class="thumbs">'+th+'</div>':'')+'<div class="status" data-st="'+r.id+'"></div></section>';
   }).join("");
-  return '<div class="eyebrow">Langkah 3 dari 5</div><h1>Foto dokumentasi</h1><p class="lead">Foto dari galeri atau langsung dari kamera. Foto akan dicetak di halaman terpisah setelah surat.</p>'+
-  '<div class="info">Langkah ini boleh dilewati jika belum ada foto.</div>'+cards;
+  return '<div class="eyebrow">Langkah 3 dari 5</div><h1>Foto dokumentasi</h1><p class="lead">Boleh dilewati jika belum ada foto.</p>'+cards;
 }
 function viewCatatan(){
   function ta(id,k,l,h,ph){return '<div class="f"><label class="l" for="'+id+'">'+l+(h?'<span class="hint">'+h+'</span>':'')+'</label><textarea id="'+id+'" data-k="'+k+'" rows="2"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>'+esc(S[k])+'</textarea></div>'}
   return '<div class="eyebrow">Langkah 4 dari 5</div><h1>Catatan dan pengesahan</h1><p class="lead">Tulis tanda strip (-) jika tidak ada.</p>'+
-  '<section class="card">'+ta("masalah","masalah","Masalah ditemukan")+ta("selesai","selesai","Penyelesaian masalah")+ta("tindak","tindak","Tindak lanjut")+
-  ta("evaluasi","evaluasi","Evaluasi","Kosongkan untuk memakai: "+evaluasiAuto(),evaluasiAuto())+'</section>'+
-  '<section class="card"><h2>Tanda tangan lurah</h2><p class="help">Nama dan NIP terisi otomatis sesuai kelurahan.</p>'+
+  '<section class="card"><p class="sub">Catatan kegiatan</p>'+ta("masalah","masalah","Masalah ditemukan")+ta("selesai","selesai","Penyelesaian masalah")+ta("tindak","tindak","Tindak lanjut")+
+  ta("evaluasi","evaluasi","Evaluasi","Kosongkan = terisi otomatis",evaluasiAuto())+'</section>'+
+  '<section class="card"><p class="sub">Tanda tangan lurah</p><p class="help" style="margin-bottom:12px">Nama dan NIP terisi otomatis sesuai kelurahan.</p>'+
   '<div class="f"><label class="l" for="kota">Kota</label><input type="text" id="kota" data-k="kota" value="'+esc(S.kota)+'"></div>'+
   '<div class="f"><label class="l" for="tglLaporan">Tanggal dan bulan tanda tangan</label><input type="date" id="tglLaporan" data-k="tglLaporan" value="'+esc(S.tglLaporan)+'">'+
-  '<div class="btnrow" style="margin-top:10px"><button type="button" class="btn sm" data-date="today">Hari ini</button><button type="button" class="btn sm" data-date="kegiatan">Sama dengan tanggal kegiatan</button></div>'+
+  '<div class="btnrow" style="margin-top:10px"><button type="button" class="btn sm" data-date="today">Hari ini</button><button type="button" class="btn sm" data-date="kegiatan">Sama dengan kegiatan</button></div>'+
   '<div class="hint" id="tglshow" style="margin-top:8px">Tertulis di surat: <b>'+esc((S.kota||"")+(S.tglLaporan?", "+tgl(S.tglLaporan):""))+'</b></div></div>'+
-  '<div class="f"><label class="l" for="jabatan">Jabatan<span class="hint">Contoh: Lurah Taipa, atau Plh. Lurah …</span></label><input type="text" id="jabatan" data-k="jabatan" value="'+esc(S.jabatan)+'" autocomplete="off"></div>'+
+  '<hr class="sep"><div class="f"><label class="l" for="jabatan">Jabatan<span class="hint">Contoh: Lurah Taipa</span></label><input type="text" id="jabatan" data-k="jabatan" value="'+esc(S.jabatan)+'" autocomplete="off"></div>'+
   '<div class="f"><label class="l" for="lurah">Nama pejabat<span class="hint">Beserta gelar</span></label><input type="text" id="lurah" data-k="lurah" value="'+esc(S.lurah)+'" autocomplete="off"></div>'+
   '<div class="f"><label class="l" for="nip">NIP</label><input type="text" id="nip" data-k="nip" value="'+esc(S.nip)+'" inputmode="numeric" autocomplete="off"></div></section>';
 }
 function checkItem(state,t,d,go){
   var sym=state==="ok"?"✓":(state==="warn"?"!":"×");
-  return '<li><span class="badge '+state+'" aria-hidden="true">'+sym+'</span><div><div class="t">'+t+'</div><div class="d">'+d+'</div></div>'+(go!=null?'<button type="button" class="btn sm go" data-goto="'+go+'">Ubah</button>':'')+'</li>';
+  return '<li><span class="badge '+state+'" aria-hidden="true">'+sym+'</span><div><div class="t">'+t+'</div><div class="d">'+d+'</div></div>'+(go!=null?'<button type="button" class="btn sm go" data-goto="'+go+'">Ubah ›</button>':'')+'</li>';
 }
 function viewPeriksa(){
   var kl=kaderList(), ok=rowsOk(), ph=photoCount();
@@ -601,11 +608,11 @@ function viewPeriksa(){
     checkItem(kl.length?"ok":"no","Nama kader",kl.length?kl.length+" kader":"Belum diisi",0),
     checkItem(S.tanggal?"ok":"no","Tanggal kegiatan",S.tanggal?tgl(S.tanggal):"Belum diisi",1),
     checkItem(ok.length?"ok":"no","Hasil kegiatan",ok.length?ok.length+" bulan terisi lengkap":"Belum diisi lengkap",1),
-    checkItem(ph?"ok":"warn","Foto dokumentasi",ph?ph+" foto":"Belum ada foto. Laporan tetap bisa dibuat.",2),
+    checkItem(ph?"ok":"warn","Foto dokumentasi",ph?ph+" foto":"Belum ada foto (boleh dilewati)",2),
     checkItem(S.lurah.trim()?"ok":"warn","Tanda tangan",S.lurah.trim()?esc(S.jabatan)+": "+esc(S.lurah)+(S.tglLaporan?", "+tgl(S.tglLaporan):""):"Nama pejabat belum diisi.",3)
   ].join("");
   var missing=!(S.jenis&&S.posyandu.trim()&&S.kelurahan&&kl.length&&S.tanggal&&ok.length);
-  return '<div class="eyebrow">Langkah 5 dari 5</div><h1>Periksa dan download</h1><p class="lead">Pastikan semua benar, lalu buat PDF untuk dicetak.</p>'+
+  return '<div class="eyebrow">Langkah 5 dari 5</div><h1>Periksa dan download</h1><p class="lead">Pastikan semua benar, lalu buat PDF.</p>'+
   '<section class="card"><ul class="check">'+items+'</ul></section>'+
   '<div id="result"></div>'+
   '<button type="button" class="btn primary block" id="make"'+(missing?' disabled':'')+'>Buat PDF laporan</button>'+
