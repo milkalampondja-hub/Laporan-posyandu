@@ -268,7 +268,7 @@ section.info small{font-size:11px}
 .how li>div span{display:block;font-size:13px;color:var(--muted)}
 .card.pasang{padding:12px 16px}
 
-/* ===== Tampilan modern (Versi 40): hijau zamrud + aksen limau, kartu besar membulat, bar bawah melayang ===== */
+/* ===== Tampilan modern (Versi 41): hijau zamrud + aksen limau, kartu besar membulat, bar bawah melayang ===== */
 body.mod{
   --bg:#f4f6f4; --surface:#fff; --fg:#0e1f16; --muted:#64766b; --line:#e6ece8; --field:#f0f4f1;
   --e9:#042a19; --e8:#06402a; --e6:#0b7a4b; --e5:#12a15f; --lime:#c4f25a; --mint:#e4f6ec;
@@ -286,7 +286,7 @@ body.mod{
 .mod .app{background:linear-gradient(135deg,var(--e9),var(--e8) 60%,#0a5c3a);color:#fff;border-radius:0 0 26px 26px;box-shadow:0 14px 30px -14px rgba(4,42,25,.55);padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));overflow:hidden}
 .mod .app::before{content:"";position:absolute;right:-40px;top:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(196,242,90,.28),transparent 65%);pointer-events:none}
 .mod .app-in{position:relative;gap:12px;padding:0 0 12px}
-.mod .app img{width:32px;filter:none;border-radius:6px}
+.mod .app img{width:32px;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
 .mod .app .ttl{display:flex;flex-direction:column;gap:1px;font-weight:800;font-size:21px;letter-spacing:-.02em;line-height:1.12}
 .mod .app .ttl small{order:-1;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.66)}
 .mod .app .sub,.mod .app .prog{display:none}
@@ -406,7 +406,7 @@ body.mod{
 .mod .hero2::before{content:"";position:absolute;right:-30px;top:0;bottom:0;width:72%;background:url(kuda.jpg) center 28%/cover no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.6) 40%,#000);mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.6) 40%,#000);z-index:-1;opacity:.95}
 .mod .hero2::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,42,25,0) 40%,rgba(4,42,25,.65));z-index:-1}
 .mod .hero2 .top{display:flex;align-items:center;gap:10px;margin-bottom:26px}
-.mod .hero2 .top img{width:34px;height:auto;border-radius:6px;filter:none}
+.mod .hero2 .top img{width:34px;height:auto;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
 .mod .hero2 .top span{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.82)}
 .mod .hero2 h1{display:block;margin:0;font-size:34px;line-height:1.02;font-weight:800;letter-spacing:-.035em;max-width:70%;color:#fff}
 .mod .hero2 h1 em{font-style:normal;color:var(--lime)}
@@ -447,7 +447,7 @@ body.mod{
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 40</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 41</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -489,7 +489,7 @@ var JENIS={
 var STEPS=["Posyandu","Kegiatan","Foto","Catatan","Periksa"];
 var TTL=["Data posyandu","Kegiatan","Foto dokumentasi","Catatan dan pengesahan","Periksa dan download"];
 var NEXTLBL=["Lanjut ke Kegiatan","Lanjut ke Foto","Lanjut ke Catatan","Periksa laporan"];
-var APP_V="40";
+var APP_V="41";
 var KEY="laporan-posyandu-v3", MAXFOTO=12, uid=0;
 var main=document.getElementById("main"), btnBack=document.getElementById("btn-back"), btnNext=document.getElementById("btn-next"), btnMake=document.getElementById("btn-make");
 
