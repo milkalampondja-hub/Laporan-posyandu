@@ -924,34 +924,63 @@ async function catatData(data){
   }
   throw new Error("Server arsip tidak menjawab");
 }
+/* ---------- tampilan pengiriman: satu kartu berpersen; tombol Download PDF baru muncul setelah laporan benar-benar terkirim ---------- */
+function kartuKirim(inner){
+  var res=document.getElementById("result");if(!res)return;
+  res.innerHTML='<div class="card kirimkartu" style="padding:22px 18px;text-align:center" role="status" aria-live="polite">'+inner+'</div>';
+  var mk=document.getElementById("make");if(mk)mk.style.display="none";
+  var ms=document.getElementById("makest");if(ms)ms.style.display="none";
+}
+function barKirim(p){return '<div style="height:16px;border-radius:99px;background:rgba(127,127,127,.25);overflow:hidden"><div id="kirimbar" style="height:100%;width:'+p+'%;background:var(--ok);border-radius:99px;transition:width .3s"></div></div>'}
+function uiProg(p,label){
+  p=Math.max(0,Math.min(99,Math.round(p)));
+  var k=document.querySelector(".kirimkartu");
+  if(!k||!k.querySelector("#kirimbar")){kartuKirim('<div style="font-weight:800;font-size:18px;margin-bottom:4px" id="kirimlab"></div><div style="opacity:.75;font-size:14px;margin-bottom:16px">Jangan tutup halaman ini</div>'+barKirim(p)+'<div style="font-weight:800;font-size:34px;margin-top:12px" id="kirimpct"></div>');}
+  document.getElementById("kirimlab").textContent=label||"Mengirim laporan…";
+  document.getElementById("kirimpct").textContent=p+"%";
+  document.getElementById("kirimbar").style.width=p+"%";
+}
+function uiOk(){
+  var canShare=false;
+  try{canShare=!!(navigator.canShare&&navigator.share&&navigator.canShare({files:[new File([resBlob],resName,{type:"application/pdf"})]}))}catch(e){}
+  kartuKirim(barKirim(100)+'<div style="font-weight:800;font-size:34px;margin:12px 0 4px">100%</div><div class="ok2 status" style="font-weight:800;font-size:18px;margin-bottom:6px">Laporan sudah terkirim</div>'+(arsipInfo&&arsipInfo.nomor?'<div style="opacity:.75;font-size:14px;margin-bottom:14px">Nomor laporan: '+esc(arsipInfo.nomor)+(arsipInfo.versi>1?' (versi '+arsipInfo.versi+')':'')+'</div>':'')+
+    '<div style="display:grid;gap:10px"><a class="btn primary block" id="dl-pdf" href="'+resUrl+'" download="'+esc(resName)+'">Download PDF</a>'+(canShare?'<button type="button" class="btn block" id="share">Bagikan atau cetak</button>':'')+'</div>');
+  var sh=document.getElementById("share");
+  if(sh)sh.addEventListener("click",function(){navigator.share({files:[new File([resBlob],resName,{type:"application/pdf"})],title:resName}).catch(function(){})});
+}
+function uiGagal(why){
+  var pm=/pemeliharaan/i.test(why);
+  kartuKirim('<div style="font-size:40px" aria-hidden="true">⚠️</div><div style="font-weight:800;font-size:19px;margin:6px 0">'+(pm?'Aplikasi sedang dalam pemeliharaan':'Jaringan kamu kurang bagus')+'</div><div style="opacity:.85;font-size:15px;line-height:1.5;margin-bottom:14px">'+(pm?'Laporan belum terkirim. Tenang, laporanmu aman di HP dan akan terkirim sendiri setelah pemeliharaan selesai.':'Laporan belum terkirim. Tenang, laporanmu aman di HP dan akan terkirim sendiri begitu sinyal membaik.')+'</div><button type="button" class="btn primary block" id="retry-arsip">Coba kirim lagi</button>');
+}
+function uiDitolak(why){
+  kartuKirim('<div style="font-weight:800;font-size:19px;margin-bottom:8px">Laporan tidak bisa dikirim ulang</div><div style="opacity:.85;font-size:15px;line-height:1.5;margin-bottom:14px">'+esc(why)+'</div><div style="opacity:.75;font-size:14px;margin-bottom:12px">PDF di HP tetap aman.</div><a class="btn primary block" href="'+resUrl+'" download="'+esc(resName)+'">Download PDF</a>');
+}
 async function kirimArsip(){
-  var box=document.getElementById("arsip");if(!box||!ARSIP_URL||!resBlob||arsipDone||arsipBusy)return;
-  arsipBusy=true;box.className="status";
+  if(!ARSIP_URL||!resBlob||arsipDone||arsipBusy)return;
+  arsipBusy=true;uiProg(arsipInfo?25:5,"Mencatat laporan…");
   try{
     var ms=S.rows.filter(function(r){return r.bulan});
     var data={kelurahan:S.kelurahan,posyandu:S.posyandu.trim(),jenis:J().label,bulan:ms.length?ms[0].bulan:"",tahun:yearOf(),tanggalKegiatan:tgl(S.tanggal),kader:kaderList().join(", "),hasilText:ringkasHasil()};
     if(!arsipId)arsipId=Math.random().toString(36).slice(2,10)+Date.now().toString(36);
     data.id=arsipId;
     if(!arsipInfo){
-      box.textContent="Mencatat laporan…";
       data.aksi="catat";
       arsipInfo=await catatData(data);
     }
-    box.className="status ok2";box.textContent="Laporan tercatat: "+arsipInfo.nomor+". File PDF sedang dikirim ke arsip, jangan tutup halaman…";
+    uiProg(25,"Mengirim laporan…");
     var pdf=await blobB64(resBlob),CH=94000,n=Math.ceil(pdf.length/CH);
     var selesaiN=0,antre=[];for(var q=0;q<n;q++)antre.push(q);
-    async function pekerja(){while(antre.length){var qi=antre.shift();await kirimBagian(arsipId,qi,pdf.slice(qi*CH,(qi+1)*CH));selesaiN++;box.textContent="Laporan tercatat: "+arsipInfo.nomor+". Mengirim file PDF… "+selesaiN+" dari "+n}}
+    async function pekerja(){while(antre.length){var qi=antre.shift();await kirimBagian(arsipId,qi,pdf.slice(qi*CH,(qi+1)*CH));selesaiN++;uiProg(25+70*selesaiN/n,"Mengirim laporan…")}}
     await Promise.all([pekerja(),pekerja(),pekerja(),pekerja(),pekerja()]);
-    data.aksi="selesai";data.n=n;
+    data.aksi="selesai";data.n=n;uiProg(96,"Menyelesaikan…");
     var j=await selesaikan(data);
     if(!j.ok)throw new Error(j.pesan||"gagal");
-    arsipDone=true;box.className="status ok2";box.textContent="Tersimpan di arsip. Nomor laporan: "+arsipInfo.nomor+(arsipInfo.versi>1?" (versi "+arsipInfo.versi+")":"")+". Data dan file PDF sudah masuk.";
+    arsipDone=true;uiOk();
     antreHapus(arsipId).catch(function(){});setTimeout(kirimAntrean,1500);
   }catch(e){
     var why=String(e&&e.message||e);
-    if(/sudah dicetak oleh pihak kelurahan/.test(why)&&!arsipInfo){box.className="status err2";box.innerHTML='<b>Laporan tidak bisa dikirim ulang.</b><br>'+esc(why)+'<br><small>PDF di HP tetap aman dan bisa Anda simpan atau bagikan.</small>';return}
-    if(arsipInfo){box.className="status err2";box.innerHTML='Data laporan sudah tercatat ('+esc(arsipInfo.nomor)+'), tetapi file PDF belum terkirim ke arsip.<br><small>Penyebab: '+esc(why)+'</small><br><button type="button" class="btn sm" id="retry-arsip">Kirim ulang PDF</button>'}
-    else{box.className="status err2";box.innerHTML='Belum tersimpan di arsip. PDF di HP tetap aman.<br><small>Penyebab: '+esc(why)+'</small><br><button type="button" class="btn sm" id="retry-arsip">Coba kirim lagi</button>'}
+    if(/sudah dicetak oleh pihak kelurahan/.test(why)&&!arsipInfo){uiDitolak(why);return}
+    uiGagal(why);
     antreSimpanGagal(data);
   }finally{arsipBusy=false}
 }
@@ -966,10 +995,7 @@ function antreSimpanGagal(data){
   try{
     if(UJI||!resBlob||!arsipId||!data)return;
     var d2={};for(var k in data)if(k!=="aksi"&&k!=="n"&&k!=="t"&&k!=="tes")d2[k]=data[k];
-    antreSimpan({id:arsipId,data:d2,blob:resBlob,nama:resName,info:arsipInfo,waktu:Date.now()}).then(function(){
-      var b=document.getElementById("arsip");
-      if(b&&!arsipDone)b.insertAdjacentHTML("beforeend","<br><small>Laporan ini disimpan di HP dan akan dikirim otomatis ke arsip saat aplikasi dibuka kembali dengan sinyal.</small>");
-    }).catch(function(){});
+    antreSimpan({id:arsipId,data:d2,blob:resBlob,nama:resName,info:arsipInfo,waktu:Date.now()}).catch(function(){});
   }catch(e){}
 }
 function antreHtml(){
@@ -1002,6 +1028,7 @@ async function kirimAntrean(){
         dt.aksi="selesai";dt.n=n;
         var j=await selesaikan(dt);if(!j.ok)throw new Error(j.pesan||"gagal");
         await antreHapus(it.id);
+        if(it.id===arsipId&&!arsipDone){arsipDone=true;arsipInfo=it.info;uiOk()}
         ANTRE.pesan="Laporan "+nm+" berhasil dikirim ke arsip ("+it.info.nomor+").";ANTRE.kls="ok2";
       }catch(e){if(/sudah dicetak oleh pihak kelurahan/.test(String(e&&e.message||e))){await antreHapus(it.id);ANTRE.pesan="Laporan "+nm+" tidak bisa dikirim ulang karena sudah dicetak oleh pihak kelurahan. Hubungi pihak kelurahan.";ANTRE.kls="err2";continue}ANTRE.pesan="Laporan "+nm+" belum terkirim ke arsip, akan dicoba lagi nanti.";ANTRE.kls="err2";break}
     }
@@ -1033,7 +1060,7 @@ async function buildPdf(){
 async function makePdf(btn){
   var st=document.getElementById("makest"),res=document.getElementById("result");
   btn.disabled=true;res.innerHTML="";
-  st.className="status";st.textContent="Membuat PDF, mohon tunggu sebentar…";
+  st.className="status";st.style.display="";st.textContent="";uiProg(2,"Menyiapkan laporan…");
   try{
     arsipId=kodeBaru();arsipInfo=null;
     var blob=await buildPdf();
@@ -1041,19 +1068,11 @@ async function makePdf(btn){
     resName=((UJI?"UJI COBA ":"")+"Laporan "+J().label+" "+S.posyandu.trim()+(bln?" "+bln:"")+".pdf").replace(/[\\\/:*?"<>|]/g," ").replace(/\s+/g," ");
     if(resUrl)URL.revokeObjectURL(resUrl);
     resBlob=blob;arsipDone=false;arsipBusy=false;arsipInfo=null;resUrl=URL.createObjectURL(blob);
-    var canShare=false;
-    try{canShare=!!(navigator.canShare&&navigator.share&&navigator.canShare({files:[new File([blob],resName,{type:"application/pdf"})]}))}catch(e){}
-    res.innerHTML='<div class="result"><strong>PDF laporan siap</strong><div class="fn">'+esc(resName)+'</div><div>Simpan file ini, lalu cetak. Laporan juga otomatis dikirim ke arsip. Jangan tutup halaman sampai tertulis "Tersimpan di arsip".</div><div class="status" id="arsip" role="status" aria-live="polite"></div><div class="btnrow">'+
-      '<a class="btn primary" href="'+resUrl+'" download="'+esc(resName)+'">Simpan PDF</a>'+
-      (canShare?'<button type="button" class="btn" id="share">Bagikan atau cetak</button>':'')+
-      '<a class="btn" href="'+resUrl+'" target="_blank" rel="noopener">Buka PDF</a></div></div>';
-    var dl=res.querySelector("a[download]");if(dl)dl.addEventListener("click",function(){kirimArsip()});
-    var sh=document.getElementById("share");
-    if(sh)sh.addEventListener("click",function(){navigator.share({files:[new File([resBlob],resName,{type:"application/pdf"})],title:resName}).catch(function(){})});
     st.textContent="";
     res.scrollIntoView({block:"center",behavior:"smooth"});
     kirimArsip();
   }catch(e){
+    res.innerHTML="";btn.style.display="";st.style.display="";
     st.className="status err2";
     st.textContent="PDF belum berhasil dibuat. Periksa sambungan internet, lalu coba lagi. Jika masih gagal, kurangi jumlah foto.";
   }finally{btn.disabled=false}
