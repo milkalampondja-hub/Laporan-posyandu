@@ -129,7 +129,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
     <div class="fld"><label for="lp">Kata sandi</label><input id="lp" type="password" autocomplete="current-password"></div>
     <div class="err" id="lerr" role="alert"></div>
     <button class="btn" id="lb" type="submit">Masuk</button>
-    <div data-ver class="vtap">Terima Posyandu · tampilan 20261106a</div>
+    <div data-ver class="vtap">Terima Posyandu · tampilan 20261107a</div>
   </form>
 </section>
 
@@ -152,7 +152,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
       <button class="btn scan" id="scan" type="button"><svg class="ic"><use href="#i-scan"/></svg>SCAN QR LAPORAN</button>
       <h2>Riwayat penerimaan</h2>
       <div class="list" id="riw"></div>
-      <div data-ver class="vtap" style="margin-bottom:90px">Terima Posyandu · tampilan 20261106a</div>
+      <div data-ver class="vtap" style="margin-bottom:90px">Terima Posyandu · tampilan 20261107a</div>
     </section>
 
     <section id="vR" class="hidden">
@@ -182,6 +182,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 </div>
 <input type="file" id="foto" accept="image/*" class="hidden">
 
+<script src="pembaruan.js?v=1"></script>
 <script src="tes.js?v=3"></script>
 <script>
 window.TES_CATATAN='Pemindaian dan konfirmasi dihentikan sementara. Data tidak berubah.';
@@ -553,6 +554,7 @@ $('lt').addEventListener('input',function(){
   try{var s=localStorage.getItem(KUNCI_LS);if(s){CRED=JSON.parse(s);if(CRED&&CRED.u&&CRED.p){$('login').classList.add('hidden');$('app').classList.remove('hidden');mulai();return}CRED=null}}catch(e){CRED=null}
 })();
 </script>
+<script>if(window.PB)PB.mulai({app:'terima',v:'20261107a'});</script>
 <script>if('serviceWorker' in navigator)window.addEventListener('load',function(){try{navigator.serviceWorker.register('sw-terima.js').catch(function(){})}catch(e){}})</script>
 </body>
 </html>

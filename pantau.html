@@ -360,7 +360,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
     <div class="lerr" id="lerr" role="alert"></div>
     <button class="btn" id="lb" type="submit">Masuk</button>
   </form>
-  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small id="ver" style="opacity:.55;font-size:10px">tampilan 20261106b</small></div>
+  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small id="ver" style="opacity:.55;font-size:10px">tampilan 20261107a</small></div>
 </section>
 
 <div id="app" class="hidden" data-view="b">
@@ -517,6 +517,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
     <button data-go="p"><svg class="ic "><use href="#i-gear"/></svg>Atur</button>
   </nav>
 </div>
+<script src="pembaruan.js?v=1"></script>
 <script src="tes.js?v=3"></script>
 <script src="seed-posyandu.js"></script>
 <script src="pantau-ext.js?v=20261106b" defer></script>
@@ -974,5 +975,6 @@ function cek(){if(window.matchMedia('(min-width:900px)').matches){if(k){t.classL
 var y=window.pageYOffset||document.documentElement.scrollTop||0;
 if(!k&&y>90){t.classList.add('kecil');k=true}else if(k&&y<12){t.classList.remove('kecil');k=false}}
 window.addEventListener('scroll',cek,{passive:true});window.addEventListener('resize',cek)})();</script>
+<script>if(window.PB)PB.mulai({app:'pantau',v:'20261107a'});</script>
 </body>
 </html>
