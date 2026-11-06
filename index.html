@@ -268,7 +268,7 @@ section.info small{font-size:11px}
 .how li>div span{display:block;font-size:13px;color:var(--muted)}
 .card.pasang{padding:12px 16px}
 
-/* ===== Tampilan modern (Versi 39): hijau zamrud + aksen limau, kartu besar membulat, bar bawah melayang ===== */
+/* ===== Tampilan modern (Versi 40): hijau zamrud + aksen limau, kartu besar membulat, bar bawah melayang ===== */
 body.mod{
   --bg:#f4f6f4; --surface:#fff; --fg:#0e1f16; --muted:#64766b; --line:#e6ece8; --field:#f0f4f1;
   --e9:#042a19; --e8:#06402a; --e6:#0b7a4b; --e5:#12a15f; --lime:#c4f25a; --mint:#e4f6ec;
@@ -403,7 +403,7 @@ body.mod{
 .mod .dock .btn[hidden]{display:none}
 /* ---------- Halaman awal ---------- */
 .mod .hero2{position:relative;overflow:hidden;margin:-20px calc(-1*max(16px,env(safe-area-inset-right,0px))) 0 calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:calc(18px + env(safe-area-inset-top,0px)) 20px 74px;color:#fff;background:linear-gradient(150deg,var(--e9),var(--e8) 55%,#0a5c3a);border-radius:0 0 34px 34px;isolation:isolate}
-.mod .hero2::before{content:"";position:absolute;right:-30px;top:0;bottom:0;width:72%;background:url(tugu.jpg) center 28%/cover no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.6) 40%,#000);mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.6) 40%,#000);z-index:-1;opacity:.95}
+.mod .hero2::before{content:"";position:absolute;right:-30px;top:0;bottom:0;width:72%;background:url(kuda.jpg) center 28%/cover no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.6) 40%,#000);mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.6) 40%,#000);z-index:-1;opacity:.95}
 .mod .hero2::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,42,25,0) 40%,rgba(4,42,25,.65));z-index:-1}
 .mod .hero2 .top{display:flex;align-items:center;gap:10px;margin-bottom:26px}
 .mod .hero2 .top img{width:34px;height:auto;border-radius:6px;filter:none}
@@ -447,7 +447,7 @@ body.mod{
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 39</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 40</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -489,7 +489,7 @@ var JENIS={
 var STEPS=["Posyandu","Kegiatan","Foto","Catatan","Periksa"];
 var TTL=["Data posyandu","Kegiatan","Foto dokumentasi","Catatan dan pengesahan","Periksa dan download"];
 var NEXTLBL=["Lanjut ke Kegiatan","Lanjut ke Foto","Lanjut ke Catatan","Periksa laporan"];
-var APP_V="39";
+var APP_V="40";
 var KEY="laporan-posyandu-v3", MAXFOTO=12, uid=0;
 var main=document.getElementById("main"), btnBack=document.getElementById("btn-back"), btnNext=document.getElementById("btn-next"), btnMake=document.getElementById("btn-make");
 
