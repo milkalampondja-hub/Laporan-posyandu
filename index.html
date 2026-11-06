@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
+<script src="pindah.js?v=1"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Laporan Posyandu Kecamatan Palu Utara</title>
 <meta name="theme-color" content="#0a7a35">
@@ -268,7 +269,7 @@ section.info small{font-size:11px}
 .how li>div span{display:block;font-size:13px;color:var(--muted)}
 .card.pasang{padding:12px 16px}
 
-/* ===== Tampilan modern (Versi 42): hijau zamrud + aksen limau, kartu besar membulat, bar bawah melayang ===== */
+/* ===== Tampilan modern (Versi 43): hijau zamrud + aksen limau, kartu besar membulat, bar bawah melayang ===== */
 body.mod{
   --bg:#f4f6f4; --surface:#fff; --fg:#0e1f16; --muted:#64766b; --line:#e6ece8; --field:#f0f4f1;
   --e9:#042a19; --e8:#06402a; --e6:#0b7a4b; --e5:#12a15f; --lime:#c4f25a; --mint:#e4f6ec;
@@ -450,7 +451,7 @@ body.mod{
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 42</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 43</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -492,7 +493,7 @@ var JENIS={
 var STEPS=["Posyandu","Kegiatan","Foto","Catatan","Periksa"];
 var TTL=["Data posyandu","Kegiatan","Foto dokumentasi","Catatan dan pengesahan","Periksa dan download"];
 var NEXTLBL=["Lanjut ke Kegiatan","Lanjut ke Foto","Lanjut ke Catatan","Periksa laporan"];
-var APP_V="42";
+var APP_V="43";
 var KEY="laporan-posyandu-v3", MAXFOTO=12, uid=0;
 var main=document.getElementById("main"), btnBack=document.getElementById("btn-back"), btnNext=document.getElementById("btn-next"), btnMake=document.getElementById("btn-make");
 
@@ -830,7 +831,7 @@ function render(keepScroll){
   if(step===4){var mk0=document.getElementById("make");btnMake.disabled=!!(mk0&&mk0.disabled);renderPreview()}
   if(!keepScroll){window.scrollTo(0,0);try{main.focus({preventScroll:true})}catch(e){}}
 }
-function go(n){step=Math.max(-1,Math.min(4,n));render();if(window.PB)PB.coba()}
+function go(n){step=Math.max(-1,Math.min(4,n));render();if(window.PB)PB.coba();if(window.PINDAH&&PINDAH.cek)PINDAH.cek()}
 
 /* ---------- interaksi ---------- */
 function refreshAuto(){
@@ -1294,6 +1295,7 @@ async function makePdf(btn){
 var UJI=!!(window.TES_KODE&&TES_KODE());
 render();
 muatDaftarPos();
+if(window.PINDAH)PINDAH.kader({siap:function(){if(arsipBusy||antreJalan||step!==-1)return false;return antreSemua().then(function(a){return !a.length})}});
 var vv=document.getElementById("ver");if(vv)vv.textContent="Versi "+APP_V;
 if(window.PB)PB.mulai({app:"kader",v:APP_V,aman:function(){
   if(arsipBusy||antreJalan)return false;

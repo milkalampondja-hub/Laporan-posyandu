@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
+<script src="pindah.js?v=1"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pantau Laporan Posyandu</title>
 <meta name="theme-color" content="#ffd000">
@@ -360,7 +361,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
     <div class="lerr" id="lerr" role="alert"></div>
     <button class="btn" id="lb" type="submit">Masuk</button>
   </form>
-  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small id="ver" style="opacity:.55;font-size:10px">tampilan 20261107a</small></div>
+  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small id="ver" style="opacity:.55;font-size:10px">tampilan 20261107b</small></div>
 </section>
 
 <div id="app" class="hidden" data-view="b">
@@ -975,6 +976,6 @@ function cek(){if(window.matchMedia('(min-width:900px)').matches){if(k){t.classL
 var y=window.pageYOffset||document.documentElement.scrollTop||0;
 if(!k&&y>90){t.classList.add('kecil');k=true}else if(k&&y<12){t.classList.remove('kecil');k=false}}
 window.addEventListener('scroll',cek,{passive:true});window.addEventListener('resize',cek)})();</script>
-<script>if(window.PB)PB.mulai({app:'pantau',v:'20261107a'});</script>
+<script>if(window.PB)PB.mulai({app:'pantau',v:'20261107b'});</script>
 </body>
 </html>
