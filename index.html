@@ -268,7 +268,7 @@ section.info small{font-size:11px}
 .how li>div span{display:block;font-size:13px;color:var(--muted)}
 .card.pasang{padding:12px 16px}
 
-/* ===== Tampilan modern (Versi 41): hijau zamrud + aksen limau, kartu besar membulat, bar bawah melayang ===== */
+/* ===== Tampilan modern (Versi 42): hijau zamrud + aksen limau, kartu besar membulat, bar bawah melayang ===== */
 body.mod{
   --bg:#f4f6f4; --surface:#fff; --fg:#0e1f16; --muted:#64766b; --line:#e6ece8; --field:#f0f4f1;
   --e9:#042a19; --e8:#06402a; --e6:#0b7a4b; --e5:#12a15f; --lime:#c4f25a; --mint:#e4f6ec;
@@ -433,6 +433,9 @@ body.mod{
  .mod .jcard b{font-size:14px}
  .mod .hero2 h1{font-size:30px}
 }
+.mod .batas{align-items:flex-start}.mod .batas svg{margin-top:2px}.mod .batas span{display:flex;flex-direction:column;gap:3px}
+.mod .batas .bnx{font-size:12px;font-weight:600;opacity:.75;padding-top:6px;margin-top:3px;border-top:1px solid rgba(154,58,0,.18)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mod .batas.ok,:root:not([data-theme="light"]) body.mod .batas.ok{background:linear-gradient(135deg,rgba(196,242,90,.10),rgba(196,242,90,.04));box-shadow:inset 0 0 0 1px rgba(196,242,90,.22)}}
 </style>
 <script src="pembaruan.js?v=1"></script>
 </head>
@@ -447,7 +450,7 @@ body.mod{
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 41</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 42</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -489,7 +492,7 @@ var JENIS={
 var STEPS=["Posyandu","Kegiatan","Foto","Catatan","Periksa"];
 var TTL=["Data posyandu","Kegiatan","Foto dokumentasi","Catatan dan pengesahan","Periksa dan download"];
 var NEXTLBL=["Lanjut ke Kegiatan","Lanjut ke Foto","Lanjut ke Catatan","Periksa laporan"];
-var APP_V="41";
+var APP_V="42";
 var KEY="laporan-posyandu-v3", MAXFOTO=12, uid=0;
 var main=document.getElementById("main"), btnBack=document.getElementById("btn-back"), btnNext=document.getElementById("btn-next"), btnMake=document.getElementById("btn-make");
 
@@ -672,10 +675,17 @@ var PANAH='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="c
 function batasHtml(){
   if(!(BATAS>=1&&BATAS<=31))return "";
   /* Laporan bulan X dikumpulkan paling lambat tanggal BATAS di bulan berikutnya. Sampai tanggal batas, yang dikumpulkan masih bulan lalu. */
-  /* Dari tanggal 1 sampai tanggal batas, dua bulan laporan terbuka sekaligus (bulan lalu dan bulan berjalan). */
-  var n=new Date(),y=n.getFullYear(),m=n.getMonth(),out="";
-  if(n.getDate()<=BATAS){var py=m===0?y-1:y,pm=m===0?11:m-1;out+=batasSatu(n,pm,py)}
-  return out+batasSatu(n,m,y);
+  /* Dari tanggal 1 sampai tanggal batas, dua bulan laporan terbuka sekaligus: satu kartu (yang mendesak) dengan baris "Berikutnya". */
+  var n=new Date(),y=n.getFullYear(),m=n.getMonth();
+  var cur=batasSatu(n,m,y);
+  if(n.getDate()<=BATAS){
+    var py=m===0?y-1:y,pm=m===0?11:m-1,pr=batasSatu(n,pm,py);
+    return batasKartu(pr,'<small class="bnx">Berikutnya: laporan '+BULAN[m]+', batas '+cur.tgl+' ('+cur.sisa+' hari lagi)</small>');
+  }
+  return batasKartu(cur,"");
+}
+function batasKartu(o,extra){
+  return '<div class="batas '+o.kls+'" role="status"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>'+esc(o.teks)+extra+'</span></div>';
 }
 function batasSatu(n,m,y){
   var dm=(m+1)%12,dy=m===11?y+1:y,akhir=new Date(dy,dm+1,0).getDate(),tg=Math.min(BATAS,akhir);
@@ -686,7 +696,7 @@ function batasSatu(n,m,y){
   else if(sisa>0){kls="dekat";teks="Segera buat "+lap+" · tinggal "+sisa+" hari (batas "+tgl+")"}
   else if(sisa===0){kls="dekat";teks="Hari ini batas terakhir "+lap+" ("+tgl+")"}
   else{kls="lewat";teks="Batas "+lap+" ("+tgl+") sudah lewat, buat laporan secepatnya"}
-  return '<div class="batas '+kls+'" role="status"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>'+esc(teks)+'</span></div>';
+  return {kls:kls,teks:teks,tgl:tgl,sisa:sisa};
 }
 function bantuanHtml(){
   if(!/^\d{9,15}$/.test(WA))return "";
