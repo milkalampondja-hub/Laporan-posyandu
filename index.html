@@ -272,7 +272,7 @@ section.info small{font-size:11px}
 </header>
 
 <main id="main" tabindex="-1"></main>
-<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 36</span></footer>
+<footer class="foot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><span id="ver" style="opacity:.6">Versi 37</span></footer>
 
 <div class="dock"><div class="dock-in">
   <button type="button" class="btn back" id="btn-back">‹ Kembali</button>
@@ -523,7 +523,7 @@ function viewPosyandu(){
     kd='<p class="help">Nama kader mengikuti SK yang berlaku dan tidak bisa diubah. Isi kolom pengganti hanya jika ada kader pengganti sementara.</p>'+
       e.kader.map(function(k,i){
         return '<div class="lock"><div class="nm">'+esc(k.nama)+(k.jabatan?'<small>'+esc(k.jabatan)+'</small>':'')+'</div>'+
-          '<input type="text" data-peng="'+i+'" value="'+esc((S.peng&&S.peng[i])||"")+'" placeholder="Kader pengganti, isi di sini" autocomplete="off" autocapitalize="words" maxlength="40"></div>';
+          '<input type="text" data-peng="'+i+'" value="'+esc((S.peng&&S.peng[i])||"")+'" placeholder="Jika ada pengganti, isi di sini" autocomplete="off" autocapitalize="words" maxlength="40"></div>';
       }).join("");
   }else{
     kd='<p class="help">Tulis satu nama di setiap kotak.</p>'+S.kader.map(function(n,i){
