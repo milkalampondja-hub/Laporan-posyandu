@@ -208,6 +208,7 @@ table.hk th,table.hk td{border:1px solid var(--ink);text-align:center;padding:3p
 .how b{display:block}.how span{color:var(--muted);font-size:14px}
 .resume .rl{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .resume .rt{font-size:20px;font-weight:700}.resume .rs{color:var(--muted);margin-bottom:6px}
+.mod .resume .rs{font-size:14px;margin-bottom:2px}.mod .resume .btnrow{display:flex;flex-direction:column;gap:10px;margin-top:14px}.mod .resume .btnrow .btn{width:100%;min-height:52px;justify-content:center}.mod .resume #draf-buang{background:transparent;border:1.5px solid var(--line);box-shadow:none}
 .btn.big{min-height:56px;font-size:17px}
 input[type=text],input[type=date],input[type=number],select,textarea{background:var(--field);min-height:52px;border-radius:12px}
 select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%237a8a84' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:44px}
@@ -497,7 +498,7 @@ var JENIS={
 var STEPS=["Posyandu","Kegiatan","Foto","Catatan","Periksa"];
 var TTL=["Data posyandu","Kegiatan","Foto dokumentasi","Catatan dan pengesahan","Periksa dan download"];
 var NEXTLBL=["Lanjut ke Kegiatan","Lanjut ke Foto","Lanjut ke Catatan","Periksa laporan"];
-var APP_V="45";
+var APP_V="46";
 var KEY="laporan-posyandu-v3", MAXFOTO=12, uid=0;
 var main=document.getElementById("main"), btnBack=document.getElementById("btn-back"), btnNext=document.getElementById("btn-next"), btnMake=document.getElementById("btn-make");
 
@@ -529,7 +530,36 @@ try{
 }catch(e){}
 function save(){
   try{var c=JSON.parse(JSON.stringify(S));delete c.peng;c.rows=S.rows.map(function(r){return {bulan:r.bulan,v:r.v}});localStorage.setItem(KEY,JSON.stringify(c))}catch(e){}
+  drafJadwal();
 }
+/* ---------- draf laporan yang sedang diisi (kegiatan dan foto) disimpan di HP ----------
+   Supaya isian dan foto tidak hilang bila browser tertutup sendiri (misalnya saat membuka kamera atau WhatsApp).
+   Draf dihapus setelah laporan terkirim atau masuk antrean kirim, atau bila kader memilih mulai baru. */
+var DRAF=null,drafT=0,drafArm=0;
+function drafOp(mode,fn){return new Promise(function(res,rej){try{var q=indexedDB.open("lp-draf",1);q.onupgradeneeded=function(){q.result.createObjectStore("d")};q.onerror=function(){rej(q.error)};q.onsuccess=function(){var db=q.result,tx=db.transaction("d",mode),r=fn(tx.objectStore("d"));tx.oncomplete=function(){db.close();res(r&&r.result)};tx.onerror=tx.onabort=function(){db.close();rej(tx.error)}}}catch(e){rej(e)}})}
+function drafIsi(){return !!(S.tanggal||photoCount()||S.rows.some(rowStarted))}
+function drafJadwal(){clearTimeout(drafT);drafT=setTimeout(drafSimpan,1200)}
+function drafSimpan(){clearTimeout(drafT);drafT=0;if(!drafIsi())return;var d={t:Date.now(),step:step,S:S};drafOp("readwrite",function(st){return st.put(d,"draf")}).catch(function(){})}
+function drafHapus(){clearTimeout(drafT);drafT=0;DRAF=null;drafOp("readwrite",function(st){return st.delete("draf")}).catch(function(){})}
+function drafPakai(){
+  var d=DRAF,s=d.S||{};DRAF=null;
+  s.rows=(Array.isArray(s.rows)?s.rows:[]).map(function(r){return {id:++uid,bulan:r.bulan||"",v:(r.v&&typeof r.v==="object")?r.v:{},photos:Array.isArray(r.photos)?r.photos.filter(function(p){return p&&p.s}):[]}});
+  if(!s.rows.length)s.rows=[newRow("")];
+  if(!Array.isArray(s.kader)||!s.kader.length)s.kader=[""];
+  S=Object.assign(blank(),s);restored=false;save();
+  return Math.max(0,Math.min(4,d.step|0));
+}
+function drafJam(t){var d=new Date(t),h=new Date(),j=pad(d.getHours())+"."+pad(d.getMinutes());return d.toDateString()===h.toDateString()?"hari ini pukul "+j:d.getDate()+" "+BULAN[d.getMonth()]+" pukul "+j}
+function drafMuat(){
+  drafOp("readonly",function(st){return st.get("draf")}).then(function(d){
+    if(!d||!d.S)return;
+    if(Date.now()-d.t>30*864e5){drafHapus();return}
+    if(step!==-1||drafIsi())return;
+    DRAF=d;render(true);
+  }).catch(function(){});
+}
+document.addEventListener("visibilitychange",function(){if(document.hidden&&drafT)drafSimpan()});
+window.addEventListener("pagehide",function(){if(drafT)drafSimpan()});
 
 /* ---------- teks otomatis ---------- */
 function J(){return JENIS[S.jenis]||null}
@@ -665,11 +695,11 @@ function opt(list,sel,ph){return '<option value="">'+ph+'</option>'+list.map(fun
 
 /* ---------- tampilan ---------- */
 function viewHome(){
-  var has=false;
+  var has=!!DRAF;
   var how=[["users","Data posyandu","Pilih jenis laporan dan kelurahan, isi nama posyandu dan kader."],["calendar","Kegiatan","Tanggal, tempat, dan hasil kegiatan bulan ini."],["camera","Foto","Tambahkan foto dokumentasi dari galeri atau kamera."],["edit","Catatan","Masalah, tindak lanjut, dan tanggal tanda tangan lurah."],["filecheck","Download","Periksa pratinjau, lalu simpan PDF dan cetak."]];
   var mulai=has?'':'<button type="button" class="btn primary block big mulai" data-start="0"><span class="pn kr" aria-hidden="true">'+PANAH+'</span><span>Buat laporan</span><span class="pn kn" aria-hidden="true">'+PANAH+'</span></button>';
   return '<section class="hero2"><div class="top"><img src="'+LOGO+'" alt=""><span>Kecamatan Palu Utara</span></div><h1 class="keep">Laporan <em>Posyandu</em></h1><p>Balita dan Lansia. Isi, kirim, dan download dalam 5 langkah.</p></section><div class="home-body">'+mulai+
-  (has?'<section class="card resume"><div class="rl">Laporan terakhir</div><div class="rt">'+esc(S.posyandu||"Belum diberi nama")+'</div><div class="rs">'+esc((J()?J().label+" · ":"")+(S.kelurahan?"Kelurahan "+S.kelurahan:"Belum memilih kelurahan"))+'</div><div class="btnrow"><button type="button" class="btn primary" data-start="0">Lanjutkan laporan</button><button type="button" class="btn" id="new-report">Laporan bulan baru</button></div></section>':'')+
+  (has?(function(){var d=DRAF.S||{},n=(d.rows||[]).reduce(function(a,r){return a+((r.photos||[]).length)},0),jn=JENIS[d.jenis];return '<section class="card resume"><div class="rl">Laporan belum selesai</div><div class="rt">'+esc((d.posyandu||"").trim()||"Belum diberi nama")+'</div><div class="rs">'+esc([jn?jn.label:"",d.kelurahan?"Kelurahan "+d.kelurahan:"",n?n+" foto":""].filter(Boolean).join(" · "))+'</div><div class="rs">Tersimpan di HP ini, '+esc(drafJam(DRAF.t))+'.</div><div class="btnrow"><button type="button" class="btn primary" data-start="0" data-draf="1">Lanjutkan laporan</button><button type="button" class="btn" id="draf-buang">Buang, mulai baru</button></div></section>'})():'')+
   batasHtml()+'<div id="antre-wrap">'+antreHtml()+'</div>'+
   (INFO&&!infoTertutup()?'<section class="info" role="note"><span class="toa" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10v4a1 1 0 0 0 1 1h2l3.5 5h2.2l-1.6-5H11l7 4V5l-7 4H4a1 1 0 0 0-1 1zm16-1.5v7a3.5 3.5 0 0 0 0-7zM21 4.5v1.6a6 6 0 0 1 0 11.8v1.6a7.5 7.5 0 0 0 0-15z"/></svg></span><span class="isi"><b>Pengumuman</b><span class="teks">'+esc(INFO)+'</span>'+(tglIndo(INFOTGL)?'<small>Diperbarui '+tglIndo(INFOTGL)+'</small>':'')+'</span><button type="button" class="tutup" id="info-tutup" aria-label="Tutup pengumuman">&times;</button></section>':'')+
   '<p class="save">Data posyandu dan kader diingat di HP ini, jadi tidak perlu mengisi ulang.</p>'+
@@ -864,6 +894,8 @@ main.addEventListener("click",function(e){
   var b=e.target.closest("button");if(!b)return;
   if(b.id==="pasang-btn"){if(PASANG){PASANG.prompt();PASANG.userChoice.then(function(){PASANG=null;if(step===-1)render(true)}).catch(function(){})}return}
   if(b.id==="info-tutup"){lsSet("lp-infotutup",INFO+"|"+INFOTGL+"|"+todayISO());render(true);return}
+  if(b.dataset.draf&&DRAF){lsSet("lp-pernah","1");go(drafPakai());return}
+  if(b.id==="draf-buang"){if(!drafArm){drafArm=1;b.textContent="Ketuk lagi untuk membuang";setTimeout(function(){drafArm=0;if(b.isConnected)b.textContent="Buang, mulai baru"},4000);return}drafArm=0;drafHapus();render();return}
   if(b.dataset.start!=null){lsSet("lp-pernah","1");go(+b.dataset.start);return}
   if(b.dataset.goto!=null){var g=+b.dataset.goto;if(g<=step||b.classList.contains("go"))go(g);return}
   if(b.dataset.jenis){if(S.jenis!==b.dataset.jenis){S.posyandu="";S.peng={}}S.jenis=b.dataset.jenis;save();render(true);return}
@@ -874,11 +906,11 @@ main.addEventListener("click",function(e){
   if(b.id==="add-kader"){S.kader.push("");save();render(true);var i=S.kader.length-1,el=document.getElementById("kader"+i);if(el)el.focus();return}
   if(b.dataset.delrow){S.rows=S.rows.filter(function(r){return r.id!=b.dataset.delrow});save();render(true);return}
   if(b.id==="add-row"){var last=S.rows.map(function(r){return r.bulan}).filter(Boolean).pop();var nr=newRow(last?BULAN[(BULAN.indexOf(last)+1)%12]:"");S.rows.push(nr);save();render(true);var el2=document.getElementById("b"+nr.id);if(el2)el2.scrollIntoView({block:"center"});return}
-  if(b.dataset.rm){var p=b.dataset.rm.split(":");rowById(p[0]).photos.splice(+p[1],1);render(true);return}
-  if(b.id==="new-report"){var keep={jenis:S.jenis,kelurahan:S.kelurahan,alamat:S.alamat,posyandu:S.posyandu,kader:S.kader.slice(),jabatan:S.jabatan,lurah:S.lurah,nip:S.nip,kota:S.kota,dasarO:S.dasarO,tujuanO:S.tujuanO,sasaranO:S.sasaranO};S=Object.assign(blank(),keep);restored=false;save();go(1);return}
+  if(b.dataset.rm){var p=b.dataset.rm.split(":");rowById(p[0]).photos.splice(+p[1],1);drafJadwal();render(true);return}
+  if(b.id==="new-report"){var keep={jenis:S.jenis,kelurahan:S.kelurahan,alamat:S.alamat,posyandu:S.posyandu,kader:S.kader.slice(),jabatan:S.jabatan,lurah:S.lurah,nip:S.nip,kota:S.kota,dasarO:S.dasarO,tujuanO:S.tujuanO,sasaranO:S.sasaranO};S=Object.assign(blank(),keep);restored=false;drafHapus();save();go(1);return}
   if(b.id==="wipe"){
     if(!wipeArm){wipeArm=1;b.textContent="Ketuk lagi untuk menghapus semua";setTimeout(function(){wipeArm=0;if(b.isConnected)b.textContent="Hapus semua isian"},4000);return}
-    wipeArm=0;S=blank();restored=false;save();render();return}
+    wipeArm=0;S=blank();restored=false;drafHapus();save();render();return}
   if(b.id==="make"){makePdf(b)}
   if(b.id==="retry-arsip"){kirimArsip()}
   if(b.id==="antre-kirim"){ANTRE.pesan="";kirimAntrean();return}
@@ -921,7 +953,7 @@ function addPhotos(id,files){
   var skipped=list.length>room;list=list.slice(0,room);
   say("Memproses foto…");
   Promise.all(list.map(function(f){return shrink(f).catch(function(){return null})})).then(function(arr){
-    var ok=arr.filter(Boolean);ok.forEach(function(p){r.photos.push(p)});
+    var ok=arr.filter(Boolean);ok.forEach(function(p){r.photos.push(p)});if(ok.length)drafJadwal();
     var bad=arr.length-ok.length;
     if(step===2){render(true);var st2=main.querySelector('[data-st="'+id+'"]');
       if(st2){st2.textContent=bad?bad+" foto tidak bisa dibaca. Gunakan foto JPG atau PNG.":(skipped?"Hanya "+MAXFOTO+" foto pertama yang dipakai.":ok.length+" foto ditambahkan.");st2.className="status"+((bad||skipped)?" err2":"")}}
@@ -1158,6 +1190,7 @@ function uiProg(p,label){
   document.getElementById("kirimtahap").innerHTML=tahapHtml(p);
 }
 function uiOk(){
+  drafHapus();
   var canShare=false;
   try{canShare=!!(navigator.canShare&&navigator.share&&navigator.canShare({files:[new File([resBlob],resName,{type:"application/pdf"})]}))}catch(e){}
   kartuKirim('<div class="ring done" id="kirimring" style="--p:100">'+SVGOK+'</div><div class="tt ok2 status" style="margin-top:0">Laporan sudah terkirim</div><p class="ds">Laporan sudah masuk ke kecamatan.</p>'+(arsipInfo&&arsipInfo.nomor?'<div class="no">Nomor laporan: '+esc(arsipInfo.nomor)+(arsipInfo.versi>1?' (versi '+arsipInfo.versi+')':'')+'</div>':'')+
@@ -1212,7 +1245,7 @@ function antreSimpanGagal(data){
   try{
     if(UJI||!resBlob||!arsipId||!data)return;
     var d2={};for(var k in data)if(k!=="aksi"&&k!=="n"&&k!=="t"&&k!=="tes")d2[k]=data[k];
-    antreSimpan({id:arsipId,data:d2,blob:resBlob,nama:resName,info:arsipInfo,waktu:Date.now()}).catch(function(){});
+    antreSimpan({id:arsipId,data:d2,blob:resBlob,nama:resName,info:arsipInfo,waktu:Date.now()}).then(function(){drafHapus()}).catch(function(){});
   }catch(e){}
 }
 function antreHtml(){
@@ -1298,19 +1331,21 @@ async function makePdf(btn){
 /* ---------- mode tes: dikelola oleh tes.js (ketuk nomor versi 5 kali); laporan masuk ke data TES, bukan data asli ---------- */
 var UJI=!!(window.TES_KODE&&TES_KODE());
 render();
+drafMuat();
 muatDaftarPos();
-if(window.PINDAH)PINDAH.kader({siap:function(){if(arsipBusy||antreJalan||step!==-1)return false;return antreSemua().then(function(a){return !a.length})}});
+if(window.PINDAH)PINDAH.kader({siap:function(){if(arsipBusy||antreJalan||step!==-1||DRAF||drafIsi())return false;return antreSemua().then(function(a){return !a.length})}});
 var vv=document.getElementById("ver");if(vv)vv.textContent="Versi "+APP_V;
 if(window.PB)PB.mulai({app:"kader",v:APP_V,aman:function(){
   if(arsipBusy||antreJalan)return false;
   var a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return false;
   /* hanya di halaman awal dan belum ada isian kegiatan: isian kegiatan tidak disimpan di HP */
-  return step===-1&&!S.tanggal&&!photoCount()&&!S.rows.some(rowStarted);
+  return step===-1&&!DRAF&&!S.tanggal&&!photoCount()&&!S.rows.some(rowStarted);
 },catatan:function(){return (step===4||arsipBusy)?"Selesaikan laporan ini dulu, lalu muat ulang.":(step>=0?"Muat ulang setelah laporan ini selesai.":"")}});
 setTimeout(kirimAntrean,2500);
 window.addEventListener("online",function(){setTimeout(kirimAntrean,800)});
 document.addEventListener("visibilitychange",function(){if(!document.hidden&&Date.now()-antreCek>30000){antreCek=Date.now();kirimAntrean()}});
 })();
 </script>
+<script>if('serviceWorker' in navigator)window.addEventListener('load',function(){try{navigator.serviceWorker.register('sw-terima.js').then(function(){return navigator.serviceWorker.ready}).then(function(g){var l=[location.href,'manifest.webmanifest','icon-192.png','apple-touch-icon.png'];try{performance.getEntriesByType('resource').forEach(function(x){l.push(x.name)})}catch(e){}if(g.active)g.active.postMessage({simpan:l})}).catch(function(){})}catch(e){}})</script>
 </body>
 </html>

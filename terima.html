@@ -305,7 +305,7 @@ body.tm .filt .fld select{font-size:14px;padding-left:12px;padding-right:30px!im
     <div class="fld"><label for="lp">Kata sandi</label><input id="lp" type="password" autocomplete="current-password"></div>
     <div class="err" id="lerr" role="alert"></div>
     <button class="btn" id="lb" type="submit">Masuk</button>
-    <div data-ver class="vtap">Terima Posyandu · tampilan 20261107d</div>
+    <div data-ver class="vtap">Terima Posyandu · tampilan 20261107f</div>
   </form>
 </section>
 
@@ -330,7 +330,7 @@ body.tm .filt .fld select{font-size:14px;padding-left:12px;padding-right:30px!im
       <button class="btn scan" id="scan" type="button"><svg class="ic"><use href="#i-scan"/></svg>SCAN QR LAPORAN</button>
       <h2>Riwayat penerimaan</h2>
       <div class="list" id="riw"></div>
-      <div data-ver class="vtap" style="margin-bottom:90px">Terima Posyandu · tampilan 20261107d</div>
+      <div data-ver class="vtap" style="margin-bottom:90px">Terima Posyandu · tampilan 20261107f</div>
     </section>
 
     <section id="vR" class="hidden">
@@ -732,7 +732,7 @@ $('lt').addEventListener('input',function(){
   try{var s=localStorage.getItem(KUNCI_LS);if(s){CRED=JSON.parse(s);if(CRED&&CRED.u&&CRED.p){$('login').classList.add('hidden');$('app').classList.remove('hidden');mulai();return}CRED=null}}catch(e){CRED=null}
 })();
 </script>
-<script>if(window.PB)PB.mulai({app:'terima',v:'20261107d'});</script>
-<script>if('serviceWorker' in navigator)window.addEventListener('load',function(){try{navigator.serviceWorker.register('sw-terima.js').catch(function(){})}catch(e){}})</script>
+<script>if(window.PB)PB.mulai({app:'terima',v:'20261107f'});</script>
+<script>if('serviceWorker' in navigator)window.addEventListener('load',function(){try{navigator.serviceWorker.register('sw-terima.js').then(function(){return navigator.serviceWorker.ready}).then(function(g){var l=[location.href,'terima.html','terima','pindah.js','kantor.jpg','jsQR.js','tes.js','logo.png','pembaruan.js','terima.webmanifest','icon-terima-192.png','icon-terima-512.png','apple-touch-icon-terima.png'];try{performance.getEntriesByType('resource').forEach(function(x){l.push(x.name)})}catch(e){}if(g.active)g.active.postMessage({simpan:l})}).catch(function(){})}catch(e){}})</script>
 </body>
 </html>
