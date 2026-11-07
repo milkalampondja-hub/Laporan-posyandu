@@ -296,6 +296,7 @@ footer.dsk{display:none}
 @media (min-width:900px){#toastbaru{bottom:24px}}
 </style>
 <link rel="stylesheet" href="pantau-tema.css?v=20261105ze">
+<link rel="stylesheet" href="pantau-modern.css?v=20261107c">
 <style id="loginKaca">
 /* ---------- Gaya kaca: halaman masuk ---------- */
 html .login{background:#fff8e1}
@@ -320,7 +321,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .login .lf label{color:#e6e3d2}}
 </style>
 </head>
-<body>
+<body class="pm">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
 <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
@@ -361,7 +362,7 @@ html .login .lfoot{color:var(--fg,#241b00);opacity:.8}
     <div class="lerr" id="lerr" role="alert"></div>
     <button class="btn" id="lb" type="submit">Masuk</button>
   </form>
-  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small id="ver" style="opacity:.55;font-size:10px">tampilan 20261107b</small></div>
+  <div class="lfoot">Developed by <b>Max Juniar Ratowo</b><br>© 2026 All Rights Reserved<br><small id="ver" style="opacity:.55;font-size:10px">tampilan 20261107c</small></div>
 </section>
 
 <div id="app" class="hidden" data-view="b">
@@ -976,6 +977,6 @@ function cek(){if(window.matchMedia('(min-width:900px)').matches){if(k){t.classL
 var y=window.pageYOffset||document.documentElement.scrollTop||0;
 if(!k&&y>90){t.classList.add('kecil');k=true}else if(k&&y<12){t.classList.remove('kecil');k=false}}
 window.addEventListener('scroll',cek,{passive:true});window.addEventListener('resize',cek)})();</script>
-<script>if(window.PB)PB.mulai({app:'pantau',v:'20261107b'});</script>
+<script>if(window.PB)PB.mulai({app:'pantau',v:'20261107c'});</script>
 </body>
 </html>

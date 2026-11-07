@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script src="pindah.js?v=1"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0a7a35">
+<meta name="theme-color" content="#120540">
 <meta name="robots" content="noindex,nofollow">
 <link rel="preconnect" href="https://script.google.com">
 <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
@@ -109,9 +109,184 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .sheet .okc{text-align:center}
 .vtap{text-align:center;font-size:11px;opacity:.5;margin:14px 0 0;padding:6px}
 .atau{text-align:center;font-size:13px;color:var(--mu);margin:-2px 0 10px}
+/* ===== Terima modern: biru tua + kuning lambang Kota Palu ===== */
+body.tm{
+  --nv9:#120540; --nv8:#1d0a5e; --nv:#2a1382; --nv2:#3a22a6; --nvs:#eeebfb; --nvs2:#e2ddf8;
+  --kn:#fcc000; --kn2:#f0b400;
+  --bg:#f4f3f9; --card:#fff; --tx:#16132b; --mu:#6b6785; --ln:#e7e4f1;
+  --g:#2a1382; --g2:#1d0a5e; --gs:#eeebfb;
+  --ok:#17824a; --oks:#dcf3e4; --okb:#2fb36a;
+  --warn:#8a5f00; --warns:#fff2c4; --wb:#f0b400;
+  --bad:#b42318; --bads:#fde6e3; --bb:#e0483a;
+  --sh:0 1px 2px rgba(18,5,64,.05),0 12px 28px -18px rgba(18,5,64,.35);
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);color:var(--tx);padding-bottom:calc(104px + env(safe-area-inset-bottom,0px));
+}
+body.tm .wrap{max-width:720px}
+
+/* ---------- masuk ---------- */
+body.tm #login{position:relative;align-items:flex-end;padding:0 16px calc(24px + env(safe-area-inset-bottom,0px));background:var(--nv9);overflow:hidden}
+body.tm #login::before{content:"";position:absolute;inset:0 0 auto 0;height:58%;background:linear-gradient(180deg,rgba(18,5,64,.25),rgba(18,5,64,.6) 55%,var(--nv9)),url(kantor.jpg) center 30%/cover no-repeat}
+body.tm #login::after{content:"";position:absolute;right:-90px;top:-90px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(252,192,0,.28),transparent 70%)}
+body.tm .lbox{position:relative;z-index:1;max-width:400px;border-radius:30px;padding:0 22px 20px;box-shadow:0 30px 60px -24px rgba(0,0,0,.6);margin-top:46vh}
+body.tm .lbox img{width:66px;margin:-40px auto 0;display:block;filter:drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff) drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1.5px 0 #fff) drop-shadow(0 10px 14px rgba(18,5,64,.35))}
+body.tm .lbox h1{font-size:23px;font-weight:800;letter-spacing:.01em;margin:10px 0 0;color:var(--nv9)}
+body.tm .lbox>p{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--kn2);margin:4px 0 20px}
+body.tm .fld label{font-size:13px;font-weight:600;color:#4a4664;margin-bottom:6px}
+body.tm .fld input,body.tm .fld select{height:52px;border-radius:14px;border:1.5px solid transparent;background:#f4f3f9;font-size:16px;color:var(--tx)}
+body.tm .fld input:focus,body.tm .fld select:focus{border-color:var(--nv2);background:#fff;box-shadow:0 0 0 4px rgba(58,34,166,.12)}
+body.tm #lt{border:1.5px dashed #cdc6ee;background:#f7f5ff}
+body.tm .atau{display:flex;align-items:center;gap:10px;margin:2px 0 12px;font-size:12.5px}
+body.tm .atau::before,body.tm .atau::after{content:"";flex:1;height:1px;background:var(--ln)}
+body.tm .btn{height:54px;border-radius:16px;background:linear-gradient(180deg,var(--nv2),var(--nv));font-weight:700;letter-spacing:.01em;box-shadow:0 12px 22px -14px rgba(42,19,130,.9)}
+body.tm .btn:active{background:var(--nv8)}
+body.tm .btn.line{background:#fff;color:var(--nv);border:1.5px solid #d9d4ee;box-shadow:none}
+body.tm .btn.bad{background:var(--bads);color:var(--bad);border:0;box-shadow:none}
+body.tm .vtap{color:var(--mu);opacity:.7}
+
+/* ---------- kepala ---------- */
+body.tm .top{background:linear-gradient(150deg,var(--nv9),var(--nv8) 60%,var(--nv));border:0;color:#fff;box-shadow:0 10px 26px -16px rgba(18,5,64,.8)}
+body.tm .top .wrap{height:66px}
+body.tm .top img{width:36px;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
+body.tm .top .t b{font-size:15px;font-weight:800;letter-spacing:.06em}
+body.tm .top .t small{color:#ffd95a;font-weight:600;font-size:12px}
+body.tm .who{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.16);padding:5px 12px 5px 5px;font-weight:700}
+body.tm .who svg.ic{width:28px!important;height:28px!important;padding:5px;border-radius:50%;background:var(--kn);color:var(--nv9);box-sizing:border-box}
+
+/* ---------- beranda ---------- */
+body.tm .hero{margin:18px 0 0;border-radius:26px;padding:20px 18px 16px;color:#fff;background:radial-gradient(120% 90% at 100% 0%,rgba(252,192,0,.20),transparent 55%),linear-gradient(150deg,var(--nv8),var(--nv) 70%,var(--nv2));box-shadow:0 26px 40px -24px rgba(18,5,64,.9);position:relative;overflow:hidden}
+body.tm .hero .per{margin:0;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#cfc6ff}
+body.tm .hero .per b{color:#ffd95a}
+body.tm .hero .pl{margin:8px 0 0;color:#fff;font-size:14px}
+body.tm .hero .pl b{color:#fff;font-size:21px;font-weight:800;line-height:1.25;letter-spacing:-.01em}
+body.tm .hero .bar{height:12px;background:rgba(255,255,255,.14);margin:14px 0 16px}
+body.tm .hero .bar i{background:linear-gradient(90deg,#34c27a,#7ee2a8);box-shadow:0 0 12px rgba(80,220,140,.5)}
+body.tm .hero .sum{gap:8px}
+body.tm .hero .sum div{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:12px 6px 10px}
+body.tm .hero .sum b{font-size:27px;font-weight:800;color:#fff}
+body.tm .hero .sum small{color:#d6d0f5;font-size:12px;font-weight:600}
+body.tm .hero .sum .ok{background:rgba(52,194,122,.18);border-color:rgba(52,194,122,.35)}
+body.tm .hero .sum .ok b{color:#8ff0bb}
+body.tm .hero .sum div:last-child{background:rgba(224,72,58,.16);border-color:rgba(224,72,58,.32)}
+body.tm .hero .sum div:last-child b{color:#ffb1a8}
+body.tm .scan{margin-top:14px;height:86px;justify-content:flex-start;gap:14px;padding:0 18px 0 14px;border-radius:24px;background:linear-gradient(180deg,#ffd23f,var(--kn2));color:var(--nv9);font-size:17px;font-weight:800;letter-spacing:.06em;box-shadow:0 18px 30px -16px rgba(200,140,0,.9)}
+body.tm .scan svg.ic{width:58px;height:58px;padding:15px;border-radius:18px;background:var(--nv9);color:#ffd23f;box-sizing:border-box}
+body.tm .scan::after{content:"›";margin-left:auto;font-size:34px;font-weight:400;line-height:1;opacity:.75}
+body.tm .scan:active{background:var(--kn2)}
+body.tm h2{display:flex;align-items:center;gap:10px;font-size:17px;letter-spacing:0;text-transform:none;color:var(--tx);font-weight:800;margin:28px 2px 12px}
+body.tm h2::before{content:"";width:4px;height:18px;border-radius:3px;background:var(--kn2)}
+body.tm .list .row{border:0;border-radius:18px;margin-bottom:10px;padding:14px 14px;box-shadow:var(--sh);gap:12px}
+body.tm #riw .row::before{content:"✓";flex:none;width:40px;height:40px;border-radius:14px;background:var(--oks);color:var(--ok);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+body.tm .row b{font-size:15.5px;font-weight:700}
+body.tm .row small{font-size:13px;line-height:1.4}
+body.tm .wkt b{color:var(--nv);font-size:16px;font-weight:800}
+body.tm .empty{background:#fff;border-radius:18px;box-shadow:var(--sh)}
+
+/* ---------- rekap ---------- */
+body.tm .filt{background:#fff;border-radius:22px;padding:16px;box-shadow:var(--sh);margin-top:18px;gap:12px}
+body.tm .filt .fld label{font-size:12.5px;margin-bottom:5px}
+body.tm .filt .fld select,body.tm .filt .fld input{height:48px;font-size:15px;padding:0 14px}
+body.tm .fld select{-webkit-appearance:none;appearance:none;padding-right:36px!important;background:#f4f3f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232a1382' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") right 14px center no-repeat}
+body.tm #fQ{padding-left:42px;background:#f4f3f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%236b6785' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") 14px center no-repeat}
+body.tm .seg{background:#e9e6f4;border-radius:16px;padding:4px;margin-top:14px}
+body.tm .seg button{height:42px;border-radius:12px;font-size:15px}
+body.tm .seg button.on{background:var(--nv);color:#fff;box-shadow:0 8px 16px -10px rgba(42,19,130,.9)}
+body.tm .count{display:flex;align-items:center;gap:8px;margin:16px 2px 10px;font-weight:700;color:var(--tx);font-size:14.5px}
+body.tm .count::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--okb)}
+body.tm #lst .row{box-shadow:var(--sh),inset 5px 0 0 #cfcbe0}
+body.tm #lst .row.g{box-shadow:var(--sh),inset 5px 0 0 var(--okb)}
+body.tm #lst .row.y{box-shadow:var(--sh),inset 5px 0 0 var(--wb)}
+body.tm #lst .row.r{box-shadow:var(--sh),inset 5px 0 0 var(--bb)}
+body.tm #lst .row{padding-left:18px}
+body.tm .chip{padding:5px 11px;font-size:12px;font-weight:700}
+body.tm .chip.ok{background:var(--oks);color:var(--ok)}
+body.tm .chip.y{background:var(--warns);color:var(--warn)}
+body.tm .chip.r{background:var(--bads);color:var(--bad)}
+
+/* ---------- navigasi bawah: pil melayang ---------- */
+body.tm .nav{left:50%;right:auto;transform:translateX(-50%);width:min(360px,calc(100% - 32px));bottom:calc(14px + env(safe-area-inset-bottom,0px));border:0;border-radius:24px;background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 18px 40px -14px rgba(18,5,64,.45),0 0 0 1px rgba(18,5,64,.05);padding:6px}
+body.tm .nav .wrap{padding:0;gap:6px}
+body.tm .nav button{flex-direction:row;justify-content:center;gap:8px;height:50px;padding:0;border-radius:18px;font-size:15px;font-weight:700}
+body.tm .nav button.on{background:var(--nv);color:#fff;box-shadow:0 10px 18px -12px rgba(42,19,130,.9)}
+body.tm .nav button.on svg{color:var(--kn)}
+
+/* ---------- lembar bawah ---------- */
+body.tm .sheet{background:rgba(18,5,64,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+body.tm .sheet .box{border-radius:30px 30px 0 0;padding:12px 20px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -20px 50px -20px rgba(18,5,64,.5)}
+body.tm .sheet .box::before{content:"";display:block;width:44px;height:5px;border-radius:5px;background:#dcd8ea;margin:0 auto 16px}
+body.tm .sheet h3{font-size:21px;font-weight:800;letter-spacing:-.01em;color:var(--nv9)}
+body.tm .sheet .sub{font-size:14px;margin-bottom:16px}
+body.tm .kv{background:#f6f5fb;border-radius:18px;padding:2px 16px}
+body.tm .kv div{padding:11px 0;font-size:15px;border-bottom-color:#e9e6f3}
+body.tm .kv span{flex:0 0 112px;font-size:14px}
+body.tm .kv b{font-weight:700;text-align:right}
+body.tm .note{display:flex;gap:10px;align-items:flex-start;border-radius:16px;padding:13px 14px;font-size:14.5px;line-height:1.45}
+body.tm .note::before{flex:none;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;margin-top:1px}
+body.tm .note.ok{background:var(--oks);color:#0f5a32}body.tm .note.ok::before{content:"✓";background:var(--okb)}
+body.tm .note.w{background:var(--warns);color:#6e4c00}body.tm .note.w::before{content:"!";background:var(--wb);color:var(--nv9)}
+body.tm .note.b{background:var(--bads);color:var(--bad)}body.tm .note.b::before{content:"×";background:var(--bb)}
+body.tm .okmark{width:84px;height:84px;line-height:84px;font-size:46px;font-weight:800;background:var(--okb);color:#fff;box-shadow:0 0 0 10px var(--oks),0 18px 30px -12px rgba(23,130,74,.7);margin:8px auto 18px}
+body.tm .sheet .okc .kv{text-align:left}
+body.tm .sheet .acts{gap:10px;background:linear-gradient(rgba(255,255,255,0),#fff 22%)}
+body.tm .lmsum{background:var(--nvs);color:#3b3566;border-radius:18px;padding:14px 16px}
+body.tm .lmsum b{color:var(--nv9);font-size:17px;font-weight:800;margin-bottom:2px}
+body.tm .pa{font-size:13.5px;margin:4px 2px 10px}
+body.tm .pa a{color:var(--nv)}
+body.tm .sheet .lmrow{border:1.5px solid #e2def0;border-radius:16px;padding:12px 14px;min-height:60px;box-shadow:inset 5px 0 0 var(--okb)}
+body.tm .sheet .lmrow:has(input:checked:not(:disabled)){border-color:#b9ade9;background:#faf9ff}
+body.tm .sheet .lmrow.nx{box-shadow:inset 5px 0 0 #cfcbe0;background:#fafafc}
+body.tm .sheet .lmrow input{accent-color:var(--nv)}
+body.tm .lmrow b{font-size:15px;font-weight:700}
+body.tm .lmk{font-size:13px}
+body.tm .lmk.x{color:var(--bad);font-weight:600}
+body.tm .sheet .err{font-size:13.5px}
+
+/* ---------- pemindai ---------- */
+body.tm #cam{background:radial-gradient(120% 80% at 50% 40%,#2a2440,#07051a)}
+body.tm #cam .frame{border:0;border-radius:30px;box-shadow:0 0 0 100vmax rgba(7,5,26,.62);
+  background:
+   linear-gradient(var(--kn),var(--kn)) 0 0/42px 5px,linear-gradient(var(--kn),var(--kn)) 0 0/5px 42px,
+   linear-gradient(var(--kn),var(--kn)) 100% 0/42px 5px,linear-gradient(var(--kn),var(--kn)) 100% 0/5px 42px,
+   linear-gradient(var(--kn),var(--kn)) 0 100%/42px 5px,linear-gradient(var(--kn),var(--kn)) 0 100%/5px 42px,
+   linear-gradient(var(--kn),var(--kn)) 100% 100%/42px 5px,linear-gradient(var(--kn),var(--kn)) 100% 100%/5px 42px;
+  background-repeat:no-repeat}
+body.tm #cam .frame::after{content:"";position:absolute;left:10%;right:10%;top:48%;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,var(--kn),transparent);box-shadow:0 0 18px 2px rgba(252,192,0,.6)}
+body.tm #cam .bar2 button{height:44px;padding:0 18px;border-radius:14px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-weight:700}
+body.tm #cam .msg{bottom:calc(28px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:20px;padding:16px;font-weight:600;line-height:1.45}
+body.tm #cam .msg button{width:100%;height:50px;border-radius:14px;background:var(--kn);color:var(--nv9);font-weight:800}
+body.tm .toast{background:var(--nv9);border-radius:16px;padding:12px 18px;font-weight:600;box-shadow:0 16px 30px -12px rgba(18,5,64,.6);bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+
+/* ---------- layar lebar (tablet/laptop) ---------- */
+@media (min-width:900px){
+  body.tm .wrap{max-width:1080px}
+  body.tm #vB:not(.hidden){display:grid;grid-template-columns:420px 1fr;column-gap:28px;align-items:start}
+  body.tm #vB .hero{grid-column:1;grid-row:1}
+  body.tm #vB .scan{grid-column:1;grid-row:2}
+  body.tm #vB h2{grid-column:2;grid-row:1;margin-top:18px;align-self:start}
+  body.tm #vB #riw{grid-column:2;grid-row:1/span 3;margin-top:64px}
+  body.tm #vB .vtap{grid-column:1;grid-row:3}
+  body.tm .filt{grid-template-columns:1.2fr 1fr 1fr 1.4fr}
+  body.tm .filt .full{grid-column:auto}
+  body.tm #lst{display:grid;grid-template-columns:1fr 1fr;column-gap:12px}
+}
+/* penyempurnaan */
+body.tm .lbox{margin-top:32vh;padding-bottom:16px}
+body.tm .lbox>p{margin-bottom:16px}
+body.tm .lbox .fld{margin-bottom:12px}
+body.tm .lbox .fld input{height:50px}
+body.tm .err{min-height:6px;margin:2px 0 8px}
+body.tm .sheet .okc .note,body.tm .sheet .okc .lmbox,body.tm .sheet .okc .acts{text-align:left}
+body.tm .sheet .box:has(.fld) .btn.bad{background:linear-gradient(180deg,#d63a2c,var(--bad));color:#fff;box-shadow:0 12px 22px -14px rgba(180,35,24,.9)}
+body.tm .filt .fld select{font-size:14.5px;padding-left:12px}
+body.tm .sheet h3:only-of-type+.sub:last-child::after{content:"";display:block;width:28px;height:28px;margin:18px auto 8px;border-radius:50%;border:3px solid var(--nvs2);border-top-color:var(--nv);animation:sp .8s linear infinite}
+@media (min-width:900px){
+  body.tm #vB:not(.hidden){grid-template-rows:auto auto 1fr}
+  body.tm #vB .vtap{align-self:start}
+}
+body.tm .filt .fld select{font-size:14px;padding-left:12px;padding-right:30px!important;background-position:right 10px center}
 </style>
 </head>
-<body>
+<body class="tm">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M4 12h16"/></symbol>
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></symbol>
@@ -130,7 +305,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
     <div class="fld"><label for="lp">Kata sandi</label><input id="lp" type="password" autocomplete="current-password"></div>
     <div class="err" id="lerr" role="alert"></div>
     <button class="btn" id="lb" type="submit">Masuk</button>
-    <div data-ver class="vtap">Terima Posyandu · tampilan 20261107b</div>
+    <div data-ver class="vtap">Terima Posyandu · tampilan 20261107c</div>
   </form>
 </section>
 
@@ -143,17 +318,19 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 
   <main class="wrap">
     <section id="vB">
-      <div class="per" id="perB"></div>
-      <div class="sum">
-        <div><b id="sT">0</b><small>Harus diterima</small></div>
-        <div class="ok"><b id="sS">0</b><small>Sudah diterima</small></div>
-        <div><b id="sB">0</b><small>Belum diterima</small></div>
+      <div class="hero">
+        <div class="per" id="perB"></div>
+        <div class="pl" id="plab"></div><div class="bar"><i id="bar" style="width:0"></i></div>
+        <div class="sum">
+          <div><b id="sT">0</b><small>Harus diterima</small></div>
+          <div class="ok"><b id="sS">0</b><small>Sudah diterima</small></div>
+          <div><b id="sB">0</b><small>Belum diterima</small></div>
+        </div>
       </div>
-      <div class="pl" id="plab"></div><div class="bar"><i id="bar" style="width:0"></i></div>
       <button class="btn scan" id="scan" type="button"><svg class="ic"><use href="#i-scan"/></svg>SCAN QR LAPORAN</button>
       <h2>Riwayat penerimaan</h2>
       <div class="list" id="riw"></div>
-      <div data-ver class="vtap" style="margin-bottom:90px">Terima Posyandu · tampilan 20261107b</div>
+      <div data-ver class="vtap" style="margin-bottom:90px">Terima Posyandu · tampilan 20261107c</div>
     </section>
 
     <section id="vR" class="hidden">
@@ -555,7 +732,7 @@ $('lt').addEventListener('input',function(){
   try{var s=localStorage.getItem(KUNCI_LS);if(s){CRED=JSON.parse(s);if(CRED&&CRED.u&&CRED.p){$('login').classList.add('hidden');$('app').classList.remove('hidden');mulai();return}CRED=null}}catch(e){CRED=null}
 })();
 </script>
-<script>if(window.PB)PB.mulai({app:'terima',v:'20261107b'});</script>
+<script>if(window.PB)PB.mulai({app:'terima',v:'20261107c'});</script>
 <script>if('serviceWorker' in navigator)window.addEventListener('load',function(){try{navigator.serviceWorker.register('sw-terima.js').catch(function(){})}catch(e){}})</script>
 </body>
 </html>
