@@ -259,3 +259,65 @@ html body.pm .nav button.on{background:linear-gradient(180deg,#ffd54a,#f0b400)}
 html body.pm .avt{color:#ffd54a}
 html body.pm .lf .btn,html body.pm .lf .btn *{color:#241b00!important}
 html body.pm .login .lf .btn{background:linear-gradient(180deg,#ffd54a,#f0b400)!important}
+
+/* ---------- jendela Ubah data Posyandu & petugas Terima ---------- */
+html body.pm{--fbg:#f8f3e2;--fln:#ebe1bf}
+:root[data-theme=dark] body.pm{--fbg:#2b230c;--fln:#3d3214}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) body.pm{--fbg:#2b230c;--fln:#3d3214}}
+
+/* kotak isian di jendela dan kartu petugas */
+html body.pm .modal .fld input,html body.pm .modal .fld select,html body.pm .modal select,
+html body.pm #cardTrm input[type=text],html body.pm #cardTrm select{width:100%;min-height:50px!important;background:var(--fbg)!important;border:1.5px solid var(--fln)!important;border-radius:14px!important;padding:10px 14px!important;font-size:16px;color:var(--fg);box-sizing:border-box}
+html body.pm .modal select,html body.pm #cardTrm select{-webkit-appearance:none;appearance:none;padding-right:40px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237a5600' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 14px center!important}
+html body.pm .modal input:focus,html body.pm .modal select:focus,html body.pm #cardTrm input:focus,html body.pm #cardTrm select:focus{outline:0;border-color:var(--em)!important;box-shadow:0 0 0 4px rgba(240,180,0,.22);background-color:var(--surface)!important}
+html body.pm .modal .fld label,html body.pm #cardTrm label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin:0 0 6px}
+html body.pm .modal input[type=checkbox],html body.pm #cardTrm input[type=checkbox]{accent-color:var(--em);width:22px;height:22px}
+
+/* jendela: lembar dari bawah di HP, kartu di tengah di laptop */
+html body.pm .modal{background:rgba(28,20,0,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+html body.pm .modal .box{background:var(--surface);border-radius:28px 28px 0 0;padding:0 18px 0;box-shadow:0 -20px 50px -20px rgba(28,20,0,.5)}
+html body.pm .modal .box>div:first-child{position:sticky;top:0;z-index:3;background:var(--surface);margin:0 -18px 16px!important;padding:12px 18px 12px;border-bottom:1px solid var(--line)}
+html body.pm .modal .box>div:first-child::before{content:"";position:absolute;left:50%;top:6px;width:44px;height:5px;margin-left:-22px;border-radius:5px;background:var(--fln)}
+html body.pm .modal .box>div:first-child h4{font-size:20px;font-weight:800;letter-spacing:-.01em;padding-top:8px}
+html body.pm .modal .box>div:first-child .btn{margin-top:8px;background:transparent!important;border:1.5px solid var(--fln)!important;color:var(--fg)!important;box-shadow:none!important;border-radius:12px}
+html body.pm .modal .box>div:nth-child(2)>.btn:last-child{position:sticky;bottom:0;width:100%;min-height:56px;margin:18px 0 0;border-radius:16px;font-size:16px;box-shadow:0 -14px 18px 6px var(--surface),0 14px 22px -12px rgba(200,140,0,.8)}
+html body.pm .modal .box>div:nth-child(2){padding-bottom:18px}
+html body.pm .modal .kh{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;color:var(--fg);margin:22px 0 10px}
+html body.pm .modal .kh::before{content:"";width:4px;height:18px;border-radius:3px;background:var(--em)}
+html body.pm .modal .krow{grid-template-columns:1fr 104px 40px 40px;gap:8px;margin-bottom:8px}
+html body.pm .modal .krow input[type=text]{min-height:46px!important;padding:8px 12px!important;font-size:15px}
+html body.pm .modal .krow button{min-height:46px;border-radius:12px;border:1.5px solid var(--fln);background:var(--surface);color:var(--fg);font-weight:700}
+@media (min-width:700px){html body.pm .modal .box{border-radius:26px;max-height:88vh}html body.pm .modal .box>div:first-child::before{display:none}html body.pm .modal .box>div:first-child{padding-top:16px}}
+
+/* pilihan cara mengubah data */
+html body.pm .pil{border:1px solid var(--line)!important;border-radius:22px!important;padding:18px!important;box-shadow:var(--shadow);background:var(--surface)}
+html body.pm .pil .pic{width:52px;height:52px;border-radius:16px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--accent-text)}
+html body.pm .pil h5{font-size:17px!important;font-weight:800;margin:12px 0 4px!important}
+html body.pm .pil .btn{width:100%;min-height:50px}
+html body.pm #dpUbah .rkhd .btn.plain{background:transparent;border:1.5px solid var(--fln);color:var(--fg)}
+
+/* petugas penerima Terima */
+html body.pm #cardTrm .trmhd{align-items:center;gap:12px;margin:14px 0 12px}
+html body.pm #cardTrm .trmhd b{flex:1;min-width:0;font-size:17px;font-weight:800}
+html body.pm #cardTrm .trmhd .btn{white-space:nowrap;flex:none;min-height:44px;padding:0 16px}
+html body.pm #cardTrm .trmrow{border:1px solid var(--line);border-left:1px solid var(--line);border-radius:18px;padding:14px 14px 14px 18px;margin-bottom:10px;background:var(--surface);box-shadow:var(--shadow),inset 5px 0 0 #2fb36a}
+html body.pm #cardTrm .trmrow.y{box-shadow:var(--shadow),inset 5px 0 0 #f0b400}
+html body.pm #cardTrm .trmrow.r{box-shadow:var(--shadow),inset 5px 0 0 #e0483a}
+html body.pm #cardTrm .trmt b{font-size:16px;font-weight:800}
+html body.pm #cardTrm .trmt span{font-size:13px;color:var(--muted);opacity:1}
+html body.pm #cardTrm .trmrow .trmbtn{gap:8px;margin-top:12px}
+html body.pm #cardTrm .trmrow .trmbtn .btn.plain{background:transparent;border:1.5px solid var(--fln);color:var(--fg);box-shadow:none;min-height:40px}
+html body.pm #cardTrm .trmrow .trmbtn .btn.plain:last-child{color:var(--bad);border-color:rgba(180,35,24,.25)}
+html body.pm #cardTrm .trmadd{background:var(--accent-soft);border:1px solid var(--fln);border-radius:20px;padding:16px;margin:0 0 12px}
+html body.pm #cardTrm .trmadd input,html body.pm #cardTrm .trmadd select{margin:0 0 12px!important}
+html body.pm #cardTrm .trmadd .btn{width:100%;min-height:50px}
+html body.pm #cardTrm .trmbox{background:var(--ok-soft);border:1px solid rgba(23,130,74,.22);border-radius:20px;padding:16px;margin:0 0 12px;color:var(--fg);font-size:13.5px;line-height:1.5}
+html body.pm #cardTrm .trmbox input{margin:12px 0 12px!important;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px!important;background:var(--surface)!important}
+html body.pm #cardTrm .trmbox .trmbtn .btn{flex:1;min-height:48px;justify-content:center;text-align:center}
+html body.pm #cardTrm .trmbox .trmbtn a.btn{text-decoration:none;background:transparent;border:1.5px solid rgba(23,130,74,.4);color:var(--ok);box-shadow:none;display:inline-flex;align-items:center}
+html body.pm #cardTrm .trmadd .btn{background:linear-gradient(180deg,var(--em2),var(--em))!important;color:#241b00!important;border:0!important}
+@media (max-width:599px){
+  html body.pm #cardTrm .trmhd{flex-direction:column;align-items:stretch;gap:10px}
+  html body.pm #cardTrm .trmhd .btn{width:100%;min-height:48px}
+}
+html body.pm #cardTrm .trmbox .trmbtn .btn{font-size:15px;padding:0 10px}
