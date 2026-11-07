@@ -321,3 +321,15 @@ html body.pm #cardTrm .trmadd .btn{background:linear-gradient(180deg,var(--em2),
   html body.pm #cardTrm .trmhd .btn{width:100%;min-height:48px}
 }
 html body.pm #cardTrm .trmbox .trmbtn .btn{font-size:15px;padding:0 10px}
+
+/* foto patung kuda putih (7 Nov 2026) */
+/* foto patung kuda putih: pita foto di atas (HP), patung di sisi kanan (laptop) */
+html body.pm .login::before{inset:0 0 auto 0!important;height:300px!important;background:url(palu.jpg) center top/cover no-repeat!important;filter:none!important;opacity:1!important}
+html body.pm .login::after{inset:0 0 auto 0!important;height:300px!important;background:linear-gradient(180deg,rgba(23,18,10,0) 55%,#17120a 100%)!important}
+html body.pm .login .av{margin:248px 0 12px!important}
+@media (min-width:900px){
+  html body.pm .login{background:linear-gradient(100deg,#1f74d6,#3d93ec 50%,#5aa7ef)!important}
+  html body.pm .login::before{inset:0 0 0 auto!important;width:min(50%,760px)!important;height:100%!important;background:url(palu.jpg) left center/cover no-repeat!important;-webkit-mask-image:linear-gradient(90deg,transparent,#000 28%);mask-image:linear-gradient(90deg,transparent,#000 28%)}
+  html body.pm .login::after{inset:0!important;height:100%!important;background:linear-gradient(180deg,rgba(23,18,10,0) 50%,rgba(23,18,10,.8) 85%,#17120a 100%)!important}
+  html body.pm .login .av{margin:calc(56px + env(safe-area-inset-top,0px)) 0 14px!important}
+}

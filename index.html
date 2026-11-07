@@ -406,6 +406,9 @@ body.mod{
 /* ---------- Halaman awal ---------- */
 .mod .hero2{position:relative;overflow:hidden;margin:-20px calc(-1*max(16px,env(safe-area-inset-right,0px))) 0 calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:calc(18px + env(safe-area-inset-top,0px)) 20px 74px;color:#fff;background:linear-gradient(150deg,var(--e9),var(--e8) 55%,#0a5c3a);border-radius:0 0 34px 34px;isolation:isolate}
 .mod .hero2::before{content:"";position:absolute;right:-30px;top:0;bottom:0;width:72%;background:url(kuda.jpg) center 28%/cover no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.6) 40%,#000);mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.6) 40%,#000);z-index:-1;opacity:.95}
+/* foto patung kuda putih */
+.mod .hero2::before{background:url(palu-kader.jpg) right center/auto 100% no-repeat!important}
+@media (min-width:600px){.mod .hero2::before{background:url(palu-kader.jpg) center 15%/cover no-repeat!important}}
 .mod .hero2::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,42,25,0) 40%,rgba(4,42,25,.65));z-index:-1}
 .mod .hero2 .top{display:flex;align-items:center;gap:10px;margin-bottom:26px}
 .mod .hero2 .top img{width:34px;height:auto;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
@@ -494,7 +497,7 @@ var JENIS={
 var STEPS=["Posyandu","Kegiatan","Foto","Catatan","Periksa"];
 var TTL=["Data posyandu","Kegiatan","Foto dokumentasi","Catatan dan pengesahan","Periksa dan download"];
 var NEXTLBL=["Lanjut ke Kegiatan","Lanjut ke Foto","Lanjut ke Catatan","Periksa laporan"];
-var APP_V="44";
+var APP_V="45";
 var KEY="laporan-posyandu-v3", MAXFOTO=12, uid=0;
 var main=document.getElementById("main"), btnBack=document.getElementById("btn-back"), btnNext=document.getElementById("btn-next"), btnMake=document.getElementById("btn-make");
 
